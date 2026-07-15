@@ -1,4 +1,8 @@
+"use client";
+
 import type { ComponentType, SVGProps } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import {
@@ -13,21 +17,21 @@ import {
 
 type NavItem = {
   label: string;
+  href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
-  active?: boolean;
 };
 
 const primaryNav: NavItem[] = [
-  { label: "Dashboard", icon: GridIcon, active: true },
-  { label: "Diagnosis", icon: RadarIcon },
-  { label: "Asesmen", icon: ClipboardIcon },
-  { label: "Remedial", icon: LifeBuoyIcon },
-  { label: "Analisis Soal", icon: BookIcon },
+  { label: "Dashboard", href: "/dashboard", icon: GridIcon },
+  { label: "Diagnosis", href: "/diagnosis", icon: RadarIcon },
+  { label: "Asesmen", href: "/assessment", icon: ClipboardIcon },
+  { label: "Remedial", href: "/remedial", icon: LifeBuoyIcon },
+  { label: "Analisis Soal", href: "/analysis", icon: BookIcon },
 ];
 
 const secondaryNav: NavItem[] = [
-  { label: "Settings", icon: SettingsIcon },
-  { label: "Help", icon: LifeBuoyIcon },
+  { label: "Settings", href: "#", icon: SettingsIcon },
+  { label: "Help", href: "#", icon: LifeBuoyIcon },
 ];
 
 function BrandLogo() {
@@ -44,33 +48,42 @@ function BrandLogo() {
   );
 }
 
-function NavLink({ item }: { item: NavItem }) {
+function NavLink({
+  item,
+  active,
+}: {
+  item: NavItem;
+  active: boolean;
+}) {
   const Icon = item.icon;
 
   return (
-    <button
+    <Link
+      aria-current={active ? "page" : undefined}
       className={cn(
         "flex w-full items-center gap-4 rounded-[10px] px-4 py-2 text-left transition-colors",
-        item.active
+        active
           ? "bg-[#2170e4] text-white"
           : "text-[#222222] hover:bg-white hover:text-[#0058be]",
       )}
-      type="button"
+      href={item.href}
     >
       <Icon className="size-[18px]" />
       <span className="text-xs font-semibold tracking-[0.04em]">{item.label}</span>
-    </button>
+    </Link>
   );
 }
 
 export function AppSidebar() {
+  const pathname = usePathname();
+
   return (
     <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-[#c5c6cd] bg-[#f5f3f4] px-4 py-4 md:min-h-screen md:w-64 md:border-b-0 md:border-r">
       <BrandLogo />
       <nav className="flex flex-1 flex-col gap-8 pt-2">
         <div className="space-y-1">
           {primaryNav.map((item) => (
-            <NavLink item={item} key={item.label} />
+            <NavLink item={item} active={pathname === item.href} key={item.label} />
           ))}
         </div>
         <div className="mt-auto space-y-6">
@@ -80,7 +93,7 @@ export function AppSidebar() {
           </Button>
           <div className="space-y-1 border-t border-[#c5c6cd] pt-4">
             {secondaryNav.map((item) => (
-              <NavLink item={item} key={item.label} />
+              <NavLink item={item} active={false} key={item.label} />
             ))}
           </div>
         </div>

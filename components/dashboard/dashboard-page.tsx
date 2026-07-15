@@ -1,5 +1,3 @@
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { TopHeader } from "@/components/layout/top-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -314,48 +312,40 @@ function RecommendationBanner() {
 
 export function DashboardPage() {
   return (
-    <div className="min-h-screen bg-white text-[#091426]">
-      <div className="md:flex">
-        <AppSidebar />
-        <main className="min-w-0 flex-1">
-          <TopHeader />
-          <div className="space-y-8 px-5 py-6 sm:px-6 lg:px-10 lg:py-10">
-            <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <h1 className="text-[clamp(2rem,5vw,3rem)] font-semibold tracking-[-0.04em] text-[#091426]">
-                  Selamat pagi, Bu Mayla!
-                </h1>
-                <p className="mt-2 text-base text-[#45474c]">
-                  Analisis terbaru untuk Kelas 9 sudah siap untuk Anda tinjau hari ini.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Button size="sm" variant="outline">
-                  <CalendarIcon className="size-4" />
-                  Mei 2024
-                </Button>
-                <Button size="sm">
-                  <DownloadIcon className="size-4" />
-                  Ekspor Laporan
-                </Button>
-              </div>
-            </section>
+    <div className="space-y-8 px-5 py-6 sm:px-6 lg:px-10 lg:py-10">
+      <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 className="text-[clamp(2rem,5vw,3rem)] font-semibold tracking-[-0.04em] text-[#091426]">
+            Selamat pagi, Bu Mayla!
+          </h1>
+          <p className="mt-2 text-base text-[#45474c]">
+            Analisis terbaru untuk Kelas 9 sudah siap untuk Anda tinjau hari ini.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button size="sm" variant="outline">
+            <CalendarIcon className="size-4" />
+            Mei 2024
+          </Button>
+          <Button size="sm">
+            <DownloadIcon className="size-4" />
+            Ekspor Laporan
+          </Button>
+        </div>
+      </section>
 
-            <section className="grid gap-4 xl:grid-cols-4">
-              {statCards.map((card) => (
-                <MetricCard key={card.title} {...card} />
-              ))}
-            </section>
+      <section className="grid gap-4 xl:grid-cols-4">
+        {statCards.map((card) => (
+          <MetricCard key={card.title} {...card} />
+        ))}
+      </section>
 
-            <section className="grid gap-4 xl:grid-cols-12">
-              <CompetencyMatrix />
-              <ActivityFeed />
-            </section>
+      <section className="grid gap-4 xl:grid-cols-12">
+        <CompetencyMatrix />
+        <ActivityFeed />
+      </section>
 
-            <RecommendationBanner />
-          </div>
-        </main>
-      </div>
+      <RecommendationBanner />
     </div>
   );
 }

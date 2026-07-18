@@ -36,7 +36,7 @@ const secondaryNav: NavItem[] = [
 
 function BrandLogo() {
   return (
-    <div className="flex items-center gap-3 px-2 py-4">
+    <Link className="flex items-center gap-3 px-2 py-4" href="/">
       <div className="flex size-10 items-center justify-center rounded-[10px] bg-[#0058be] text-white">
         <GridIcon className="size-5" />
       </div>
@@ -44,7 +44,7 @@ function BrandLogo() {
         <p className="text-xl font-bold text-[#1b1b1d]">EduInsight</p>
         <p className="text-[10px] text-[#45474c]">AI Learning Partner</p>
       </div>
-    </div>
+    </Link>
   );
 }
 

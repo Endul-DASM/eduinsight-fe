@@ -56,7 +56,7 @@ function BackpackIcon(props: SVGProps<SVGSVGElement>) {
 
 function EduInsightMark() {
   return (
-    <div className="flex items-center gap-2">
+    <Link className="flex items-center gap-2" href="/">
       <div className="grid size-10 shrink-0 place-items-center rounded-[8px] bg-white shadow-[0_10px_20px_rgba(9,20,38,0.12)]">
         <svg aria-hidden="true" className="size-[22px] text-[#0058be]" fill="none" viewBox="0 0 24 24">
           <path
@@ -77,7 +77,7 @@ function EduInsightMark() {
       <span className="text-[clamp(1.5rem,3vw,2rem)] font-bold tracking-[-0.03em] text-white">
         EduInsight
       </span>
-    </div>
+    </Link>
   );
 }
 
@@ -141,13 +141,13 @@ function LandingCopy() {
 const ctaOptions = [
   {
     label: "Mulai Sekarang sebagai Guru",
-    href: "/dashboard",
+    href: "/login",
     icon: GraduationCapIcon,
     variant: "primary" as const,
   },
   {
     label: "Mulai Sekarang sebagai Siswa",
-    href: "/dashboard",
+    href: "/login",
     icon: BackpackIcon,
     variant: "secondary" as const,
   },

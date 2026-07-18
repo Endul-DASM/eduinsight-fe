@@ -103,7 +103,7 @@ function LinkedinIcon(props: SVGProps<SVGSVGElement>) {
 
 const navLinks = [
   { label: "Home", href: "/", active: true },
-  { label: "About", href: "#", active: false },
+  { label: "About", href: "#about", active: false },
 ];
 
 const socialProof = [
@@ -178,9 +178,9 @@ function TopNavBar() {
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-center border-b border-[rgba(197,198,205,0.3)] bg-[rgba(251,248,250,0.8)] shadow-[0_1px_2px_rgba(0,0,0,0.05)] backdrop-blur-[6px] md:h-20">
       <div className="flex w-full max-w-[80rem] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
-        <span className="text-xl font-semibold tracking-[-0.02em] text-black md:text-2xl">
+        <Link className="text-xl font-semibold tracking-[-0.02em] text-black md:text-2xl" href="/">
           EduInsight
-        </span>
+        </Link>
         <nav className="hidden items-center gap-8 lg:flex">
           {navLinks.map((link) => (
             <Link
@@ -199,13 +199,13 @@ function TopNavBar() {
         <div className="flex items-center gap-2 sm:gap-4">
           <Link
             className="rounded-full px-3 py-2 text-sm font-semibold text-[#45474c] sm:px-6 sm:text-base"
-            href="/dashboard"
+            href="/login"
           >
             Login
           </Link>
           <Link
             className="rounded-full bg-[#085ac0] px-4 py-2 text-sm font-semibold text-white shadow-[0_10px_15px_-3px_rgba(8,90,192,0.2),0_4px_6px_-4px_rgba(8,90,192,0.2)] sm:px-6 sm:py-2.5 sm:text-base"
-            href="/dashboard"
+            href="/login"
           >
             Sign Up
           </Link>
@@ -238,7 +238,7 @@ function HeroSection() {
           <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
             <Link
               className="flex items-center justify-center gap-3 rounded-xl bg-[#085ac0] px-8 py-4 text-base font-semibold text-white shadow-[0_20px_25px_-5px_rgba(8,90,192,0.25),0_8px_10px_-6px_rgba(8,90,192,0.25)]"
-              href="/dashboard"
+              href="/login"
             >
               Coba Sekarang Gratis
               <ArrowRightIcon className="size-5" />
@@ -311,7 +311,7 @@ function RoleCard({ card }: { card: (typeof roleCards)[number] }) {
       </ul>
       <Link
         className="w-full rounded-xl border-2 border-[#085ac0] py-[18px] text-center text-lg font-bold text-[#085ac0]"
-        href="/dashboard"
+        href="/login"
       >
         {card.cta}
       </Link>
@@ -321,7 +321,7 @@ function RoleCard({ card }: { card: (typeof roleCards)[number] }) {
 
 function RoleSelectionSection() {
   return (
-    <section className="bg-[rgba(246,243,245,0.5)] py-16 lg:py-24">
+    <section className="scroll-mt-16 bg-[rgba(246,243,245,0.5)] py-16 md:scroll-mt-20 lg:py-24" id="about">
       <div className="mx-auto flex max-w-[80rem] flex-col gap-10 px-4 sm:px-6 lg:gap-16 lg:px-10">
         <div className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-3xl font-bold tracking-[-0.02em] text-black sm:text-4xl lg:text-5xl">

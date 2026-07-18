@@ -50,7 +50,7 @@ const roleCards = [
     iconTone: "bg-[rgba(216,226,252,0.5)] text-black",
     description: "Lihat hasil diagnosis dan kerjakan latihan personal kamu untuk mengasah kemampuan akademik.",
     cta: "Masuk sebagai Siswa",
-    href: "/dashboard",
+    href: "/student/dashboard",
     buttonTone: "bg-black text-white",
   },
 ];

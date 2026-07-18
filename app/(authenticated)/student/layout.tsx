@@ -1,17 +1,17 @@
 import type { ReactNode } from "react";
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { TopHeader } from "@/components/layout/top-header";
+import { StudentSidebar } from "@/components/layout/student-sidebar";
+import { StudentTopHeader } from "@/components/layout/student-top-header";
 
-export default function AuthenticatedLayout({
+export default function StudentLayout({
   children,
 }: {
   children: ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-white text-[#091426] md:flex">
-      <AppSidebar />
+      <StudentSidebar />
       <main className="min-w-0 flex-1">
-        <TopHeader />
+        <StudentTopHeader />
         {children}
       </main>
     </div>

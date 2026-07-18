@@ -3,14 +3,11 @@
 import type { ComponentType, SVGProps } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import {
-  BookIcon,
   ClipboardIcon,
   GridIcon,
   LifeBuoyIcon,
-  PlusIcon,
   RadarIcon,
   SettingsIcon,
 } from "@/components/ui/icons";
@@ -22,11 +19,10 @@ type NavItem = {
 };
 
 const primaryNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: GridIcon },
-  { label: "Diagnosis", href: "/diagnosis", icon: RadarIcon },
-  { label: "Asesmen", href: "/assessment", icon: ClipboardIcon },
-  { label: "Remedial", href: "/remedial", icon: LifeBuoyIcon },
-  { label: "Analisis Soal", href: "/analysis", icon: BookIcon },
+  { label: "Dashboard", href: "/student/dashboard", icon: GridIcon },
+  { label: "Diagnosis", href: "#", icon: RadarIcon },
+  { label: "Asesmen", href: "#", icon: ClipboardIcon },
+  { label: "Remedial", href: "#", icon: LifeBuoyIcon },
 ];
 
 const secondaryNav: NavItem[] = [
@@ -48,13 +44,7 @@ function BrandLogo() {
   );
 }
 
-function NavLink({
-  item,
-  active,
-}: {
-  item: NavItem;
-  active: boolean;
-}) {
+function NavLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
 
   return (
@@ -74,11 +64,11 @@ function NavLink({
   );
 }
 
-export function AppSidebar() {
+export function StudentSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-[#c5c6cd] bg-[#f5f3f4] px-4 py-4 md:min-h-screen md:w-64 md:border-b-0 md:border-r">
+    <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-[#c5c6cd] bg-[#f5f3f4] px-4 py-4 md:sticky md:top-0 md:min-h-screen md:w-64 md:border-b-0 md:border-r">
       <BrandLogo />
       <nav className="flex flex-1 flex-col gap-8 pt-2">
         <div className="space-y-1">
@@ -86,16 +76,10 @@ export function AppSidebar() {
             <NavLink item={item} active={pathname === item.href} key={item.label} />
           ))}
         </div>
-        <div className="mt-auto space-y-6">
-          <Button className="w-full justify-center" size="md">
-            <PlusIcon className="size-4" />
-            Buat Asesmen
-          </Button>
-          <div className="space-y-1 border-t border-[#c5c6cd] pt-4">
-            {secondaryNav.map((item) => (
-              <NavLink item={item} active={false} key={item.label} />
-            ))}
-          </div>
+        <div className="mt-auto space-y-1 border-t border-[#c5c6cd] pt-4">
+          {secondaryNav.map((item) => (
+            <NavLink item={item} active={false} key={item.label} />
+          ))}
         </div>
       </nav>
     </aside>

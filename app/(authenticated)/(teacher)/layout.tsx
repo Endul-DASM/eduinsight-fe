@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopHeader } from "@/components/layout/top-header";
 
-export default function AuthenticatedLayout({
+export default function TeacherLayout({
   children,
 }: {
   children: ReactNode;

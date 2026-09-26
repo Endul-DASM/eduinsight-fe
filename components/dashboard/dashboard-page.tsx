@@ -310,13 +310,13 @@ function RecommendationBanner() {
   );
 }
 
-export function DashboardPage() {
+export function DashboardPage({ teacherName }: { teacherName: string }) {
   return (
     <div className="space-y-8 px-5 py-6 sm:px-6 lg:px-10 lg:py-10">
       <section className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 className="text-[clamp(2rem,5vw,3rem)] font-semibold tracking-[-0.04em] text-[#091426]">
-            Selamat pagi, Bu Mayla!
+            Selamat pagi, {teacherName}!
           </h1>
           <p className="mt-2 text-base text-[#45474c]">
             Analisis terbaru untuk Kelas 9 sudah siap untuk Anda tinjau hari ini.

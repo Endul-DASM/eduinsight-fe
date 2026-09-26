@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
 import { BellIcon, HelpIcon, SearchIcon } from "@/components/ui/icons";
+import type { Teacher } from "@/lib/api/types";
 
-export function TopHeader() {
+export function TopHeader({ subjectName, teacher }: { subjectName: string; teacher: Teacher }) {
   return (
     <header className="flex flex-col gap-4 border-b border-[#c5c6cd] bg-[#fbf8fa] px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
       <Input
@@ -24,11 +25,11 @@ export function TopHeader() {
         </button>
         <div className="flex items-center gap-3 border-l border-[#c5c6cd] pl-4">
           <div className="grid size-10 place-items-center rounded-full border-2 border-[rgba(0,88,190,0.2)] bg-[linear-gradient(180deg,#ffd7ba_0%,#f9b47f_100%)] text-sm font-bold text-[#7a3d11]">
-            BM
+            {teacher.initials}
           </div>
           <div>
-            <p className="text-xs font-semibold tracking-[0.04em] text-[#1b1b1d]">Bu Mayla</p>
-            <p className="text-[10px] text-[#45474c]">Matematika</p>
+            <p className="text-xs font-semibold tracking-[0.04em] text-[#1b1b1d]">{teacher.name}</p>
+            <p className="text-[10px] text-[#45474c]">{subjectName}</p>
           </div>
         </div>
       </div>

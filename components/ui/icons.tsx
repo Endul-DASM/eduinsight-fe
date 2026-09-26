@@ -55,6 +55,20 @@ export function HelpIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+export function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <IconBase {...props}>
+      <path
+        d="M5 12h14m-5-5 5 5-5 5"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
+    </IconBase>
+  );
+}
+
 export function GridIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <IconBase {...props}>

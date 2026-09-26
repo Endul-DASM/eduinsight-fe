@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { SVGProps } from "react";
-import { HelpIcon } from "@/components/ui/icons";
+import { PublicFooter } from "@/components/layout/public-footer";
+import { PublicTopNav } from "@/components/layout/public-top-nav";
+import { ArrowRightIcon } from "@/components/ui/icons";
 
 function GraduationCapIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -21,19 +23,6 @@ function StudentIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function ArrowRightIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
-      <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-    </svg>
-  );
-}
-
-const navLinks = [
-  { label: "Fitur", href: "#" },
-  { label: "Tentang Kami", href: "#" },
-];
-
 const roleCards = [
   {
     title: "Untuk Guru",
@@ -41,7 +30,7 @@ const roleCards = [
     iconTone: "bg-[rgba(216,226,255,0.5)] text-[#085ac0]",
     description: "Kelola asesmen dan pantau perkembangan siswa secara cerdas dengan dashboard analitik AI.",
     cta: "Masuk sebagai Guru",
-    href: "/dashboard",
+    href: "/choose-subject",
     buttonTone: "bg-[#085ac0] text-white",
   },
   {
@@ -54,34 +43,6 @@ const roleCards = [
     buttonTone: "bg-black text-white",
   },
 ];
-
-const footerLinks = [
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms of Service", href: "#" },
-  { label: "Contact Support", href: "#" },
-];
-
-function TopNavBar() {
-  return (
-    <header className="flex items-center justify-between gap-4 bg-[rgba(251,248,250,0.8)] px-4 py-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)] backdrop-blur-[6px] sm:px-6 lg:px-10">
-      <Link className="text-xl font-semibold tracking-[-0.02em] text-black sm:text-2xl" href="/">
-        EduInsight
-      </Link>
-      <div className="flex items-center gap-4 sm:gap-6">
-        <nav className="hidden items-center gap-8 sm:flex">
-          {navLinks.map((link) => (
-            <Link className="text-sm text-[#45474c]" href={link.href} key={link.label}>
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-        <span className="grid size-8 place-items-center rounded-full text-[#085ac0]">
-          <HelpIcon className="size-5" />
-        </span>
-      </div>
-    </header>
-  );
-}
 
 function RoleCard({ card }: { card: (typeof roleCards)[number] }) {
   const Icon = card.icon;
@@ -104,34 +65,10 @@ function RoleCard({ card }: { card: (typeof roleCards)[number] }) {
   );
 }
 
-function Footer() {
-  return (
-    <footer className="flex flex-col items-center gap-4 bg-[#f6f3f5] px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-10">
-      <div className="flex flex-col items-center gap-2 sm:items-start">
-        <p className="text-xl font-black text-black">EduInsight</p>
-        <p className="text-xs font-semibold tracking-[0.05em] text-[#45474c] opacity-90">
-          © 2026 EduInsight AI. Systematic &amp; Encouraging Learning.
-        </p>
-      </div>
-      <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-        {footerLinks.map((link) => (
-          <Link
-            className="text-xs font-semibold tracking-[0.05em] text-[rgba(69,71,76,0.7)] underline"
-            href={link.href}
-            key={link.label}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </div>
-    </footer>
-  );
-}
-
 export function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <TopNavBar />
+      <PublicTopNav />
       <main className="relative flex flex-1 items-center overflow-hidden bg-[rgba(251,248,250,0.5)] px-4 py-16 sm:px-6 md:py-20 lg:px-10">
         <div className="absolute -left-48 -top-48 size-96 rounded-full bg-[rgba(216,226,255,0.3)] blur-[32px]" />
         <div className="absolute -bottom-20 -right-20 size-80 rounded-full bg-[rgba(216,226,252,0.2)] blur-[32px]" />
@@ -158,7 +95,7 @@ export function LoginPage() {
           </p>
         </div>
       </main>
-      <Footer />
+      <PublicFooter />
     </div>
   );
 }

@@ -1,0 +1,57 @@
+<svg width="214" height="98" viewBox="0 0 214 98" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Login page">
+<g id="Html &#226;&#134;&#146; Body">
+<g id="Main Content">
+<g id="Container">
+<g id="Frame 10" clip-path="url(#clip0_0_1)">
+<g id="Frame 9">
+<g id="Frame 15">
+<g id="Circle Pattern">
+<g clip-path="url(#clip1_0_1)">
+<path d="M0 12C0 5.37258 5.37258 0 12 0H202C208.627 0 214 5.37258 214 12V98H0V12Z" fill="#EBE6DB"/>
+<g id="Group 8">
+<line id="Line" x1="38.25" y1="47.75" x2="175.75" y2="47.75" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_2" x1="37.9186" y1="48.4697" x2="133.062" y2="73.9633" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_3" x1="38.0245" y1="48.7255" x2="93.0171" y2="80.4755" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_4" x1="38.7678" y1="49" x2="135.995" y2="146.227" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_5" x1="38.0245" y1="49.2745" x2="87.2745" y2="134.578" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_6" x1="37.9186" y1="49.5303" x2="54.3536" y2="110.867" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_7" x1="38.25" y1="50.25" x2="38.25" y2="187.75" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_8" x1="37.5303" y1="49.9186" x2="12.0367" y2="145.062" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_9" x1="37.2745" y1="50.0245" x2="5.52452" y2="105.017" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_10" x1="37" y1="50.7678" x2="-60.2272" y2="147.995" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_11" x1="36.7255" y1="50.0245" x2="-48.578" y2="99.2745" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_12" x1="36.4697" y1="49.9186" x2="-24.8666" y2="66.3536" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_13" x1="35.75" y1="50.25" x2="-101.75" y2="50.25" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_14" x1="36.0814" y1="49.5303" x2="-59.0623" y2="24.0367" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_15" x1="35.9755" y1="49.2745" x2="-19.0171" y2="17.5245" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_16" x1="35.2322" y1="49" x2="-61.995" y2="-48.2272" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_17" x1="35.9755" y1="48.7255" x2="-13.2745" y2="-36.578" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_18" x1="36.0814" y1="48.4697" x2="19.6464" y2="-12.8666" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_19" x1="35.75" y1="47.75" x2="35.75" y2="-89.75" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_20" x1="36.4697" y1="48.0814" x2="61.9633" y2="-47.0623" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_21" x1="36.7255" y1="47.9755" x2="68.4755" y2="-7.01713" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_22" x1="37" y1="47.2322" x2="134.227" y2="-49.995" stroke="#1F1F26" stroke-width="2.5" stroke-linecap="round"/>
+<line id="Line_23" x1="37.2745" y1="47.9755" x2="122.578" y2="-1.27452" stroke="#387385" stroke-width="1.5" stroke-linecap="round"/>
+<line id="Line_24" x1="37.5303" y1="48.0814" x2="98.8666" y2="31.6464" stroke="#B8ADA1" stroke-width="1.5" stroke-linecap="round"/>
+<circle id="Ellipse" cx="37" cy="49" r="10" fill="#D65947"/>
+<circle id="Ellipse_2" cx="37" cy="49" r="144.25" stroke="#1F1F26" stroke-width="1.5"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_1">
+<rect width="1200" height="374" fill="white" transform="translate(0 -190)"/>
+</clipPath>
+<clipPath id="clip1_0_1">
+<path d="M0 12C0 5.37258 5.37258 0 12 0H202C208.627 0 214 5.37258 214 12V98H0V12Z" fill="white"/>
+</clipPath>
+</defs>
+</svg>

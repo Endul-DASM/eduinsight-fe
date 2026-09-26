@@ -245,7 +245,7 @@ function HeroSection() {
             </Link>
             <Link
               className="flex items-center justify-center gap-2 rounded-xl bg-[#eae7e9] px-8 py-4 text-base font-semibold text-[#1b1b1d] sm:py-5"
-              href="/dashboard"
+              href="/choose-subject"
             >
               <PlayCircleIcon className="size-5" />
               Lihat Demo
@@ -386,7 +386,7 @@ function CTABannerSection() {
           <div className="flex w-full flex-col items-stretch gap-4 sm:w-auto sm:flex-row sm:items-center">
             <Link
               className="rounded-xl bg-[#085ac0] px-8 py-[17px] text-center text-lg font-bold text-white shadow-[0_10px_15px_-3px_rgba(8,90,192,0.4),0_4px_6px_-4px_rgba(8,90,192,0.4)]"
-              href="/dashboard"
+              href="/choose-subject"
             >
               Mulai Trial 14 Hari
             </Link>

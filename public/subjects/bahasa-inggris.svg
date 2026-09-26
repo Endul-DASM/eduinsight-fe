@@ -1,0 +1,56 @@
+<svg width="214" height="98" viewBox="0 0 214 98" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Login page">
+<g id="Html &#226;&#134;&#146; Body">
+<g id="Main Content">
+<g id="Container">
+<g id="Frame 10" clip-path="url(#clip0_0_1)">
+<g id="Frame 9">
+<g id="Frame 16">
+<g id="Circle Pattern">
+<g clip-path="url(#clip1_0_1)">
+<path d="M0 12C0 5.37258 5.37258 0 12 0H202C208.627 0 214 5.37258 214 12V98H0V12Z" fill="#EBE6DB"/>
+<g id="Group 9">
+<circle id="Ellipse" cx="41.6109" cy="-5.28095" r="6.11383" fill="#387385"/>
+<circle id="Ellipse_2" cx="77.7223" cy="-5.28091" r="6.9" fill="#387385"/>
+<circle id="Ellipse_3" cx="113.833" cy="-5.28082" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_4" cx="149.945" cy="-5.28082" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_5" cx="186.056" cy="-5.28091" r="6.9" fill="#387385"/>
+<circle id="Ellipse_6" cx="5.5" cy="30.8303" r="5.5" fill="#B8ADA1"/>
+<circle id="Ellipse_7" cx="41.6109" cy="30.8301" r="6.47611" fill="#387385"/>
+<circle id="Ellipse_8" cx="77.7224" cy="30.8303" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_9" cx="113.833" cy="30.8303" r="8.3" fill="#1F1F26"/>
+<circle id="Ellipse_10" cx="149.945" cy="30.8303" r="8.3" fill="#1F1F26"/>
+<circle id="Ellipse_11" cx="186.056" cy="30.8303" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_12" cx="5.5" cy="66.9414" r="5.5" fill="#B8ADA1"/>
+<circle id="Ellipse_13" cx="41.6109" cy="66.9414" r="6.47611" fill="#387385"/>
+<circle id="Ellipse_14" cx="77.7224" cy="66.9413" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_15" cx="113.833" cy="66.9414" r="8.3" fill="#1F1F26"/>
+<circle id="Ellipse_16" cx="149.945" cy="66.9414" r="8.3" fill="#1F1F26"/>
+<circle id="Ellipse_17" cx="186.056" cy="66.9413" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_18" cx="5.49992" cy="103.052" r="5.23038" fill="#B8ADA1"/>
+<circle id="Ellipse_19" cx="41.6109" cy="103.052" r="6.11383" fill="#387385"/>
+<circle id="Ellipse_20" cx="77.7223" cy="103.052" r="6.9" fill="#387385"/>
+<circle id="Ellipse_21" cx="113.833" cy="103.052" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_22" cx="149.945" cy="103.052" r="7.43475" fill="#387385"/>
+<circle id="Ellipse_23" cx="186.056" cy="103.052" r="6.9" fill="#387385"/>
+<line id="Line" x1="34.7422" y1="48.5322" x2="172.628" y2="186.418" stroke="#D65947" stroke-opacity="0.35"/>
+<line id="Line_2" x1="34.0351" y1="48.5322" x2="171.921" y2="-89.3536" stroke="#D65947" stroke-opacity="0.35"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_1">
+<rect width="1200" height="374" fill="white" transform="translate(-984 -190)"/>
+</clipPath>
+<clipPath id="clip1_0_1">
+<path d="M0 12C0 5.37258 5.37258 0 12 0H202C208.627 0 214 5.37258 214 12V98H0V12Z" fill="white"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,45 @@
+<svg width="214" height="98" viewBox="0 0 214 98" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Login page">
+<g id="Html &#226;&#134;&#146; Body">
+<g id="Main Content">
+<g id="Container">
+<g id="Frame 10" clip-path="url(#clip0_0_1)">
+<g id="Frame 8">
+<g id="Frame 13">
+<g id="Circle Pattern">
+<g clip-path="url(#clip1_0_1)">
+<path d="M0 12C0 5.37258 5.37258 0 12 0H202C208.627 0 214 5.37258 214 12V98H0V12Z" fill="#EBE6DB"/>
+<g id="Group 7">
+<circle id="Circle" opacity="0.85" cx="12" cy="2.5" r="60" fill="#2E406B"/>
+<circle id="Circle_2" opacity="0.7" cx="94" cy="84.5" r="50" fill="#66948C"/>
+<circle id="Circle_3" opacity="0.75" cx="132" cy="-17.5" r="40" fill="#D97359"/>
+<circle id="Circle_4" opacity="0.8" cx="222" cy="62.5" r="35" fill="#E6B880"/>
+<circle id="Circle_5" opacity="0.8" cx="-33" cy="62.5" r="35" fill="#E6B880"/>
+<circle id="Circle_6" opacity="0.65" cx="212" cy="-27.5" r="32.5" fill="#8CA6BF"/>
+<circle id="Circle_7" opacity="0.6" cx="142" cy="102.5" r="30" fill="#BF4D66"/>
+<circle id="Circle_8" opacity="0.55" cx="172" cy="82.5" r="15" fill="#D97359"/>
+<circle id="Circle_9" opacity="0.65" cx="22" cy="92.5" r="14" fill="#E6B880"/>
+<circle id="Circle_10" opacity="0.9" cx="112" cy="42.5" r="9" fill="#BF4D66"/>
+<circle id="Circle_11" opacity="0.8" cx="192" cy="22.5" r="7.5" fill="#8CA6BF"/>
+<circle id="Ring" opacity="0.2" cx="62" cy="52.5" r="75" stroke="#2E406B" stroke-width="2"/>
+<circle id="Ring_2" opacity="0.25" cx="152" cy="122.5" r="65" stroke="#D97359" stroke-width="1.5"/>
+<circle id="Ring_3" opacity="0.2" cx="202" cy="-7.5" r="45" stroke="#BF4D66" stroke-width="1.5"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_1">
+<rect width="1200" height="374" fill="white"/>
+</clipPath>
+<clipPath id="clip1_0_1">
+<path d="M0 12C0 5.37258 5.37258 0 12 0H202C208.627 0 214 5.37258 214 12V98H0V12Z" fill="white"/>
+</clipPath>
+</defs>
+</svg>

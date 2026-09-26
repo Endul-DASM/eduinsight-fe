@@ -2,7 +2,7 @@
 
 import type { ComponentType, SVGProps } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import {
@@ -21,6 +21,7 @@ type NavItem = {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
+// Paths are relative to the current subject, e.g. /matematika/dashboard.
 const primaryNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: GridIcon },
   { label: "Diagnosis", href: "/diagnosis", icon: RadarIcon },
@@ -36,7 +37,7 @@ const secondaryNav: NavItem[] = [
 
 function BrandLogo() {
   return (
-    <Link className="flex items-center gap-3 px-2 py-4" href="/">
+    <Link className="flex items-center gap-3 px-2 py-4" href="/choose-subject">
       <div className="flex size-10 items-center justify-center rounded-[10px] bg-[#0058be] text-white">
         <GridIcon className="size-5" />
       </div>
@@ -76,15 +77,20 @@ function NavLink({
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { subject } = useParams<{ subject: string }>();
 
   return (
-    <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-[#c5c6cd] bg-[#f5f3f4] px-4 py-4 md:min-h-screen md:w-64 md:border-b-0 md:border-r">
+    <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-[#c5c6cd] bg-[#f5f3f4] px-4 py-4 md:w-64 md:border-b-0 md:border-r">
       <BrandLogo />
       <nav className="flex flex-1 flex-col gap-8 pt-2">
         <div className="space-y-1">
-          {primaryNav.map((item) => (
-            <NavLink item={item} active={pathname === item.href} key={item.label} />
-          ))}
+          {primaryNav.map((item) => {
+            const href = `/${subject}${item.href}`;
+
+            return (
+              <NavLink item={{ ...item, href }} active={pathname === href} key={item.label} />
+            );
+          })}
         </div>
         <div className="mt-auto space-y-6">
           <Button className="w-full justify-center" size="md">

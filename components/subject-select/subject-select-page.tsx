@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AddSubjectCard } from "@/components/subject-select/add-subject-card";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { PublicTopNav } from "@/components/layout/public-top-nav";
 import { ArrowRightIcon } from "@/components/ui/icons";
@@ -43,15 +44,12 @@ export function SubjectSelectPage({ subjects, teacher }: { subjects: Subject[]; 
             </h1>
             <p className="text-sm text-[#45474c]">Silakan pilih mata pelajaran yang ingin dipantau.</p>
           </div>
-          {subjects.length > 0 ? (
-            <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5 lg:gap-8">
-              {subjects.map((subject) => (
-                <SubjectCard key={subject.id} subject={subject} />
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-[#45474c]">Belum ada mata pelajaran yang terdaftar.</p>
-          )}
+          <div className="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6 lg:grid-cols-5 lg:gap-8">
+            {subjects.map((subject) => (
+              <SubjectCard key={subject.id} subject={subject} />
+            ))}
+            <AddSubjectCard />
+          </div>
         </div>
       </main>
       <PublicFooter />

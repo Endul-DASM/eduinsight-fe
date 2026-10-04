@@ -3,6 +3,7 @@ import type { SVGProps } from "react";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { PublicTopNav } from "@/components/layout/public-top-nav";
 import { ArrowRightIcon } from "@/components/ui/icons";
+import { LoginForm } from "./login-form";
 
 function GraduationCapIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -65,7 +66,8 @@ function RoleCard({ card }: { card: (typeof roleCards)[number] }) {
   );
 }
 
-export function LoginPage() {
+// Mock mode has no accounts, so it keeps the role picker that jumps straight into each side.
+export function LoginPage({ mockMode }: { mockMode: boolean }) {
   return (
     <div className="flex min-h-screen flex-col bg-white">
       <PublicTopNav />
@@ -78,20 +80,22 @@ export function LoginPage() {
               Selamat Datang Kembali
             </h1>
             <p className="text-sm text-[#45474c]">
-              Silakan pilih peran Anda untuk melanjutkan pengalaman belajar yang cerdas dan
-              terstruktur bersama EduInsight.
+              {mockMode
+                ? "Silakan pilih peran Anda untuk melanjutkan pengalaman belajar yang cerdas dan terstruktur bersama EduInsight."
+                : "Masuk dengan akun EduInsight Anda untuk melanjutkan pengalaman belajar yang cerdas dan terstruktur."}
             </p>
           </div>
-          <div className="flex w-full max-w-[56rem] flex-col gap-6 sm:flex-row">
-            {roleCards.map((card) => (
-              <RoleCard card={card} key={card.title} />
-            ))}
-          </div>
+          {mockMode ? (
+            <div className="flex w-full max-w-[56rem] flex-col gap-6 sm:flex-row">
+              {roleCards.map((card) => (
+                <RoleCard card={card} key={card.title} />
+              ))}
+            </div>
+          ) : (
+            <LoginForm />
+          )}
           <p className="text-xs font-semibold tracking-[0.05em] text-[rgba(69,71,76,0.7)]">
-            Belum punya akun?{" "}
-            <Link className="text-[#085ac0]" href="#">
-              Daftar sekarang
-            </Link>
+            Belum punya akun? Hubungi admin sekolah Anda.
           </p>
         </div>
       </main>

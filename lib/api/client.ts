@@ -44,18 +44,20 @@ export async function apiFetch<T>(path: string, { withSession = true, ...init }:
     },
   });
 
-  // The session expired or was revoked: send the user back to sign in.
+  // The session expired or was revoked: clear it and send the user back to sign in.
   if (response.status === 401 && token) {
-    redirect("/login");
+    redirect(SESSION_EXPIRED_PATH);
   }
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ErrorBody;
+    const { code, message, fields, ...extra } = body.detail ?? {};
     throw new ApiError(
       response.status,
-      body.detail?.message ?? `${init.method ?? "GET"} ${path} failed with ${response.status}`,
-      body.detail?.code,
-      body.detail?.fields,
+      message ?? `${init.method ?? "GET"} ${path} failed with ${response.status}`,
+      code,
+      fields,
+      extra,
     );
   }
 

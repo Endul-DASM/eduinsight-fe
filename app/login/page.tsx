@@ -1,6 +1,5 @@
-import { LoginPage } from "@/components/login/login-page";
-import { isMockMode } from "@/lib/api/client";
+import { RolePickerPage } from "@/components/auth/role-picker-page";
 
 export default function LoginRoute() {
-  return <LoginPage mockMode={isMockMode} />;
+  return <RolePickerPage />;
 }

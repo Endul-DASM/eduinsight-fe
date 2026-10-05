@@ -39,7 +39,7 @@ export async function createSubject(input: SubjectInput): Promise<Subject> {
 
 export type SubjectUpdateInput = {
   name?: string;
-  // Moving a subject to another class. The backend does not accept this yet and ignores it.
+  // Moves the subject to another class the user can see; its materials and questions move with it.
   classId?: string;
 };
 

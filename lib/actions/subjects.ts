@@ -118,20 +118,11 @@ export async function updateSubjectAction(
 
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE, values };
 
-  let movedToClassId: string | undefined;
   try {
     const schoolClass = await findOrCreateClass(values);
-    movedToClassId = schoolClass.id === currentClassId ? undefined : schoolClass.id;
-    const updated = await updateSubject(subjectId, { name: values.name, classId: movedToClassId });
-    // The backend cannot move a subject to another class yet and silently keeps the old one.
-    if (movedToClassId && updated.class.id !== movedToClassId) {
-      revalidatePath("/choose-subject");
-      return {
-        status: "error",
-        message: "Nama mata pelajaran tersimpan, tetapi perubahan kelas dan tahun ajaran belum didukung server.",
-        values,
-      };
-    }
+    // Only sent when the class or academic year changed; the backend moves the subject and its slug follows.
+    const classId = schoolClass.id === currentClassId ? undefined : schoolClass.id;
+    await updateSubject(subjectId, { name: values.name, classId });
   } catch (error) {
     return errorState(error, values);
   }

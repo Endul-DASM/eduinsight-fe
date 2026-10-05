@@ -10,7 +10,7 @@ export const isMockMode = !API_BASE_URL;
 
 // Error body returned by eduinsight-be: { detail: { code, message, fields?, ...extra } }.
 type ErrorBody = {
-  detail?: { code?: string; message?: string; fields?: Record<string, string>; [key: string]: unknown };
+  detail?: { code?: string; message?: string; fields?: Record<string, string>; [key: string]: unknown } | string;
 };
 
 export class ApiError extends Error {
@@ -51,7 +51,8 @@ export async function apiFetch<T>(path: string, { withSession = true, ...init }:
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as ErrorBody;
-    const { code, message, fields, ...extra } = body.detail ?? {};
+    // FastAPI's own errors (e.g. an unknown route) send detail as a plain string, without a code.
+    const { code, message, fields, ...extra } = typeof body.detail === "object" && body.detail ? body.detail : {};
     throw new ApiError(
       response.status,
       message ?? `${init.method ?? "GET"} ${path} failed with ${response.status}`,

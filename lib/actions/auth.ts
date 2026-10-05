@@ -13,6 +13,7 @@ import {
   SERVER_UNREACHABLE_MESSAGE,
   wrongRoleNotice,
 } from "@/lib/auth/messages";
+import { takeReturnPath } from "@/lib/auth/return-to";
 import { type AuthRole, authRoleOf, authRoles, isAuthRole } from "@/lib/auth/roles";
 import {
   type FieldErrors,
@@ -63,6 +64,11 @@ async function startSession(role: AuthRole, result: LoginResponse): Promise<Auth
   return undefined;
 }
 
+// The page a signed-out user was sent away from (e.g. a join link), else the role's home page.
+async function pageAfterSignIn(role: AuthRole): Promise<string> {
+  return (await takeReturnPath()) ?? authRoles[role].homePath;
+}
+
 export type LoginState = (AuthNotice & { identifier: string; unverified?: boolean }) | undefined;
 
 export async function login(role: AuthRole, _previous: LoginState, formData: FormData): Promise<LoginState> {
@@ -99,7 +105,7 @@ export async function login(role: AuthRole, _previous: LoginState, formData: For
   }
 
   if (notice) return { ...notice, identifier };
-  redirect(authRoles[role].homePath);
+  redirect(await pageAfterSignIn(role));
 }
 
 export type ResendState = { message: string } | undefined;
@@ -150,7 +156,7 @@ export async function register(role: AuthRole, _previous: RegisterState, formDat
   }
 
   if (notice) return { message: notice.message, values: kept };
-  redirect(authRoles[role].homePath);
+  redirect(await pageAfterSignIn(role));
 }
 
 export type GoogleSignupState =
@@ -181,7 +187,7 @@ export async function completeGoogleSignup(
 
   await clearGoogleSignup();
   if (notice) return { ...notice, username };
-  redirect(authRoles[role].homePath);
+  redirect(await pageAfterSignIn(role));
 }
 
 export async function logout() {

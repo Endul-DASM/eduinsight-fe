@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { completeGoogleSignupRequest, loginRequest, registerRequest, resendVerificationRequest } from "@/lib/api/auth";
 import { ApiError, isMockMode } from "@/lib/api/client";
 import { clearSessionToken, setSessionToken } from "@/lib/api/session";
-import type { LoginResponse } from "@/lib/api/types";
+import type { LoginResponse, UserRole } from "@/lib/api/types";
 import { clearGoogleSignup, getGoogleSignup } from "@/lib/auth/google";
 import {
   type AuthNotice,
@@ -27,10 +27,16 @@ function text(formData: FormData, name: string) {
   return String(formData.get(name) ?? "").trim();
 }
 
-// The page's role travels in a hidden input; anything else is treated as tampering.
+// The page's role is bound to the action from its URL (/login/[role]). Bound arguments still come from the
+// browser, so anything else is treated as tampering.
+function assertRole(role: unknown): asserts role is AuthRole {
+  if (!isAuthRole(role)) throw new Error("Unknown sign-in role");
+}
+
+// Still used by the Google sign-up form, which sends the role in a hidden input.
 function roleFrom(formData: FormData): AuthRole {
   const role = formData.get("role");
-  if (!isAuthRole(role)) throw new Error("Unknown sign-in role");
+  assertRole(role);
   return role;
 }
 
@@ -59,8 +65,8 @@ async function startSession(role: AuthRole, result: LoginResponse): Promise<Auth
 
 export type LoginState = (AuthNotice & { identifier: string; unverified?: boolean }) | undefined;
 
-export async function login(_previous: LoginState, formData: FormData): Promise<LoginState> {
-  const role = roleFrom(formData);
+export async function login(role: AuthRole, _previous: LoginState, formData: FormData): Promise<LoginState> {
+  assertRole(role);
   const identifier = text(formData, "identifier");
   const password = String(formData.get("password") ?? "");
 
@@ -73,8 +79,15 @@ export async function login(_previous: LoginState, formData: FormData): Promise<
 
   let notice: AuthNotice | undefined;
   try {
-    notice = await startSession(role, await loginRequest(identifier, password));
+    notice = await startSession(role, await loginRequest(identifier, password, role));
   } catch (error) {
+    // The password was right but the account is another role's; the backend only says so after checking it.
+    if (error instanceof ApiError && error.code === "wrong_portal") {
+      const accountRole = typeof error.extra?.role === "string" ? authRoleOf(error.extra.role as UserRole) : null;
+      // Admin accounts have no sign-in page, so they read as wrong credentials.
+      return { ...(accountRole ? wrongRoleNotice(accountRole) : { message: INVALID_CREDENTIALS_MESSAGE }), identifier };
+    }
+    // Not sent by the backend yet: email verification (FR-X-008) is not built.
     if (error instanceof ApiError && error.code === "email_not_verified") {
       return { message: "Verifikasi email Anda terlebih dahulu.", identifier, unverified: true };
     }
@@ -104,12 +117,12 @@ export async function resendVerification(_previous: ResendState, formData: FormD
 }
 
 export type RegisterState =
-  | { status: "error"; message?: string; fields?: FieldErrors; values: Pick<RegisterValues, "username" | "email"> }
-  | { status: "sent"; email: string }
+  | { message?: string; fields?: FieldErrors; values: Pick<RegisterValues, "username" | "email"> }
   | undefined;
 
-export async function register(_previous: RegisterState, formData: FormData): Promise<RegisterState> {
-  const role = roleFrom(formData);
+// Signs the new account in right away (FR-X-006, FR-X-007): there is no email verification yet.
+export async function register(role: AuthRole, _previous: RegisterState, formData: FormData): Promise<RegisterState> {
+  assertRole(role);
   const values: RegisterValues = {
     username: text(formData, "username"),
     email: text(formData, "email"),
@@ -121,21 +134,23 @@ export async function register(_previous: RegisterState, formData: FormData): Pr
 
   // The browser validates first; this repeats it for requests that skip the form (SRS 6.1.1).
   const fields = validateRegister(values);
-  if (Object.keys(fields).length > 0) return { status: "error", fields, values: kept };
+  if (Object.keys(fields).length > 0) return { fields, values: kept };
 
-  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE, values: kept };
+  if (isMockMode) return { message: MOCK_MODE_MESSAGE, values: kept };
 
+  let notice: AuthNotice | undefined;
   try {
-    await registerRequest(role, values);
+    notice = await startSession(role, await registerRequest(role, values));
   } catch (error) {
     const fields =
       error instanceof ApiError
         ? pickFields(error.fields, ["username", "email", "password", "passwordConfirmation"])
         : undefined;
-    return { status: "error", message: fields ? undefined : messageOf(error), fields, values: kept };
+    return { message: fields ? undefined : messageOf(error), fields, values: kept };
   }
 
-  return { status: "sent", email: values.email };
+  if (notice) return { message: notice.message, values: kept };
+  redirect(authRoles[role].homePath);
 }
 
 export type GoogleSignupState =

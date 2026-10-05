@@ -1,5 +1,6 @@
 import "server-only";
 import { redirect } from "next/navigation";
+import { SESSION_EXPIRED_PATH } from "@/lib/auth/session-expiry";
 import { getSessionToken } from "./session";
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -7,9 +8,9 @@ const API_BASE_URL = process.env.API_BASE_URL;
 // Without API_BASE_URL the app runs on the mock data in lib/api/mocks.
 export const isMockMode = !API_BASE_URL;
 
-// Error body returned by eduinsight-be: { detail: { code, message, fields? } }.
+// Error body returned by eduinsight-be: { detail: { code, message, fields?, ...extra } }.
 type ErrorBody = {
-  detail?: { code?: string; message?: string; fields?: Record<string, string> };
+  detail?: { code?: string; message?: string; fields?: Record<string, string>; [key: string]: unknown };
 };
 
 export class ApiError extends Error {
@@ -19,6 +20,8 @@ export class ApiError extends Error {
     readonly code?: string,
     // Validation messages keyed by request field, e.g. { kkmDefault: "..." }.
     readonly fields?: Record<string, string>,
+    // Any other keys of detail, e.g. { role: "siswa" } on wrong_portal.
+    readonly extra?: Record<string, unknown>,
   ) {
     super(message);
   }

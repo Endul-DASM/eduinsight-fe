@@ -2,7 +2,7 @@
 
 import type { ComponentType, SVGProps } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { cn } from "@/components/ui/cn";
 import {
   ClipboardIcon,
@@ -18,8 +18,9 @@ type NavItem = {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
+// Paths are relative to the current subject, e.g. /student/matematika/dashboard. "#" marks pages not built yet.
 const primaryNav: NavItem[] = [
-  { label: "Dashboard", href: "/student/dashboard", icon: GridIcon },
+  { label: "Dashboard", href: "/dashboard", icon: GridIcon },
   { label: "Diagnosis", href: "#", icon: RadarIcon },
   { label: "Asesmen", href: "#", icon: ClipboardIcon },
   { label: "Remedial", href: "#", icon: LifeBuoyIcon },
@@ -32,7 +33,7 @@ const secondaryNav: NavItem[] = [
 
 function BrandLogo() {
   return (
-    <Link className="flex items-center gap-3 px-2 py-4" href="/">
+    <Link className="flex items-center gap-3 px-2 py-4" href="/student">
       <div className="flex size-10 items-center justify-center rounded-[10px] bg-[#0058be] text-white">
         <GridIcon className="size-5" />
       </div>
@@ -66,15 +67,18 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
 
 export function StudentSidebar() {
   const pathname = usePathname();
+  const { subject } = useParams<{ subject: string }>();
 
   return (
     <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-[#c5c6cd] bg-[#f5f3f4] px-4 py-4 md:sticky md:top-0 md:min-h-screen md:w-64 md:border-b-0 md:border-r">
       <BrandLogo />
       <nav className="flex flex-1 flex-col gap-8 pt-2">
         <div className="space-y-1">
-          {primaryNav.map((item) => (
-            <NavLink item={item} active={pathname === item.href} key={item.label} />
-          ))}
+          {primaryNav.map((item) => {
+            const href = item.href === "#" ? item.href : `/student/${subject}${item.href}`;
+
+            return <NavLink item={{ ...item, href }} active={pathname === href} key={item.label} />;
+          })}
         </div>
         <div className="mt-auto space-y-1 border-t border-[#c5c6cd] pt-4">
           {secondaryNav.map((item) => (

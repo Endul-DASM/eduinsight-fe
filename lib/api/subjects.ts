@@ -3,21 +3,23 @@ import { ApiError, apiFetch, isMockMode } from "./client";
 import { mockSubjects } from "./mocks";
 import type { Subject } from "./types";
 
-// GET /subjects — subjects the signed-in teacher teaches (every subject for an admin).
+// GET /subjects — subjects the signed-in teacher teaches (every subject for an admin), or the ones a student joined.
 export const getSubjects = cache(async (): Promise<Subject[]> => {
   if (isMockMode) return mockSubjects;
 
   return apiFetch<Subject[]>("/subjects");
 });
 
-// GET /subjects/:slug — returns null when the subject does not exist or belongs to another teacher.
+// GET /subjects/:slug — returns null when the subject does not exist, belongs to another teacher, or the student
+// has not joined it.
 export const getSubject = cache(async (slug: string): Promise<Subject | null> => {
   if (isMockMode) return mockSubjects.find((subject) => subject.slug === slug) ?? null;
 
   try {
     return await apiFetch<Subject>(`/subjects/${encodeURIComponent(slug)}`);
   } catch (error) {
-    if (error instanceof ApiError && error.status === 404) return null;
+    // 403 is the backend refusing a role it does not serve this subject to yet (students), so it reads as not found.
+    if (error instanceof ApiError && (error.status === 404 || error.status === 403)) return null;
     throw error;
   }
 });
@@ -49,4 +51,9 @@ export async function updateSubject(id: string, input: SubjectUpdateInput): Prom
 // DELETE /subjects/:id — a soft delete on the backend.
 export async function deleteSubject(id: string): Promise<void> {
   await apiFetch<void>(`/subjects/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+// POST /subjects/join — a student joins a subject with the code from its teacher. Not provided by the backend yet.
+export async function joinSubject(joinCode: string): Promise<Subject> {
+  return apiFetch<Subject>("/subjects/join", { method: "POST", body: JSON.stringify({ joinCode }) });
 }

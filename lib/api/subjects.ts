@@ -34,3 +34,19 @@ export type SubjectInput = {
 export async function createSubject(input: SubjectInput): Promise<Subject> {
   return apiFetch<Subject>("/subjects", { method: "POST", body: JSON.stringify(input) });
 }
+
+export type SubjectUpdateInput = {
+  name?: string;
+  // Moving a subject to another class. The backend does not accept this yet and ignores it.
+  classId?: string;
+};
+
+// PATCH /subjects/:id — mutations use the id because renaming a subject changes its slug.
+export async function updateSubject(id: string, input: SubjectUpdateInput): Promise<Subject> {
+  return apiFetch<Subject>(`/subjects/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(input) });
+}
+
+// DELETE /subjects/:id — a soft delete on the backend.
+export async function deleteSubject(id: string): Promise<void> {
+  await apiFetch<void>(`/subjects/${encodeURIComponent(id)}`, { method: "DELETE" });
+}

@@ -37,7 +37,7 @@ export const authRoles: Record<AuthRole, RoleConfig> = {
     registerPath: "/register/student",
     registerAccountPath: "/register/student/account",
     registerGooglePath: "/register/student/google",
-    homePath: "/student/dashboard",
+    homePath: "/student",
     icon: { src: "/auth/student.svg", width: 27, height: 27, className: "size-[26.667px]" },
     iconBackground: "bg-[rgba(216,226,252,0.5)]",
   },

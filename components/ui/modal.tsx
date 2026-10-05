@@ -7,11 +7,14 @@ export function Modal({
   open,
   onClose,
   title,
+  description,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
+  // A line under the title, e.g. "Masukkan kode kelas dari guru kamu!".
+  description?: string;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -37,9 +40,12 @@ export function Modal({
     >
       {open && (
         <div className="flex flex-col gap-6">
-          <h2 className="text-center text-2xl font-bold leading-10 tracking-[-0.32px] text-black" id="modal-title">
-            {title}
-          </h2>
+          <div className="flex flex-col items-center gap-2 text-center">
+            <h2 className="text-2xl font-bold leading-10 tracking-[-0.32px] text-black" id="modal-title">
+              {title}
+            </h2>
+            {description && <p className="text-sm leading-5 text-[#45474c]">{description}</p>}
+          </div>
           {children}
         </div>
       )}

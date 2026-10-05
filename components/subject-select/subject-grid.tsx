@@ -1,10 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import type { Subject } from "@/lib/api/types";
 import { DeleteSubjectModal } from "./delete-subject-modal";
-import { SubjectCard } from "./subject-card";
+import { AddSubjectCard, SubjectCard, subjectGridClassName, subjectGridOuterClassName } from "./subject-card";
 import { SubjectFormModal } from "./subject-form-modal";
 
 type OpenModal = { kind: "create" } | { kind: "edit"; subject: Subject } | { kind: "delete"; subject: Subject } | null;
@@ -39,28 +38,21 @@ export function SubjectGrid({ subjects }: { subjects: Subject[] }) {
       {subjects.length === 0 && (
         <p className="text-sm text-[#45474c]">Belum ada mata pelajaran. Buat kelas pertama Anda.</p>
       )}
-      {/* The list scrolls once it outgrows the space (Figma note: "Ini bisa scroll"). */}
-      <div className="max-h-[374px] w-full overflow-y-auto overflow-x-clip p-1">
-        <div className="mx-auto grid w-fit grid-cols-2 gap-4 sm:grid-cols-[repeat(3,214px)] sm:gap-8 lg:grid-cols-[repeat(5,214px)]">
+      <div className={subjectGridOuterClassName}>
+        <div className={subjectGridClassName}>
           {subjects.map((subject) => (
             <SubjectCard
+              actions={{
+                onCopyLink: () => copyJoinLink(subject),
+                onDelete: () => setModal({ kind: "delete", subject }),
+                onEdit: () => setModal({ kind: "edit", subject }),
+              }}
+              href={`/${subject.slug}/dashboard`}
               key={subject.id}
-              onCopyLink={() => copyJoinLink(subject)}
-              onDelete={() => setModal({ kind: "delete", subject })}
-              onEdit={() => setModal({ kind: "edit", subject })}
               subject={subject}
             />
           ))}
-          <button
-            className="flex min-h-[150px] w-full flex-col items-center justify-center gap-1 rounded-xl border border-[#c5c6cd] bg-white p-3 text-[#45474c] transition-shadow hover:shadow-[0_10px_24px_-8px_rgba(8,90,192,0.35)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0058be]"
-            onClick={() => setModal({ kind: "create" })}
-            type="button"
-          >
-            <span className="mb-4 grid size-16 place-items-center rounded-full bg-[#d8e2ff]">
-              <Image alt="" height={17.5} src="/subjects/actions/plus.svg" width={17.5} />
-            </span>
-            <span className="text-base font-semibold leading-7">Buat Kelas Baru</span>
-          </button>
+          <AddSubjectCard label="Buat Kelas Baru" onClick={() => setModal({ kind: "create" })} />
         </div>
       </div>
 

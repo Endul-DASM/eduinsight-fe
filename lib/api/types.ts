@@ -16,7 +16,8 @@ export type TeacherSummary = {
   email: string;
 };
 
-export type SchoolLevel = "SMP" | "SMA";
+// The backend accepts only SMP and SMA for now; SD is sent so grades 1–6 work once it does.
+export type SchoolLevel = "SD" | "SMP" | "SMA";
 
 export type SchoolClass = {
   id: string;
@@ -33,6 +34,8 @@ export type Subject = {
   kkmDefault: number;
   class: SchoolClass;
   teachers: TeacherSummary[];
+  // Code students use to join the subject. Not provided by the backend yet.
+  joinCode?: string | null;
 };
 
 export type LoginResponse = {

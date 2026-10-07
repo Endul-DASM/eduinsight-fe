@@ -169,23 +169,18 @@ export function AssessmentSummaryCard({ slug, assessment }: { slug: string; asse
           {summary.blueprint.length > 0 && (
             <ul className="space-y-3">
               {summary.blueprint.map((row) => (
-                <li className="space-y-1" key={row.competency.id}>
+                <li className="space-y-1" key={row.learningObjective.id}>
                   <p className="text-sm text-[#1b1b1d]">
-                    {row.competency.code && <span className="font-semibold">{row.competency.code} </span>}
-                    {row.competency.description}
+                    {row.learningObjective.code && (
+                      <span className="font-semibold">{row.learningObjective.code} </span>
+                    )}
+                    {row.learningObjective.description}
                     <span className="text-[#5c6470]"> · {row.questionCount} soal</span>
                   </p>
-                  {!row.selected && (
-                    <p className="text-[11px] text-[#c2410c]">Tidak termasuk Kompetensi yang dipilih.</p>
-                  )}
-                  {row.indicators.map((entry) => (
-                    <p className="pl-3 text-[11px] leading-4 text-[#75777d]" key={entry.indicator.id}>
-                      {entry.indicator.code ?? entry.indicator.description}: soal {numbers(entry.questionNumbers)}
-                    </p>
-                  ))}
-                  {row.indicators.length === 0 && (
-                    <p className="pl-3 text-[11px] leading-4 text-[#75777d]">Belum ada soal.</p>
-                  )}
+                  {!row.selected && <p className="text-[11px] text-[#c2410c]">Tidak termasuk TP yang dipilih.</p>}
+                  <p className="pl-3 text-[11px] leading-4 text-[#75777d]">
+                    {row.questionNumbers.length > 0 ? `Soal ${numbers(row.questionNumbers)}` : "Belum ada soal."}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -224,7 +219,7 @@ export function AssessmentSummaryCard({ slug, assessment }: { slug: string; asse
           <section className="space-y-2 rounded-[10px] bg-[#fff7ed] p-4 text-xs leading-5 text-[#9a3412]">
             <p className="font-semibold">Perlu diperbaiki sebelum publikasi</p>
             {summary.untaggedQuestionNumbers.length > 0 && (
-              <p>Soal tanpa Indikator: {numbers(summary.untaggedQuestionNumbers)}</p>
+              <p>Soal tanpa TP: {numbers(summary.untaggedQuestionNumbers)}</p>
             )}
             {summary.unreviewedQuestionNumbers.length > 0 && (
               <p>Soal belum ditinjau: {numbers(summary.unreviewedQuestionNumbers)}</p>

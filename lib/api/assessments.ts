@@ -63,11 +63,14 @@ export async function updateAssessment(id: string, input: AssessmentInput): Prom
   });
 }
 
-// PUT /assessments/:id/competencies — Pilih Kompetensi (FR-G-042), at least one.
-export async function replaceAssessmentCompetencies(id: string, competencyIds: string[]): Promise<AssessmentDetail> {
-  return apiFetch<AssessmentDetail>(`/assessments/${encodeURIComponent(id)}/competencies`, {
+// PUT /assessments/:id/learning-objectives — Pilih TP (FR-G-042), at least one.
+export async function replaceAssessmentLearningObjectives(
+  id: string,
+  learningObjectiveIds: string[],
+): Promise<AssessmentDetail> {
+  return apiFetch<AssessmentDetail>(`/assessments/${encodeURIComponent(id)}/learning-objectives`, {
     method: "PUT",
-    body: JSON.stringify({ competencyIds }),
+    body: JSON.stringify({ learningObjectiveIds }),
   });
 }
 

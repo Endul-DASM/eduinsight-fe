@@ -20,17 +20,19 @@ function QuestionMeta({ question }: { question: Question }) {
           {question.bloomLevel} · {question.cognitiveLevel}
         </span>
       )}
-      {question.indicators.length > 0 ? (
-        <span>Indikator {question.indicators.map((indicator) => indicator.code ?? indicator.description).join(", ")}</span>
+      {question.learningObjectives.length > 0 ? (
+        <span>
+          TP {question.learningObjectives.map((objective) => objective.code ?? objective.description).join(", ")}
+        </span>
       ) : (
-        <span className="text-[#ba1a1a]">Belum ada Indikator</span>
+        <span className="text-[#ba1a1a]">Belum ada TP</span>
       )}
       {question.status === "pending_review" && <span className="text-[#c2410c]">Draf AI, belum ditinjau</span>}
     </span>
   );
 }
 
-// Langkah Pilih Soal (FR-G-043): Bank Soal questions tagged with the selected competencies, in the order students see.
+// Langkah Pilih Soal (FR-G-043): Bank Soal questions tagged with the selected TPs, in the order students see.
 export function QuestionsStep({
   slug,
   assessment,
@@ -45,7 +47,7 @@ export function QuestionsStep({
   const [state, formAction, pending] = useActionState(saveQuestionsAction.bind(null, slug, assessment.id), undefined);
   const [selectedIds, setSelectedIds] = useState(() => assessment.questions.map((question) => question.id));
 
-  // Questions already in the assessment stay listed even if they no longer match the selected competencies.
+  // Questions already in the assessment stay listed even if they no longer match the selected TPs.
   const questions = new Map<string, Question>();
   for (const question of [...assessment.questions, ...bank.items]) questions.set(question.id, question);
   const selected = new Set(selectedIds);
@@ -137,16 +139,16 @@ export function QuestionsStep({
         {!locked && (
           <section className="flex flex-col gap-3 border-t border-[#c5c6cd] pt-6">
             <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-[#45474c]">
-              Bank Soal sesuai Kompetensi ({available.length})
+              Bank Soal sesuai TP ({available.length})
             </h3>
-            {assessment.competencies.length === 0 ? (
+            {assessment.learningObjectives.length === 0 ? (
               <p className="rounded-lg bg-[#f5f3f4] px-4 py-3 text-sm text-[#45474c]">
-                Pilih Kompetensi terlebih dahulu agar soal yang sesuai dapat ditampilkan.
+                Pilih TP terlebih dahulu agar soal yang sesuai dapat ditampilkan.
               </p>
             ) : available.length === 0 ? (
               <p className="rounded-lg bg-[#f5f3f4] px-4 py-3 text-sm text-[#45474c]">
                 {bank.items.length === 0
-                  ? "Bank Soal belum memiliki soal untuk Kompetensi yang dipilih."
+                  ? "Bank Soal belum memiliki soal untuk TP yang dipilih."
                   : "Semua soal yang sesuai sudah dipilih."}
               </p>
             ) : (

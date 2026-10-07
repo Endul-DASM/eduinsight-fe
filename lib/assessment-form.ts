@@ -37,12 +37,14 @@ export function isAssessmentStatus(value: unknown): value is AssessmentStatus {
 // Wizard steps (PRD 5.4.2), in order. The step is kept in the URL: /{slug}/assessment/{id}?step=soal.
 export const wizardSteps = [
   { id: "informasi", label: "Informasi" },
-  { id: "kompetensi", label: "Pilih Kompetensi" },
+  { id: "tp", label: "Pilih TP" },
   { id: "soal", label: "Pilih Soal" },
   { id: "pengaturan", label: "Pengaturan" },
 ] as const;
 
 export type WizardStep = (typeof wizardSteps)[number]["id"];
+
+export const MIN_LEARNING_OBJECTIVE_MESSAGE = "Pilih minimal satu TP.";
 
 export function wizardStepOf(value: unknown): WizardStep {
   return wizardSteps.find((step) => step.id === value)?.id ?? "informasi";

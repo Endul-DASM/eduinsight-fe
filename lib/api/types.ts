@@ -64,19 +64,14 @@ export type GoogleSignupRequired = {
 
 export type GoogleExchangeResponse = LoginResponse | GoogleSignupRequired;
 
-// Curriculum (GET /subjects/:id/curriculum), only the levels the assessment wizard needs.
+// Curriculum, Kurikulum Merdeka (GET /subjects/:id/curriculum): CP → TP and Bab → Subbab, joined by the
+// TP ↔ Bab mapping (FR-G-023). The TP is what gets assessed.
 
-export type IndicatorRef = {
+export type LearningObjectiveRef = {
   id: string;
   code: string | null;
   description: string;
-  competencyId: string;
-};
-
-export type CompetencyRef = {
-  id: string;
-  code: string | null;
-  description: string;
+  cpId: string;
 };
 
 type CurriculumTreeNode = { id: string; code: string | null; description: string; position: number };
@@ -84,14 +79,11 @@ type CurriculumTreeNode = { id: string; code: string | null; description: string
 export type CurriculumTree = {
   subjectId: string;
   cps: (CurriculumTreeNode & {
-    learningObjectives: (CurriculumTreeNode & {
-      chapters: (CurriculumTreeNode & {
-        subchapters: (CurriculumTreeNode & {
-          competencies: (CurriculumTreeNode & { indicators: CurriculumTreeNode[] })[];
-        })[];
-      })[];
-    })[];
+    // Elemen of the CP, e.g. Bilangan.
+    element: string | null;
+    learningObjectives: (CurriculumTreeNode & { keywords: string[]; chapterIds: string[] })[];
   })[];
+  chapters: (CurriculumTreeNode & { learningObjectiveIds: string[]; subchapters: CurriculumTreeNode[] })[];
 };
 
 // Bank Soal (GET /subjects/:id/questions).
@@ -112,7 +104,7 @@ export type Question = {
   difficulty: "mudah" | "sedang" | "sulit" | null;
   origin: "manual" | "upload" | "ocr" | "ai";
   status: QuestionStatus;
-  indicators: IndicatorRef[];
+  learningObjectives: LearningObjectiveRef[];
 };
 
 export type QuestionPage = {
@@ -154,19 +146,20 @@ export type AssessmentSummary = {
   estimatedMinutes: number;
   cognitiveLevels: Record<CognitiveLevel | "unset", number>;
   bloomLevels: Record<BloomLevel, number>;
+  // Kisi-kisi per TP: selected TPs first, then TPs reached only through a question's tags.
   blueprint: {
-    competency: CompetencyRef;
-    // False for a competency reached only through a question's indicator.
+    learningObjective: LearningObjectiveRef;
+    // False for a TP reached only through a question's tags, not through Pilih TP.
     selected: boolean;
     questionCount: number;
-    indicators: { indicator: IndicatorRef; questionNumbers: number[] }[];
+    questionNumbers: number[];
   }[];
   untaggedQuestionNumbers: number[];
   unreviewedQuestionNumbers: number[];
 };
 
 export type AssessmentDetail = Assessment & {
-  competencies: CompetencyRef[];
+  learningObjectives: LearningObjectiveRef[];
   questions: Question[];
   summary: AssessmentSummary;
 };

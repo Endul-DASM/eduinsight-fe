@@ -3,6 +3,7 @@ import type { CurrentUser, SchoolClass, Subject, TeacherSummary } from "./types"
 export const mockTeacher: CurrentUser = {
   id: "teacher-1",
   name: "Bu Mayla",
+  username: "mayla",
   email: "mayla@eduinsight.id",
   role: "guru",
   initials: "BM",
@@ -12,6 +13,7 @@ export const mockTeacher: CurrentUser = {
 export const mockStudent: CurrentUser = {
   id: "student-1",
   name: "Alya",
+  username: "alya",
   email: "alya@eduinsight.id",
   role: "siswa",
   initials: "A",

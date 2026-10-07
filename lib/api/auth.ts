@@ -3,19 +3,20 @@ import type { GoogleExchangeResponse, LoginResponse, RegisterRequest } from "./t
 import type { AuthRole } from "@/lib/auth/roles";
 import { authRoles } from "@/lib/auth/roles";
 
-// POST /auth/login — the identifier is an email or a username (SRS FR-X-001).
-// The backend still names the field `email` and only accepts emails, so usernames are rejected for now.
-export async function loginRequest(identifier: string, password: string): Promise<LoginResponse> {
+// POST /auth/login — the identifier is an email or a username (SRS FR-X-001). The role is the sign-in page's;
+// an account of another role is refused with 403 wrong_portal.
+export async function loginRequest(identifier: string, password: string, role: AuthRole): Promise<LoginResponse> {
   return apiFetch<LoginResponse>("/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email: identifier, password }),
+    body: JSON.stringify({ identifier, password, role: authRoles[role].apiRole }),
     withSession: false,
   });
 }
 
-// POST /auth/register/{guru|siswa} — sends a verification email; the account cannot sign in until verified.
-export async function registerRequest(role: AuthRole, input: RegisterRequest): Promise<void> {
-  await apiFetch<unknown>(`/auth/register/${authRoles[role].apiRole}`, {
+// POST /auth/register/{guru|siswa} — the account is active right away, so this returns a session.
+// Email verification (FR-X-008) is not built yet.
+export async function registerRequest(role: AuthRole, input: RegisterRequest): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>(`/auth/register/${authRoles[role].apiRole}`, {
     method: "POST",
     body: JSON.stringify(input),
     withSession: false,

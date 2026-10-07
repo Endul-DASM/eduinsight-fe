@@ -13,14 +13,14 @@ import { TextField } from "./text-field";
 
 // initialNotice comes from ?error= after a failed Google sign-in.
 export function LoginForm({ role, initialNotice }: { role: AuthRole; initialNotice?: AuthNotice }) {
-  const [state, formAction, pending] = useActionState(login, undefined);
+  // The role comes from the page's URL (/login/[role]).
+  const [state, formAction, pending] = useActionState(login.bind(null, role), undefined);
   const [resendState, resendAction, resending] = useActionState(resendVerification, undefined);
   const notice = state ?? initialNotice;
 
   return (
     <AuthCard>
       <form action={formAction} className="flex flex-col gap-6">
-        <input name="role" type="hidden" value={role} />
         <div className="flex flex-col gap-3">
           <TextField
             autoComplete="username"

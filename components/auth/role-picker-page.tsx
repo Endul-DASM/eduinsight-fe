@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/components/ui/cn";
+import type { AuthNotice } from "@/lib/auth/messages";
 import { type AuthRole, authRoles } from "@/lib/auth/roles";
+import { AuthNoticeMessage } from "./auth-notice";
 import { AuthShell } from "./auth-shell";
 import { RoleIcon } from "./role-heading";
 
@@ -42,7 +44,8 @@ function RoleCard({ card }: { card: (typeof cards)[number] }) {
   );
 }
 
-export function RolePickerPage() {
+// notice explains why the user is here, e.g. after the session ended.
+export function RolePickerPage({ notice }: { notice?: AuthNotice }) {
   return (
     <AuthShell>
       <div className="flex max-w-[32rem] flex-col items-center gap-2 text-center">
@@ -52,6 +55,11 @@ export function RolePickerPage() {
           EduInsight.
         </p>
       </div>
+      {notice && (
+        <div className="w-full max-w-[56rem]">
+          <AuthNoticeMessage notice={notice} />
+        </div>
+      )}
       <div className="flex w-full max-w-[56rem] flex-col gap-6 sm:flex-row">
         {cards.map((card) => (
           <RoleCard card={card} key={card.role} />

@@ -4,7 +4,9 @@ export type UserRole = "guru" | "siswa" | "admin";
 
 export type CurrentUser = {
   id: string;
+  // The username until a full name is filled in (BR-11).
   name: string;
+  username: string;
   email: string;
   role: UserRole;
   initials: string;

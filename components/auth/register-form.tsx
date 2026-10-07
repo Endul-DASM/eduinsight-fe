@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { type FormEvent, useActionState, useState } from "react";
 import { register } from "@/lib/actions/auth";
-import { type AuthRole, authRoles } from "@/lib/auth/roles";
+import type { AuthRole } from "@/lib/auth/roles";
 import { type FieldErrors, type RegisterValues, validateRegister } from "@/lib/auth/validation";
 import { AuthCard } from "./auth-card";
 import { AuthNoticeMessage } from "./auth-notice";
@@ -23,26 +22,10 @@ function valuesOf(form: HTMLFormElement): RegisterValues {
 }
 
 export function RegisterForm({ role }: { role: AuthRole }) {
-  const [state, formAction, pending] = useActionState(register, undefined);
+  // The role comes from the page's URL (/register/[role]/account); on success the action signs in and redirects.
+  const [state, formAction, pending] = useActionState(register.bind(null, role), undefined);
   // Checked in the browser before submitting; the Server Function repeats the same rules.
   const [clientErrors, setClientErrors] = useState<FieldErrors>({});
-
-  if (state?.status === "sent") {
-    return (
-      <AuthCard>
-        <div className="flex flex-col gap-2 text-center" role="status">
-          <p className="text-base font-semibold text-[#111c2d]">Akun berhasil dibuat</p>
-          <p className="text-sm leading-5 text-[#45474c]">
-            Kami telah mengirim tautan verifikasi ke <span className="font-semibold">{state.email}</span>. Buka email
-            tersebut untuk mengaktifkan akun Anda, lalu masuk.
-          </p>
-        </div>
-        <Link className={`${primaryButtonClassName} self-center`} href={authRoles[role].loginPath}>
-          Ke Halaman Masuk
-        </Link>
-      </AuthCard>
-    );
-  }
 
   const serverErrors = state?.fields ?? {};
   const errorOf = (field: keyof FieldErrors) => clientErrors[field] ?? serverErrors[field];
@@ -56,7 +39,6 @@ export function RegisterForm({ role }: { role: AuthRole }) {
   return (
     <AuthCard>
       <form action={formAction} className="flex flex-col gap-6" noValidate onSubmit={handleSubmit}>
-        <input name="role" type="hidden" value={role} />
         <div className="flex flex-col gap-3">
           <TextField
             autoCapitalize="none"

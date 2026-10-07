@@ -1,14 +1,13 @@
-import type { ReactElement, SVGProps } from "react";
+// Cards from the Smart Assessment Builder design (Figma) for features the backend does not have yet: importing
+// from platforms, the offline template, and AI question generation (G-ASM-05 – 07). They are shown in the wizard
+// as they were designed; the AI cards are disabled until their backend lands.
+
+import type { ReactElement, ReactNode, SVGProps } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/components/ui/cn";
-import {
-  ClipboardIcon,
-  DownloadIcon,
-  PlusIcon,
-  SearchIcon,
-} from "@/components/ui/icons";
+import { DownloadIcon, PlusIcon, SearchIcon, SparkIcon } from "@/components/ui/icons";
 
 function CloudImportIcon(props: SVGProps<SVGSVGElement>) {
   return (
@@ -66,7 +65,7 @@ function SheetIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function TimerIcon(props: SVGProps<SVGSVGElement>) {
+export function TimerIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
       <circle cx="12" cy="13" r="7" stroke="currentColor" strokeWidth="1.8" />
@@ -75,15 +74,7 @@ function TimerIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function SparkIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
-      <path d="M12 3.5 14 9l5.5 2-5.5 2L12 18.5 10 13 4.5 11 10 9 12 3.5Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
+export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
       <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.8" />
@@ -101,7 +92,7 @@ function RefreshIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-function LightbulbIcon(props: SVGProps<SVGSVGElement>) {
+export function LightbulbIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" {...props}>
       <path d="M9 17.5h6M10 20h4M8 9.5a4 4 0 1 1 8 0c0 1.62-.73 2.78-1.8 3.83-.76.75-1.2 1.5-1.2 2.67h-2c0-1.17-.44-1.92-1.2-2.67C8.73 12.28 8 11.12 8 9.5Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
@@ -159,20 +150,15 @@ const questionOptions = [
   "D. 198 m²",
 ];
 
-function PageIntro() {
+export function ComingSoonBadge() {
   return (
-    <section className="space-y-2">
-      <h1 className="text-[clamp(2rem,4vw,2.75rem)] font-semibold tracking-[-0.04em] text-[#1b1b1d]">
-        Smart Assessment Builder
-      </h1>
-      <p className="text-sm text-[#5c6470]">
-        Kelola asesmen secara efisien melalui integrasi platform atau mode luring cerdas.
-      </p>
-    </section>
+    <span className="inline-flex items-center rounded-full bg-[#fff7e8] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8a6b38]">
+      Segera hadir
+    </span>
   );
 }
 
-function ImportLink() {
+export function ImportLink() {
   return (
     <button className="inline-flex items-center gap-2 text-sm font-medium text-[#1f4ca0]" type="button">
       <CloudImportIcon className="size-4" />
@@ -181,7 +167,7 @@ function ImportLink() {
   );
 }
 
-function PlatformSourceCards() {
+export function PlatformSourceCards() {
   return (
     <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       {sourceCards.map((card) => {
@@ -205,9 +191,9 @@ function PlatformSourceCards() {
   );
 }
 
-function OfflineModeCard() {
+export function OfflineModeCard() {
   return (
-    <Card className="rounded-[14px] border-dashed shadow-none xl:col-span-8">
+    <Card className="rounded-[14px] border-dashed shadow-none">
       <CardContent className="space-y-6 p-4 md:p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -261,105 +247,10 @@ function OfflineModeCard() {
   );
 }
 
-function SummaryCard() {
-  return (
-    <Card className="rounded-[14px] shadow-none xl:col-span-4">
-      <CardContent className="space-y-8 p-5">
-        <section className="space-y-6">
-          <h2 className="text-[16px] font-medium text-[#1b1b1d]">Ringkasan Asesmen</h2>
-          <div className="space-y-5">
-            <SummaryRow icon={ClipboardIcon} label="Total Soal" value="25 Soal" tone="text-[#2170e4]" />
-            <SummaryRow icon={TimerIcon} label="Estimasi Durasi" value="60 Menit" />
-          </div>
-        </section>
-
-        <section className="space-y-4 border-t border-[#c5c6cd] pt-6">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.08em] text-[#45474c]">Kisi-Kisi</h3>
-          <div className="space-y-3 text-sm text-[#1b1b1d]">
-            <div className="flex items-center justify-between">
-              <span>Pilihan Ganda</span>
-              <span className="text-[#5c6470]">20 soal</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Uraian</span>
-              <span className="text-[#5c6470]">5 soal</span>
-            </div>
-          </div>
-
-          <div className="rounded-[10px] bg-[#f5f3f4] p-4">
-            <div className="mb-3 flex items-center gap-2 text-sm text-[#1b1b1d]">
-              <SparkIcon className="size-3 text-[#1b1b1d]" />
-              Distribusi Kognitif
-            </div>
-            <div className="flex h-2 overflow-hidden rounded-full bg-[#eae7e9]">
-              <span className="flex-1 bg-[#0058be]" />
-              <span className="flex-1 bg-[#adc6ff]" />
-              <span className="flex-1 bg-[#091426]" />
-            </div>
-            <div className="mt-3 flex items-center justify-between text-[10px] text-[#75777d]">
-              <span>LOTS (33%)</span>
-              <span>MOTS (33%)</span>
-              <span>HOTS (33%)</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-3">
-          <Button className="w-full" size="md">
-            Simpan & Publikasi
-          </Button>
-          <Button className="w-full" size="md" variant="outline">
-            Simpan sebagai Draf
-          </Button>
-        </section>
-
-        <section className="border-t border-[#c5c6cd] pt-6">
-          <div className="rounded-[12px] border border-[#d8e3fb] bg-[rgba(216,227,251,0.3)] p-4">
-            <div className="flex gap-3">
-              <div className="grid size-6 place-items-center text-[#0058be]">
-                <LightbulbIcon className="size-5" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-[#0058be]">AI Recommendation</p>
-                <p className="text-xs leading-5 text-[#3c475a]">
-                  Siswa di kelas ini cenderung lemah di <span className="font-semibold">Geometri</span>. Tambahkan 2-3
-                  soal level C3 untuk penguatan.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </CardContent>
-    </Card>
-  );
-}
-
-function SummaryRow({
-  icon: Icon,
-  label,
-  value,
-  tone = "text-[#1b1b1d]",
-}: {
-  icon: (props: SVGProps<SVGSVGElement>) => ReactElement;
-  label: string;
-  value: string;
-  tone?: string;
-}) {
-  return (
-    <div className="flex items-center justify-between border-b border-[#c5c6cd] pb-4 last:border-b-0 last:pb-0">
-      <div className="flex items-center gap-3 text-sm text-[#45474c]">
-        <Icon className="size-[18px]" />
-        {label}
-      </div>
-      <span className={cn("text-sm", tone)}>{value}</span>
-    </div>
-  );
-}
-
-function SelectField({ label, value }: { label: string; value: string }) {
+function StaticSelect({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs text-[#5c6470]">{label}</label>
+      <p className="text-xs text-[#5c6470]">{label}</p>
       <div className="flex min-h-12 items-center justify-between rounded-[10px] border border-[#c5c6cd] bg-white px-3 text-sm text-[#1b1b1d]">
         <span>{value}</span>
         <span className="text-[#8f96a3]">⌄</span>
@@ -396,107 +287,123 @@ function BloomSelector() {
   );
 }
 
-function GenerateQuestionCard() {
+// Greyed out and inert until AI question generation (G-ASM-05 – 07) has a backend.
+function ComingSoon({ children }: { children: ReactNode }) {
   return (
-    <Card className="rounded-[14px] shadow-none xl:col-span-8">
+    <div aria-disabled="true" className="pointer-events-none select-none opacity-60" inert>
+      {children}
+    </div>
+  );
+}
+
+export function GenerateQuestionCard() {
+  return (
+    <Card className="rounded-[14px] shadow-none">
       <CardContent className="space-y-5 p-5">
-        <div className="flex items-center gap-2 text-sm font-medium text-[#1b1b1d]">
-          <SparkIcon className="size-4 text-[#2170e4]" />
-          Buat Soal Baru dengan AI
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm font-medium text-[#1b1b1d]">
+            <SparkIcon className="size-4 text-[#2170e4]" />
+            Buat Soal Baru dengan AI
+          </div>
+          <ComingSoonBadge />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <SelectField label="Pilih Mata Pelajaran" value="Matematika" />
-          <SelectField label="Capaian Pembelajaran (CP)" value="Geometri dan Pengukuran (SMP Kelas 8)" />
-        </div>
+        <ComingSoon>
+          <div className="space-y-5">
+            <div className="grid gap-4 md:grid-cols-2">
+              <StaticSelect label="Pilih Mata Pelajaran" value="Matematika" />
+              <StaticSelect label="Capaian Pembelajaran (CP)" value="Geometri dan Pengukuran (SMP Kelas 8)" />
+            </div>
 
-        <BloomSelector />
+            <BloomSelector />
 
-        <Button className="h-11 bg-[#091426] px-6 hover:bg-[#0f1f3d]" size="lg">
-          <SparkIcon className="size-4" />
-          Generate Soal dengan AI
-        </Button>
+            <Button className="h-11 bg-[#091426] px-6 hover:bg-[#0f1f3d]" disabled size="lg">
+              <SparkIcon className="size-4" />
+              Generate Soal dengan AI
+            </Button>
+          </div>
+        </ComingSoon>
       </CardContent>
     </Card>
   );
 }
 
-function PreviewQuestionCard() {
+export function PreviewQuestionCard() {
   return (
-    <Card className="rounded-[14px] shadow-none xl:col-span-8">
+    <Card className="rounded-[14px] shadow-none">
       <CardContent className="space-y-5 p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-2">
-            <p className="text-sm text-[#1b1b1d]">Pratinjau Soal (3)</p>
+            <p className="text-sm text-[#1b1b1d]">Pratinjau Soal AI</p>
             <Badge className="bg-[#eef5ff] text-[#5d73bf]" variant="info">
               C4 - Analisis
             </Badge>
           </div>
-          <button className="inline-flex items-center gap-1 text-sm text-[#2170e4]" type="button">
-            <RefreshIcon className="size-4" />
-            Regenerate Semua
-          </button>
+          <ComingSoonBadge />
         </div>
 
-        <div className="space-y-4">
-          <p className="max-w-[44rem] text-sm leading-6 text-[#1b1b1d]">
-            Jika sebuah taman berbentuk lingkaran memiliki jari-jari 14m, dan sebuah jalan setapak selebar 2m
-            dibangun mengelilingi bagian luar taman tersebut. Berapakah selisih luas jalan setapak dengan
-            luas taman awal?
-          </p>
+        <ComingSoon>
+          <div className="space-y-5">
+            <div className="flex justify-end">
+              <span className="inline-flex items-center gap-1 text-sm text-[#2170e4]">
+                <RefreshIcon className="size-4" />
+                Regenerate Semua
+              </span>
+            </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
-            {questionOptions.map((option) => {
-              const active = option.startsWith("B.");
+            <p className="max-w-[44rem] text-sm leading-6 text-[#1b1b1d]">
+              Jika sebuah taman berbentuk lingkaran memiliki jari-jari 14m, dan sebuah jalan setapak selebar 2m
+              dibangun mengelilingi bagian luar taman tersebut. Berapakah selisih luas jalan setapak dengan
+              luas taman awal?
+            </p>
 
-              return (
-                <button
-                  className={cn(
-                    "flex h-12 items-center justify-between rounded-[8px] border px-4 text-left text-sm text-[#1b1b1d] transition-colors",
-                    active
-                      ? "border-[#0058be] bg-[rgba(33,112,228,0.1)]"
-                      : "border-[#c5c6cd] bg-white hover:border-[#8ab3f3]",
-                  )}
-                  key={option}
-                  type="button"
-                >
-                  <span>{option}</span>
-                  {active ? <CheckCircleIcon className="size-4 text-[#2170e4]" /> : null}
-                </button>
-              );
-            })}
+            <div className="grid gap-3 md:grid-cols-2">
+              {questionOptions.map((option) => {
+                const active = option.startsWith("B.");
+
+                return (
+                  <div
+                    className={cn(
+                      "flex h-12 items-center justify-between rounded-[8px] border px-4 text-left text-sm text-[#1b1b1d]",
+                      active ? "border-[#0058be] bg-[rgba(33,112,228,0.1)]" : "border-[#c5c6cd] bg-white",
+                    )}
+                    key={option}
+                  >
+                    <span>{option}</span>
+                    {active ? <CheckCircleIcon className="size-4 text-[#2170e4]" /> : null}
+                  </div>
+                );
+              })}
+            </div>
+
+            <span className="inline-flex items-center gap-2 pt-1 text-sm text-[#2170e4]">
+              <PlusIcon className="size-3" />
+              Buat Variasi
+            </span>
           </div>
-        </div>
-
-        <button className="inline-flex items-center gap-2 pt-1 text-sm text-[#2170e4]" type="button">
-          <PlusIcon className="size-3" />
-          Buat Variasi
-        </button>
+        </ComingSoon>
       </CardContent>
     </Card>
   );
 }
 
-export function AssessmentPage() {
+export function AiRecommendationNote() {
   return (
-    <div className="space-y-8 px-5 py-6 sm:px-6 lg:px-10 lg:py-10">
-      <PageIntro />
-      <ImportLink />
-      <PlatformSourceCards />
-
-      <section className="grid gap-4 xl:grid-cols-12">
-        <OfflineModeCard />
-        <SummaryCard />
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-12">
-        <GenerateQuestionCard />
-        <div className="hidden xl:block" />
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-12">
-        <PreviewQuestionCard />
-      </section>
+    <div className="rounded-[12px] border border-[#d8e3fb] bg-[rgba(216,227,251,0.3)] p-4">
+      <div className="flex gap-3">
+        <div className="grid size-6 place-items-center text-[#0058be]">
+          <LightbulbIcon className="size-5" />
+        </div>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-sm font-medium text-[#0058be]">AI Recommendation</p>
+            <ComingSoonBadge />
+          </div>
+          <p className="text-xs leading-5 text-[#3c475a]">
+            Saran topik dan level soal berdasarkan hasil diagnosis kelas akan tampil di sini.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

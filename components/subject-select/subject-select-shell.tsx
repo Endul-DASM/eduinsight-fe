@@ -1,14 +1,27 @@
 import { Poppins } from "next/font/google";
 import type { ReactNode } from "react";
-import { PublicFooter } from "@/components/layout/public-footer";
-import { PublicTopNav } from "@/components/layout/public-top-nav";
+import { outlineButtonClassName } from "@/components/auth/styles";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
 import { cn } from "@/components/ui/cn";
 import { logout } from "@/lib/actions/auth";
+import { firstName } from "@/lib/display-name";
 
 // The design uses Poppins; it is scoped to these pages so the rest of the app keeps its font.
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
-// The page around the subject cards, shared by teachers (Figma 167:722) and students (Figma 236:3420).
+function LogoutButton() {
+  return (
+    <form action={logout}>
+      <button className={outlineButtonClassName} type="submit">
+        Logout
+      </button>
+    </form>
+  );
+}
+
+// The page around the subject cards, shared by teachers and students (header, greeting and footer from Figma New
+// Design 22:3475).
 export function SubjectSelectShell({
   userName,
   subtitle,
@@ -20,26 +33,21 @@ export function SubjectSelectShell({
 }) {
   return (
     <div className={cn(poppins.className, "flex min-h-screen flex-col bg-white")}>
-      <PublicTopNav />
+      <SiteHeader action={<LogoutButton />} className="bg-[#f5f3f4] sm:py-6" />
       <main className="relative flex flex-1 items-center overflow-hidden bg-[rgba(251,248,250,0.5)] px-4 py-16 sm:px-6 md:py-28 lg:px-10">
         <div className="absolute -left-48 -top-48 size-96 rounded-full bg-[rgba(216,226,255,0.3)] blur-[32px]" />
         <div className="absolute -bottom-20 -right-20 size-80 rounded-full bg-[rgba(216,226,252,0.2)] blur-[32px]" />
         <div className="relative mx-auto flex w-full max-w-[80rem] flex-col items-center gap-8">
-          <div className="flex max-w-[32rem] flex-col items-center gap-2 text-center">
-            <h1 className="text-3xl leading-10 tracking-[-0.32px] text-black sm:text-[32px]">
-              Selamat Datang, {userName}
+          <div className="flex flex-col items-center gap-3 text-center">
+            <h1 className="text-[32px] font-bold leading-normal text-[#1b1b1d] sm:text-5xl">
+              Selamat Datang Kembali, {firstName(userName)}
             </h1>
-            <p className="text-sm text-[#45474c]">{subtitle}</p>
-            <form action={logout}>
-              <button className="text-xs font-semibold text-[#085ac0] hover:underline" type="submit">
-                Bukan Anda? Keluar
-              </button>
-            </form>
+            <p className="text-base leading-normal text-[#75777d]">{subtitle}</p>
           </div>
           {children}
         </div>
       </main>
-      <PublicFooter />
+      <SiteFooter />
     </div>
   );
 }

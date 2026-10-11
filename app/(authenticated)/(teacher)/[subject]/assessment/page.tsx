@@ -4,10 +4,10 @@ import { AssessmentPage, assessmentTabOf } from "@/components/assessment/assessm
 import { MethodPicker } from "@/components/assessment/method-picker";
 import { sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
-import { getAssessments } from "@/lib/api/assessments";
 import { getSubject } from "@/lib/api/subjects";
 import { getCurrentUser } from "@/lib/api/users";
 import { isAssessmentStatus, isAssessmentType } from "@/lib/assessment-form";
+import { getAssessmentCards } from "@/lib/assessment-list";
 import { firstName } from "@/lib/display-name";
 
 // /{slug}/assessment: Buat Asesmen, ?tab=daftar (with ?type= and ?status=) and ?tab=hasil.
@@ -27,7 +27,7 @@ export default async function AssessmentRoute({ params, searchParams }: PageProp
       {tab === "buat" && <MethodPicker slug={slug} />}
       {tab === "daftar" && (
         <AssessmentListPage
-          assessments={await getAssessments(subject.id, { type, status })}
+          cards={await getAssessmentCards(subject, { type, status })}
           filtered={Boolean(type || status)}
           slug={slug}
         />

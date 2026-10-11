@@ -4,7 +4,6 @@ import { type FormEvent, useActionState, useState } from "react";
 import { completeGoogleSignup } from "@/lib/actions/auth";
 import type { AuthRole } from "@/lib/auth/roles";
 import { validateUsername } from "@/lib/auth/validation";
-import { AuthCard } from "./auth-card";
 import { AuthNoticeMessage } from "./auth-notice";
 import { primaryButtonClassName } from "./styles";
 import { TextField } from "./text-field";
@@ -30,29 +29,27 @@ export function GoogleSignupForm({
   }
 
   return (
-    <AuthCard>
-      <form action={formAction} className="flex flex-col gap-6" noValidate onSubmit={handleSubmit}>
-        <input name="role" type="hidden" value={role} />
-        <div className="flex flex-col gap-3">
-          <TextField label="Email" name="email" readOnly tabIndex={-1} value={email} />
-          <TextField
-            autoCapitalize="none"
-            autoComplete="username"
-            defaultValue={state?.username ?? suggestedUsername}
-            error={clientError ?? state?.fields?.username}
-            label="Username"
-            maxLength={30}
-            name="username"
-            placeholder="contoh: andi.pratama"
-          />
-        </div>
-        {state?.message && <AuthNoticeMessage notice={{ message: state.message, wrongRole: state.wrongRole }} />}
-        <div className="flex justify-end">
-          <button className={primaryButtonClassName} disabled={pending} type="submit">
-            {pending ? "Memproses..." : "Daftarkan Akun"}
-          </button>
-        </div>
-      </form>
-    </AuthCard>
+    <form action={formAction} className="flex flex-col gap-[35px]" noValidate onSubmit={handleSubmit}>
+      <input name="role" type="hidden" value={role} />
+      <div className="flex flex-col gap-[13px]">
+        <TextField label="Email" name="email" readOnly tabIndex={-1} value={email} />
+        <TextField
+          autoCapitalize="none"
+          autoComplete="username"
+          defaultValue={state?.username ?? suggestedUsername}
+          error={clientError ?? state?.fields?.username}
+          label="Username"
+          maxLength={30}
+          name="username"
+          placeholder="contoh: andi.pratama"
+        />
+      </div>
+      {state?.message && <AuthNoticeMessage notice={{ message: state.message, wrongRole: state.wrongRole }} />}
+      <div className="flex justify-end">
+        <button className={primaryButtonClassName} disabled={pending} type="submit">
+          {pending ? "Memproses..." : "Daftarkan Akun"}
+        </button>
+      </div>
+    </form>
   );
 }

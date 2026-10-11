@@ -123,40 +123,51 @@ export async function resendVerification(_previous: ResendState, formData: FormD
 }
 
 export type RegisterState =
-  | { message?: string; fields?: FieldErrors; values: Pick<RegisterValues, "username" | "email"> }
+  | {
+      message?: string;
+      fields?: FieldErrors;
+      values: Pick<RegisterValues, "username" | "name" | "email">;
+      // The account exists; the form gives way to "Akun Berhasil Dibuat!".
+      created?: boolean;
+    }
   | undefined;
 
-// Signs the new account in right away (FR-X-006, FR-X-007): there is no email verification yet.
+// Creates the account without signing it in: the page then shows "Akun Berhasil Dibuat!" and the user signs in
+// (Figma New Design 22:3160).
 export async function register(role: AuthRole, _previous: RegisterState, formData: FormData): Promise<RegisterState> {
   assertRole(role);
   const values: RegisterValues = {
     username: text(formData, "username"),
+    // Runs of spaces are collapsed so the first word is found reliably.
+    name: text(formData, "name").replace(/\s+/g, " "),
     email: text(formData, "email"),
     password: String(formData.get("password") ?? ""),
     passwordConfirmation: String(formData.get("passwordConfirmation") ?? ""),
   };
   // Passwords are never sent back to the browser.
-  const kept = { username: values.username, email: values.email };
+  const kept = { username: values.username, name: values.name, email: values.email };
 
   // The browser validates first; this repeats it for requests that skip the form (SRS 6.1.1).
   const fields = validateRegister(values);
   if (Object.keys(fields).length > 0) return { fields, values: kept };
 
-  if (isMockMode) return { message: MOCK_MODE_MESSAGE, values: kept };
+  // Mock mode has no accounts, but the success screen can still be tried.
+  if (isMockMode) return { created: true, values: kept };
 
-  let notice: AuthNotice | undefined;
+  let result: LoginResponse;
   try {
-    notice = await startSession(role, await registerRequest(role, values));
+    result = await registerRequest(role, values);
   } catch (error) {
     const fields =
       error instanceof ApiError
-        ? pickFields(error.fields, ["username", "email", "password", "passwordConfirmation"])
+        ? pickFields(error.fields, ["username", "name", "email", "password", "passwordConfirmation"])
         : undefined;
     return { message: fields ? undefined : messageOf(error), fields, values: kept };
   }
 
-  if (notice) return { message: notice.message, values: kept };
-  redirect(await pageAfterSignIn(role));
+  // The backend also returns a session; it is not kept, so the user signs in on the role's page.
+  if (authRoleOf(result.user.role) !== role) return { message: REQUEST_FAILED_MESSAGE, values: kept };
+  return { created: true, values: kept };
 }
 
 export type GoogleSignupState =

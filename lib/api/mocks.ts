@@ -2,11 +2,11 @@ import type { CurrentUser, SchoolClass, Subject, TeacherSummary } from "./types"
 
 export const mockTeacher: CurrentUser = {
   id: "teacher-1",
-  name: "Bu Mayla",
+  name: "Mayla Putri Ananda",
   username: "mayla",
   email: "mayla@eduinsight.id",
   role: "guru",
-  initials: "BM",
+  initials: "MP",
 };
 
 // Mock mode has no sessions, so the student pages show this user instead of mockTeacher.

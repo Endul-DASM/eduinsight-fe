@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { BellIcon, HelpIcon, SearchIcon } from "@/components/ui/icons";
 import type { CurrentUser } from "@/lib/api/types";
+import { firstName } from "@/lib/display-name";
 
 export function TopHeader({ subjectName, user }: { subjectName: string; user: CurrentUser }) {
   return (
@@ -28,7 +29,7 @@ export function TopHeader({ subjectName, user }: { subjectName: string; user: Cu
             {user.initials}
           </div>
           <div>
-            <p className="text-xs font-semibold tracking-[0.04em] text-[#1b1b1d]">{user.name}</p>
+            <p className="text-xs font-semibold tracking-[0.04em] text-[#1b1b1d]">{firstName(user.name)}</p>
             <p className="text-[10px] text-[#45474c]">{subjectName}</p>
           </div>
         </div>

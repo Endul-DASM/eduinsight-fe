@@ -1,6 +1,7 @@
 // Sign-up rules and messages from SRS 6.1.1. Used by the forms and again by the Server Functions.
 
 export const USERNAME_MESSAGE = "Username 3–30 karakter, hanya huruf kecil, angka, titik, atau garis bawah.";
+export const NAME_MESSAGE = "Nama wajib diisi, maksimal 120 karakter.";
 export const EMAIL_MESSAGE = "Format email tidak valid.";
 export const PASSWORD_MESSAGE = "Kata sandi minimal 8 dan maksimal 72 karakter.";
 export const PASSWORD_CONFIRMATION_MESSAGE = "Konfirmasi kata sandi tidak sama.";
@@ -12,6 +13,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export type RegisterValues = {
   username: string;
+  // Full name; the navbar shows its first word.
+  name: string;
   email: string;
   password: string;
   passwordConfirmation: string;
@@ -23,6 +26,11 @@ export type FieldErrors = Partial<Record<RegisterField, string>>;
 
 export function validateUsername(username: string): string | undefined {
   return USERNAME_PATTERN.test(username) ? undefined : USERNAME_MESSAGE;
+}
+
+// users.name in the backend holds up to 120 characters.
+export function validateName(name: string): string | undefined {
+  return name.length > 0 && name.length <= 120 ? undefined : NAME_MESSAGE;
 }
 
 export function validateEmail(email: string): string | undefined {
@@ -40,6 +48,7 @@ export function validatePasswordConfirmation(password: string, confirmation: str
 export function validateRegister(values: RegisterValues): FieldErrors {
   const errors: FieldErrors = {
     username: validateUsername(values.username),
+    name: validateName(values.name),
     email: validateEmail(values.email),
     password: validatePassword(values.password),
     passwordConfirmation: validatePasswordConfirmation(values.password, values.passwordConfirmation),

@@ -2,8 +2,9 @@ import Image from "next/image";
 import { cn } from "@/components/ui/cn";
 import { type AuthRole, authRoles } from "@/lib/auth/roles";
 
-export function RoleIcon({ role }: { role: AuthRole }) {
-  const { icon, iconBackground } = authRoles[role];
+// iconBackground: the role picker shows the Siswa icon on grey; the sign-in and sign-up cards use blue for both.
+export function RoleIcon({ role, iconBackground = "bg-[#e6eff9]" }: { role: AuthRole; iconBackground?: string }) {
+  const { icon } = authRoles[role];
 
   return (
     <div className={cn("grid size-20 shrink-0 place-items-center rounded-full", iconBackground)}>

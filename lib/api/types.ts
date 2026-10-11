@@ -47,8 +47,10 @@ export type LoginResponse = {
 };
 
 // POST /auth/register/{guru|siswa} (SRS FR-X-006). The role comes from the endpoint, never from the body.
+// name is not stored by the backend yet; until it is, the app shows the username (BR-11).
 export type RegisterRequest = {
   username: string;
+  name: string;
   email: string;
   password: string;
   passwordConfirmation: string;

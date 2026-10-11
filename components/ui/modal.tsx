@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useEffect, useRef } from "react";
+import { cn } from "./cn";
 
 // A native <dialog>: showModal() gives the backdrop, focus trapping and Esc-to-close for free.
 export function Modal({
@@ -8,6 +9,7 @@ export function Modal({
   onClose,
   title,
   description,
+  className,
   children,
 }: {
   open: boolean;
@@ -15,6 +17,8 @@ export function Modal({
   title: string;
   // A line under the title, e.g. "Masukkan kode kelas dari guru kamu!".
   description?: string;
+  // Replaces the default look of the box and its backdrop, e.g. the glass modals of the new design.
+  className?: string;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -29,7 +33,10 @@ export function Modal({
   return (
     <dialog
       aria-labelledby="modal-title"
-      className="m-auto w-[calc(100%-2rem)] max-w-[542px] rounded-xl border border-[#c5c6cd] bg-white p-6 text-[#111c2d] backdrop:bg-[rgba(9,20,38,0.4)]"
+      className={cn(
+        "m-auto w-[calc(100%-2rem)] max-w-[542px] text-[#111c2d]",
+        className ?? "rounded-xl border border-[#c5c6cd] bg-white p-6 backdrop:bg-[rgba(9,20,38,0.4)]",
+      )}
       // Esc fires "cancel" and closes the dialog itself; keep the parent's state in step.
       onClose={onClose}
       // Clicking the backdrop lands on the <dialog> element itself.

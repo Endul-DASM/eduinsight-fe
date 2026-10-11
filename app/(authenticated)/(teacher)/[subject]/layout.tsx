@@ -16,7 +16,7 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 // The two wide ellipses behind the workspace (Figma New Design 22:4162), at their design size.
 function Background() {
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden print:hidden">
       <Image
         alt=""
         className="absolute left-1/2 top-[-850px] h-[1704px] w-[1067px] max-w-none -translate-x-1/2 -rotate-[107deg]"
@@ -55,14 +55,21 @@ export default async function TeacherLayout({ children, params }: LayoutProps<"/
       style={zoomStyle(WORKSPACE_ZOOM, APP_ZOOM)}
     >
       <Background />
-      <AppSidebar />
+      {/* Printing a page (e.g. Unduh Soal) leaves out the workspace around it. */}
+      <div className="contents print:hidden">
+        <AppSidebar />
+      </div>
       <div className="relative flex min-h-screen min-w-0 flex-1 flex-col">
         {/* The header reads ?bab= for its breadcrumb. */}
-        <Suspense fallback={null}>
-          <TopHeader subjectLabel={subjectLabel} user={user} />
-        </Suspense>
+        <div className="contents print:hidden">
+          <Suspense fallback={null}>
+            <TopHeader subjectLabel={subjectLabel} user={user} />
+          </Suspense>
+        </div>
         <main className="min-w-0 flex-1">{children}</main>
-        <WorkspaceFooter />
+        <div className="contents print:hidden">
+          <WorkspaceFooter />
+        </div>
       </div>
     </div>
   );

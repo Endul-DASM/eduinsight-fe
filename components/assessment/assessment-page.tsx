@@ -30,14 +30,14 @@ export function AssessmentPage({
 
   return (
     <div className="flex flex-col gap-6 px-4 py-6 sm:px-8">
-      <div className="leading-normal">
+      <div className="leading-normal print:hidden">
         <h2 className="text-2xl font-bold text-[#1b1b1d] sm:text-[32px]">Kelola Asesmen Bersama {teacherName}!</h2>
         <p className="text-base text-[#45474c]">
           Atur asesmen untuk mata pelajaran di kelas, sampai menganalisa hasil asesmen.
         </p>
       </div>
 
-      <nav aria-label="Tab Asesmen" className="flex gap-6 overflow-x-auto border-b border-[#c5c6cd]">
+      <nav aria-label="Tab Asesmen" className="flex gap-6 overflow-x-auto border-b border-[#c5c6cd] print:hidden">
         {tabs.map((item) => {
           const active = item.id === tab;
           return (

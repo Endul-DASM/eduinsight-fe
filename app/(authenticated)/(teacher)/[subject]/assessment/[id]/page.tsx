@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { AssessmentWizard } from "@/components/assessment/assessment-wizard";
 import { getAssessment } from "@/lib/api/assessments";
-import { getCompetencies } from "@/lib/api/curriculum";
-import { getQuestionsForCompetencies } from "@/lib/api/questions";
+import { getLearningObjectives } from "@/lib/api/curriculum";
+import { getQuestionsForLearningObjectives } from "@/lib/api/questions";
 import { getSubject } from "@/lib/api/subjects";
 import { wizardStepOf } from "@/lib/assessment-form";
 
@@ -18,12 +18,12 @@ export default async function AssessmentWizardRoute({
   if (!subject || !assessment || assessment.subjectId !== subject.id) notFound();
 
   // Each step only loads what it shows.
-  const competencies = step === "kompetensi" ? await getCompetencies(subject.id) : [];
+  const learningObjectives = step === "tp" ? await getLearningObjectives(subject.id) : [];
   const bank =
     step === "soal"
-      ? await getQuestionsForCompetencies(
+      ? await getQuestionsForLearningObjectives(
           subject.id,
-          assessment.competencies.map((competency) => competency.id),
+          assessment.learningObjectives.map((objective) => objective.id),
         )
       : { items: [], total: 0 };
 
@@ -31,7 +31,7 @@ export default async function AssessmentWizardRoute({
     <AssessmentWizard
       assessment={assessment}
       bank={bank}
-      competencies={competencies}
+      learningObjectives={learningObjectives}
       slug={slug}
       step={step}
       subject={subject}

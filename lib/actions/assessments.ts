@@ -6,7 +6,7 @@ import {
   createAssessment,
   deleteAssessment,
   publishAssessment,
-  replaceAssessmentCompetencies,
+  replaceAssessmentLearningObjectives,
   replaceAssessmentQuestions,
   unpublishAssessment,
   updateAssessment,
@@ -16,6 +16,7 @@ import type { AssessmentMode, AssessmentType } from "@/lib/api/types";
 import {
   type InformationValues,
   isAssessmentType,
+  MIN_LEARNING_OBJECTIVE_MESSAGE,
   nextWizardStep,
   type SettingsValues,
   validateInformation,
@@ -137,25 +138,25 @@ export async function saveInformationAction(
   return afterSave(slug, assessmentId, "informasi");
 }
 
-export async function saveCompetenciesAction(
+export async function saveLearningObjectivesAction(
   slug: string,
   assessmentId: string,
   _previous: AssessmentFormState,
   formData: FormData,
 ): Promise<AssessmentFormState> {
-  const competencyIds = formData.getAll("competencyId").map(String);
-  if (competencyIds.length === 0) {
-    return { status: "error", fields: { competencyIds: "Pilih minimal satu Kompetensi." } };
+  const learningObjectiveIds = [...new Set(formData.getAll("learningObjectiveId").map(String))];
+  if (learningObjectiveIds.length === 0) {
+    return { status: "error", fields: { learningObjectiveIds: MIN_LEARNING_OBJECTIVE_MESSAGE } };
   }
 
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
 
   try {
-    await replaceAssessmentCompetencies(assessmentId, competencyIds);
+    await replaceAssessmentLearningObjectives(assessmentId, learningObjectiveIds);
   } catch (error) {
     return errorState(error);
   }
-  return afterSave(slug, assessmentId, "kompetensi");
+  return afterSave(slug, assessmentId, "tp");
 }
 
 export async function saveQuestionsAction(

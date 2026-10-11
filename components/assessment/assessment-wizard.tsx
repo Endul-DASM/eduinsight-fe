@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/components/ui/cn";
-import type { CompetencyOption } from "@/lib/api/curriculum";
+import type { LearningObjectiveOption } from "@/lib/api/curriculum";
 import type { AssessmentDetail, QuestionPage, Subject } from "@/lib/api/types";
 import { formatSchedule, type WizardStep, wizardSteps } from "@/lib/assessment-form";
 import { AssessmentStatusBadge, AssessmentTypeBadge } from "./assessment-badges";
@@ -13,8 +13,8 @@ import {
   PreviewQuestionCard,
 } from "./assessment-mockup";
 import { AssessmentSummaryCard } from "./summary-card";
-import { CompetenciesStep } from "./steps/competencies-step";
 import { InformationStep } from "./steps/information-step";
+import { LearningObjectivesStep } from "./steps/learning-objectives-step";
 import { QuestionsStep } from "./steps/questions-step";
 import { SettingsStep } from "./steps/settings-step";
 
@@ -59,14 +59,14 @@ export function AssessmentWizard({
   subject,
   assessment,
   step,
-  competencies,
+  learningObjectives,
   bank,
 }: {
   slug: string;
   subject: Subject;
   assessment: AssessmentDetail;
   step: WizardStep;
-  competencies: CompetencyOption[];
+  learningObjectives: LearningObjectiveOption[];
   bank: QuestionPage;
 }) {
   // A published assessment is read-only until it is unpublished (SRS 7.2).
@@ -106,10 +106,10 @@ export function AssessmentWizard({
               {step === "informasi" && (
                 <InformationStep assessment={assessment} className={subject.class.name} locked={locked} slug={slug} />
               )}
-              {step === "kompetensi" && (
-                <CompetenciesStep
+              {step === "tp" && (
+                <LearningObjectivesStep
                   assessment={assessment}
-                  competencies={competencies}
+                  learningObjectives={learningObjectives}
                   locked={locked}
                   slug={slug}
                 />

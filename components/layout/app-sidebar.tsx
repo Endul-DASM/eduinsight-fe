@@ -18,7 +18,7 @@ type NavItem = {
 // Figma New Design 22:4162. Diagnosis is not in the menu; it opens from the dashboard's "Tinjau" link.
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: "/dashboard/nav-dashboard-active.svg" },
-  { label: "Kurikulum", href: null, icon: "/dashboard/nav-kurikulum.svg" },
+  { label: "Kurikulum", href: "/curriculum", icon: "/dashboard/nav-kurikulum.svg" },
   { label: "Asesmen", href: "/assessment", icon: "/dashboard/nav-asesmen.svg" },
   { label: "Remedial", href: "/remedial", icon: "/dashboard/nav-remedial.svg" },
   { label: "Analisis Soal", href: "/analysis", icon: "/dashboard/nav-analisis.svg" },

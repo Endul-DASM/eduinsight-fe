@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="1680" height="1052" viewBox="0 0 1680 1052" fill="none" xmlns="http://www.w3.org/2000/svg">
+<ellipse id="Background Curve" opacity="0.35" cx="840" cy="526" rx="840" ry="526" fill="url(#paint0_linear_0_68)"/>
+<defs>
+<linearGradient id="paint0_linear_0_68" x1="0" y1="0" x2="1680" y2="0" gradientUnits="userSpaceOnUse">
+<stop stop-color="#E6EFF9"/>
+<stop offset="0.5" stop-color="#99BCE5"/>
+<stop offset="1" stop-color="#0058BE"/>
+</linearGradient>
+</defs>
+</svg>

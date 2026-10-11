@@ -15,7 +15,7 @@ export function GoogleButton({
 }) {
   return (
     <a
-      className={cn(primaryButtonClassName, "h-[54px]", className)}
+      className={cn(primaryButtonClassName, "w-full", className)}
       href={`/auth/google?role=${role}&intent=${intent}`}
     >
       <Image alt="" className="h-[14px] w-[15px]" height={14} src="/auth/google.svg" width={15} />

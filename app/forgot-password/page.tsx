@@ -7,8 +7,8 @@ import { primaryButtonClassName } from "@/components/auth/styles";
 export default function ForgotPasswordRoute() {
   return (
     <AuthShell>
-      <h1 className="text-center text-2xl font-bold leading-10 tracking-[-0.32px] text-black">Lupa Kata Sandi</h1>
       <AuthCard>
+        <h1 className="text-center text-2xl font-bold leading-10 tracking-[-0.32px] text-black">Lupa Kata Sandi</h1>
         <p className="text-center text-sm leading-5 text-[#45474c]">
           Fitur atur ulang kata sandi lewat email sedang disiapkan. Untuk sementara, hubungi guru pengampu atau tim
           EduInsight. Jika akun Anda terhubung dengan Google, Anda tetap dapat masuk dengan Google.

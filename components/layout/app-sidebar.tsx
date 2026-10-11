@@ -1,75 +1,62 @@
 "use client";
 
-import type { ComponentType, SVGProps } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import { outlineButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
-import {
-  BookIcon,
-  ClipboardIcon,
-  GridIcon,
-  LifeBuoyIcon,
-  PlusIcon,
-  RadarIcon,
-  SettingsIcon,
-} from "@/components/ui/icons";
+import { MaskIcon } from "@/components/ui/mask-icon";
+import { logout } from "@/lib/actions/auth";
 
 type NavItem = {
   label: string;
-  href: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  // Relative to the current subject, e.g. /matematika-x-ipa-1/dashboard. Null for a page that is not built yet.
+  href: string | null;
+  icon: string;
 };
 
-// Paths are relative to the current subject, e.g. /matematika/dashboard.
-const primaryNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: GridIcon },
-  { label: "Diagnosis", href: "/diagnosis", icon: RadarIcon },
-  { label: "Asesmen", href: "/assessment", icon: ClipboardIcon },
-  { label: "Remedial", href: "/remedial", icon: LifeBuoyIcon },
-  { label: "Analisis Soal", href: "/analysis", icon: BookIcon },
+// Figma New Design 22:4162. Diagnosis is not in the menu; it opens from the dashboard's "Tinjau" link.
+const navItems: NavItem[] = [
+  { label: "Dashboard", href: "/dashboard", icon: "/dashboard/nav-dashboard-active.svg" },
+  { label: "Kurikulum", href: null, icon: "/dashboard/nav-kurikulum.svg" },
+  { label: "Asesmen", href: "/assessment", icon: "/dashboard/nav-asesmen.svg" },
+  { label: "Remedial", href: "/remedial", icon: "/dashboard/nav-remedial.svg" },
+  { label: "Analisis Soal", href: "/analysis", icon: "/dashboard/nav-analisis.svg" },
 ];
 
-const secondaryNav: NavItem[] = [
-  { label: "Settings", href: "#", icon: SettingsIcon },
-  { label: "Help", href: "#", icon: LifeBuoyIcon },
-];
+const itemClassName = "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-base font-semibold leading-normal";
 
-function BrandLogo() {
-  return (
-    <Link className="flex items-center gap-3 px-2 py-4" href="/choose-subject">
-      <div className="flex size-10 items-center justify-center rounded-[10px] bg-[#0058be] text-white">
-        <GridIcon className="size-5" />
-      </div>
-      <div>
-        <p className="text-xl font-bold text-[#1b1b1d]">EduInsight</p>
-        <p className="text-[10px] text-[#45474c]">AI Learning Partner</p>
-      </div>
-    </Link>
-  );
-}
+function NavLink({ item, subject, pathname }: { item: NavItem; subject: string; pathname: string }) {
+  const icon = <MaskIcon className="size-6" src={item.icon} />;
 
-function NavLink({
-  item,
-  active,
-}: {
-  item: NavItem;
-  active: boolean;
-}) {
-  const Icon = item.icon;
+  if (!item.href) {
+    return (
+      <span aria-disabled className={cn(itemClassName, "cursor-not-allowed text-[#75777d]")}>
+        {icon}
+        {item.label}
+        <span className="ml-auto rounded-3xl bg-[rgba(153,188,229,0.6)] px-2 py-0.5 text-[10px] text-[#004695]">
+          Segera
+        </span>
+      </span>
+    );
+  }
+
+  const href = `/${subject}${item.href}`;
+  // Nested pages, e.g. /{slug}/assessment/{id}, keep their menu item highlighted.
+  const active = pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <Link
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex w-full items-center gap-4 rounded-[10px] px-4 py-2 text-left transition-colors",
-        active
-          ? "bg-[#2170e4] text-white"
-          : "text-[#222222] hover:bg-white hover:text-[#0058be]",
+        itemClassName,
+        "transition-colors",
+        active ? "bg-[#0058be] text-[#f5f3f4]" : "text-[#1b1b1d] hover:bg-[#e6eff9] hover:text-[#0058be]",
       )}
-      href={item.href}
+      href={href}
     >
-      <Icon className="size-[18px]" />
-      <span className="text-xs font-semibold tracking-[0.04em]">{item.label}</span>
+      {icon}
+      {item.label}
     </Link>
   );
 }
@@ -79,35 +66,29 @@ export function AppSidebar() {
   const { subject } = useParams<{ subject: string }>();
 
   return (
-    <aside className="flex w-full shrink-0 flex-col gap-6 border-b border-[#c5c6cd] bg-[#f5f3f4] px-4 py-4 md:w-64 md:border-b-0 md:border-r">
-      <BrandLogo />
-      <nav className="flex flex-1 flex-col gap-8 pt-2">
-        <div className="space-y-1">
-          {primaryNav.map((item) => {
-            const href = `/${subject}${item.href}`;
-
-            return (
-              // Nested pages, e.g. /matematika/assessment/{id}, keep their menu item highlighted.
-              <NavLink item={{ ...item, href }} active={pathname === href || pathname.startsWith(`${href}/`)} key={item.label} />
-            );
-          })}
-        </div>
-        <div className="mt-auto space-y-6">
-          {/* Opens the Buat Assessment modal on Daftar Assessment. */}
-          <Link
-            className="inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[12px] bg-[#0058be] px-4 text-xs font-bold tracking-[0.04em] text-white shadow-[0_10px_25px_-12px_rgba(0,88,190,0.55)] transition-colors hover:bg-[#00479b]"
-            href={`/${subject}/assessment?new=1`}
-          >
-            <PlusIcon className="size-4" />
-            Buat Asesmen
-          </Link>
-          <div className="space-y-1 border-t border-[#c5c6cd] pt-4">
-            {secondaryNav.map((item) => (
-              <NavLink item={item} active={false} key={item.label} />
-            ))}
-          </div>
-        </div>
-      </nav>
+    <aside className="relative z-10 flex w-full shrink-0 flex-col gap-6 bg-[#fafbfd] px-4 py-4 md:sticky md:top-0 md:h-[calc(100vh/var(--app-zoom))] md:w-[312px] md:justify-between md:px-8 md:py-6">
+      <div className="flex flex-col gap-4 md:gap-9">
+        <Link className="flex items-center gap-2 px-2 py-2 md:py-4" href="/choose-subject">
+          <Image alt="" className="size-10" height={40} src="/auth/logo.svg" width={40} />
+          <span className="text-xl font-bold leading-normal text-[#1b1b1d]">EduInsight</span>
+        </Link>
+        <nav className="flex flex-col gap-2">
+          {navItems.map((item) => (
+            <NavLink item={item} key={item.label} pathname={pathname} subject={subject} />
+          ))}
+        </nav>
+      </div>
+      <div className="flex flex-col gap-[19px]">
+        <form action={logout}>
+          <button className={cn(outlineButtonClassName, "w-full")} type="submit">
+            Logout
+          </button>
+        </form>
+        <Link className={cn(itemClassName, "text-[#1b1b1d] hover:bg-[#e6eff9]")} href="#">
+          <MaskIcon className="size-6" src="/auth/help-circle.svg" />
+          Help
+        </Link>
+      </div>
     </aside>
   );
 }

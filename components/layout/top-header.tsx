@@ -1,36 +1,77 @@
-import { Input } from "@/components/ui/input";
-import { BellIcon, HelpIcon, SearchIcon } from "@/components/ui/icons";
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, usePathname, useSearchParams } from "next/navigation";
 import type { CurrentUser } from "@/lib/api/types";
 import { firstName } from "@/lib/display-name";
 
-export function TopHeader({ subjectName, user }: { subjectName: string; user: CurrentUser }) {
+// Page title per section of the subject workspace, e.g. /{slug}/assessment → "Asesmen".
+const sectionTitles: Record<string, string> = {
+  dashboard: "Dashboard",
+  assessment: "Asesmen",
+  remedial: "Remedial",
+  analysis: "Analisis Soal",
+  diagnosis: "Diagnosis",
+};
+
+type Crumb = { label: string; href?: string };
+
+function useCrumbs(): Crumb[] {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { subject } = useParams<{ subject: string }>();
+  const [, , section = "dashboard", detail] = pathname.split("/");
+  const title = sectionTitles[section] ?? "Dashboard";
+  const crumbs: Crumb[] = [{ label: title, href: `/${subject}/${section}` }];
+
+  // Detail Bab on the dashboard (?bab={number}) and an assessment's wizard (/assessment/{id}).
+  const chapter = section === "dashboard" ? searchParams.get("bab") : null;
+  if (chapter) crumbs.push({ label: `Detail Bab ${chapter}` });
+  if (section === "assessment" && detail) crumbs.push({ label: "Detail Asesmen" });
+  return crumbs;
+}
+
+// Figma New Design 22:4162 (top bar of the subject workspace).
+export function TopHeader({ subjectLabel, user }: { subjectLabel: string; user: CurrentUser }) {
+  const crumbs = useCrumbs();
+
   return (
-    <header className="flex flex-col gap-4 border-b border-[#c5c6cd] bg-[#fbf8fa] px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-      <Input
-        icon={<SearchIcon className="size-[18px]" />}
-        placeholder="Cari data siswa atau asesmen..."
-        wrapperClassName="max-w-[448px]"
-      />
-      <div className="flex items-center justify-between gap-4 sm:justify-end sm:gap-6">
-        <button
-          className="relative rounded-full p-2 text-[#1b1b1d] transition-colors hover:bg-[#eef2f7]"
-          type="button"
-        >
-          <BellIcon className="size-5" />
-        </button>
-        <button
-          className="rounded-full p-2 text-[#1b1b1d] transition-colors hover:bg-[#eef2f7]"
-          type="button"
-        >
-          <HelpIcon className="size-5" />
-        </button>
-        <div className="flex items-center gap-3 border-l border-[#c5c6cd] pl-4">
-          <div className="grid size-10 place-items-center rounded-full border-2 border-[rgba(0,88,190,0.2)] bg-[linear-gradient(180deg,#ffd7ba_0%,#f9b47f_100%)] text-sm font-bold text-[#7a3d11]">
+    <header className="sticky top-0 z-20 flex min-h-[93px] items-center justify-between gap-4 border-b border-[#c5c6cd] bg-[rgba(250,251,253,0.6)] px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-xs sm:px-8">
+      <div className="flex min-w-0 flex-col gap-1">
+        <h1 className="truncate text-xl font-semibold leading-normal text-black sm:text-2xl">{crumbs[0].label}</h1>
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs leading-normal">
+          {crumbs.map((crumb, index) => {
+            const last = index === crumbs.length - 1;
+            return (
+              <span className="flex items-center gap-1" key={crumb.label}>
+                {index > 0 && <span className="text-[#75777d]">›</span>}
+                {crumb.href && !last ? (
+                  <Link className="text-[#75777d] hover:text-[#0058be]" href={crumb.href}>
+                    {crumb.label}
+                  </Link>
+                ) : (
+                  <span aria-current={last ? "page" : undefined} className="text-[#0058be]">
+                    {crumb.label}
+                  </span>
+                )}
+              </span>
+            );
+          })}
+        </nav>
+      </div>
+      <div className="flex shrink-0 items-center gap-4">
+        {/* Notifications (FR-X-041) are not built yet. */}
+        <span aria-hidden className="hidden sm:block">
+          <Image alt="" height={30} src="/dashboard/bell-dot.svg" width={30} />
+        </span>
+        <div className="flex items-center gap-3 border-l-2 border-[#75777d] pl-4 sm:gap-6">
+          <div className="grid size-12 place-items-center rounded-full bg-[#e6eff9] text-base font-bold text-[#004695] sm:size-[65px] sm:text-xl">
             {user.initials}
           </div>
-          <div>
-            <p className="text-xs font-semibold tracking-[0.04em] text-[#1b1b1d]">{firstName(user.name)}</p>
-            <p className="text-[10px] text-[#45474c]">{subjectName}</p>
+          <div className="hidden max-w-[220px] leading-normal text-[#1b1b1d] sm:block">
+            <p className="truncate text-xl font-semibold lg:text-2xl">{firstName(user.name)}</p>
+            <p className="truncate text-sm lg:text-base">{subjectLabel}</p>
           </div>
         </div>
       </div>

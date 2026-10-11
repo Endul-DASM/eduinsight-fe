@@ -34,7 +34,9 @@ function useCrumbs(): Crumb[] {
   if (section === "curriculum" && searchParams.get("bab")) crumbs.push({ label: "Detail Bab" });
   if (section === "assessment" && detail) {
     // Buat Asesmen: "Asesmen > Buat Soal Manual > Ketik di EduInsight" (Figma New Design 61:8772).
-    if (detail === "manual") {
+    if (pathname.endsWith("/soal")) {
+      crumbs.push({ label: "Lihat Soal" });
+    } else if (detail === "manual") {
       crumbs.push({ label: "Buat Soal Manual" });
     } else {
       const method = builderMethodOf(searchParams.get("method"));

@@ -1,11 +1,10 @@
-import { notFound } from "next/navigation";
-import { RegisterAccountPage } from "@/components/auth/register-account-page";
-import { isAuthRole } from "@/lib/auth/roles";
+import { notFound, redirect } from "next/navigation";
+import { authRoles, isAuthRole } from "@/lib/auth/roles";
 
-// /register/teacher/account and /register/student/account
+// The sign-up form now opens on /register/[role]; old links to /register/[role]/account land there.
 export default async function RoleRegisterAccountRoute({ params }: PageProps<"/register/[role]/account">) {
   const { role } = await params;
   if (!isAuthRole(role)) notFound();
 
-  return <RegisterAccountPage role={role} />;
+  redirect(authRoles[role].registerPath);
 }

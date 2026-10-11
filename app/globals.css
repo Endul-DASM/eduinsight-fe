@@ -3,6 +3,20 @@
 :root {
   --background: #ffffff;
   --foreground: #091426;
+  /* Same value as the zoom on <html> in app/layout.tsx; change both together. */
+  --app-zoom: 0.9;
+}
+
+/* Zoom shrinks 100vh too, so full-height layouts are scaled back up to fill the screen. Outside any layer, so these
+   win over Tailwind's own min-h-screen. */
+.min-h-screen {
+  min-height: calc(100vh / var(--app-zoom));
+}
+
+@media (min-width: 48rem) {
+  .md\:min-h-screen {
+    min-height: calc(100vh / var(--app-zoom));
+  }
 }
 
 @theme inline {

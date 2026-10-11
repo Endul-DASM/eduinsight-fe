@@ -26,6 +26,27 @@ export const assessmentModeLabels: Record<AssessmentMode, string> = {
 export const assessmentTypes = Object.keys(assessmentTypeLabels) as AssessmentType[];
 export const assessmentStatuses = Object.keys(assessmentStatusLabels) as AssessmentStatus[];
 
+// Daftar Asesmen chips (Figma New Design 54:7817), plus Ulangan Harian from PRD G-ASM-00. A type chip filters
+// ?type=, Draft filters ?status=draft; one chip at a time.
+export const assessmentFilterChips = [
+  { id: "semua", label: "Semua", tone: "grey" },
+  { id: "pre_test", label: "Pre-Test", tone: "grey", type: "pre_test" },
+  { id: "post_test", label: "Post-Test", tone: "grey", type: "post_test" },
+  { id: "ulangan_harian", label: "Ulangan Harian", tone: "grey", type: "ulangan_harian" },
+  { id: "uts", label: "UTS", tone: "grey", type: "uts" },
+  { id: "uas", label: "UAS", tone: "grey", type: "uas" },
+  { id: "remedial", label: "Remedial", tone: "red", type: "remedial" },
+  { id: "draft", label: "Draft", tone: "orange", status: "draft" },
+] as const satisfies readonly { id: string; label: string; tone: string; type?: AssessmentType; status?: AssessmentStatus }[];
+
+// Status badge on a card. "Terjadwal" is not in the design, which only shows Aktif, Selesai and Draft.
+export const cardStatus: Record<AssessmentStatus, { label: string; className: string }> = {
+  draft: { label: "Draft", className: "bg-[#ffedd5] text-[#c2410c]" },
+  scheduled: { label: "Terjadwal", className: "bg-[#e5e7eb] text-[#45474c]" },
+  ongoing: { label: "Aktif", className: "bg-[rgba(153,188,229,0.6)] text-[#004695]" },
+  closed: { label: "Selesai", className: "bg-[rgba(187,247,208,0.6)] text-[#16a34a]" },
+};
+
 export function isAssessmentType(value: unknown): value is AssessmentType {
   return typeof value === "string" && value in assessmentTypeLabels;
 }
@@ -102,6 +123,21 @@ const scheduleFormat = new Intl.DateTimeFormat("id-ID", {
   hour: "2-digit",
   minute: "2-digit",
 });
+
+const longScheduleFormat = new Intl.DateTimeFormat("id-ID", {
+  timeZone: SCHEDULE_TIME_ZONE,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+// "25 Oktober 2026, 08.00 WIB".
+export function formatLongSchedule(iso: string | null): string {
+  // id-ID writes "14 Oktober 2026 pukul 08.00"; the design separates date and time with a comma.
+  return iso ? `${longScheduleFormat.format(new Date(iso)).replace(" pukul ", ", ")} WIB` : "Belum dijadwalkan";
+}
 
 // "1 Nov 2026, 07.00 WIB".
 export function formatSchedule(iso: string | null): string {
@@ -205,9 +241,12 @@ export const bloomLevels = [
 export const difficultyLabels = { mudah: "Mudah", sedang: "Sedang", sulit: "Sulit" } as const;
 export type Difficulty = keyof typeof difficultyLabels;
 
-export const OPTION_KEYS = ["A", "B", "C", "D", "E"] as const;
-
-// Template imports (POST /subjects/:id/question-imports): .xlsx or .csv, at most 5 MB and 500 rows.
+export const OPTION_KEYS = ["A", "B", "C", "D", "E"] as const;
+
+
+
+// Template imports (POST /subjects/:id/question-imports): .xlsx or .csv, at most 5 MB and 500 rows.
+
 export const MAX_IMPORT_MB = 5;
 
 // One question in "Ketik di EduInsight" (Figma 61:8772), before it is saved to the Bank Soal.

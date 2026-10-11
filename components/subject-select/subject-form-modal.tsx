@@ -17,7 +17,8 @@ function valuesOf(form: HTMLFormElement): SubjectFormValues {
   return { name: value("name"), className: value("className"), academicYear: value("academicYear").replace(/\s/g, "") };
 }
 
-// FR-G-024 "Salin Kurikulum" is not in the backend yet, so the field is shown but disabled and never submitted.
+// FR-G-024: copies the whole curriculum of another of the teacher's classes after saving. The backend only copies into
+// an empty curriculum.
 function CopyCurriculumField({ sources }: { sources: Subject[] }) {
   return (
     <div className="flex w-full flex-col gap-2">
@@ -27,9 +28,9 @@ function CopyCurriculumField({ sources }: { sources: Subject[] }) {
       <div className="relative">
         <select
           aria-describedby="copyCurriculumFrom-note"
-          className="h-[50px] w-full cursor-not-allowed appearance-none rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] pl-[13px] pr-12 text-base leading-normal text-[#75777d] opacity-70 outline-none"
+          className="h-[50px] w-full appearance-none rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] pl-[13px] pr-12 text-base leading-normal text-[#1b1b1d] outline-none focus:border-[#0058be] focus:ring-2 focus:ring-[rgba(0,88,190,0.15)] disabled:cursor-not-allowed disabled:opacity-70"
           defaultValue=""
-          disabled
+          disabled={sources.length === 0}
           id="copyCurriculumFrom"
           name="copyCurriculumFrom"
         >
@@ -42,21 +43,33 @@ function CopyCurriculumField({ sources }: { sources: Subject[] }) {
         </select>
         <Image
           alt=""
-          className="pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2 opacity-70"
+          className="pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2"
           height={24}
           src="/subjects/chevron-down.svg"
           width={24}
         />
       </div>
       <p className="text-xs leading-normal text-[#75777d]" id="copyCurriculumFrom-note">
-        Segera tersedia. Salin kurikulum belum didukung server.
+        {sources.length === 0
+          ? "Belum ada kelas lain untuk disalin."
+          : "CP, Bab, TP, dan Subbab disalin ke kelas ini. Hanya bisa bila kurikulum kelas ini masih kosong."}
       </p>
     </div>
   );
 }
 
 // Mounted only while the modal is open, so each opening starts from a fresh form state.
-function SubjectForm({ subject, subjects, onClose }: { subject?: Subject; subjects: Subject[]; onClose: () => void }) {
+function SubjectForm({
+  subject,
+  subjects,
+  onClose,
+  onNotice,
+}: {
+  subject?: Subject;
+  subjects: Subject[];
+  onClose: () => void;
+  onNotice?: (notice: string) => void;
+}) {
   const [state, formAction, pending] = useActionState(
     subject ? updateSubjectAction : createSubjectAction,
     undefined,
@@ -65,8 +78,11 @@ function SubjectForm({ subject, subjects, onClose }: { subject?: Subject; subjec
   const [clientErrors, setClientErrors] = useState<SubjectFormErrors>({});
 
   useEffect(() => {
-    if (state?.status === "saved") onClose();
-  }, [state, onClose]);
+    if (state?.status !== "saved") return;
+    // The result of Salin Kurikulum, shown by the page once the modal closes.
+    if (state.notice) onNotice?.(state.notice);
+    onClose();
+  }, [state, onClose, onNotice]);
 
   const failed = state?.status === "error" ? state : undefined;
   const values = failed?.values ?? {
@@ -149,11 +165,13 @@ export function SubjectFormModal({
   subject,
   subjects,
   onClose,
+  onNotice,
 }: {
   open: boolean;
   subject?: Subject;
   subjects: Subject[];
   onClose: () => void;
+  onNotice?: (notice: string) => void;
 }) {
   return (
     <Modal
@@ -162,7 +180,13 @@ export function SubjectFormModal({
       open={open}
       title={subject ? "Edit Kelas" : "Tambah Kelas Baru"}
     >
-      <SubjectForm key={subject?.id ?? "new"} onClose={onClose} subject={subject} subjects={subjects} />
+      <SubjectForm
+        key={subject?.id ?? "new"}
+        onClose={onClose}
+        onNotice={onNotice}
+        subject={subject}
+        subjects={subjects}
+      />
     </Modal>
   );
 }

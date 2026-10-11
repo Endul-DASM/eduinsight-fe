@@ -3,7 +3,6 @@
 import type { ComponentType, SVGProps } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
 import {
   BookIcon,
@@ -88,15 +87,20 @@ export function AppSidebar() {
             const href = `/${subject}${item.href}`;
 
             return (
-              <NavLink item={{ ...item, href }} active={pathname === href} key={item.label} />
+              // Nested pages, e.g. /matematika/assessment/{id}, keep their menu item highlighted.
+              <NavLink item={{ ...item, href }} active={pathname === href || pathname.startsWith(`${href}/`)} key={item.label} />
             );
           })}
         </div>
         <div className="mt-auto space-y-6">
-          <Button className="w-full justify-center" size="md">
+          {/* Opens the Buat Assessment modal on Daftar Assessment. */}
+          <Link
+            className="inline-flex h-10 w-full items-center justify-center gap-2 whitespace-nowrap rounded-[12px] bg-[#0058be] px-4 text-xs font-bold tracking-[0.04em] text-white shadow-[0_10px_25px_-12px_rgba(0,88,190,0.55)] transition-colors hover:bg-[#00479b]"
+            href={`/${subject}/assessment?new=1`}
+          >
             <PlusIcon className="size-4" />
             Buat Asesmen
-          </Button>
+          </Link>
           <div className="space-y-1 border-t border-[#c5c6cd] pt-4">
             {secondaryNav.map((item) => (
               <NavLink item={item} active={false} key={item.label} />

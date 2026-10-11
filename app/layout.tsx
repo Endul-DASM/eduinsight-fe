@@ -12,7 +12,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full antialiased">
+    // The whole app is shown at 90%, like browser zoom at 90%: at 100% the designs feel too large on laptop
+    // screens. Set inline because the CSS build drops `zoom` from globals.css.
+    <html lang="en" className="h-full antialiased" style={{ zoom: 0.9 }}>
       <body className="min-h-full bg-background font-sans text-foreground">
         {children}
       </body>

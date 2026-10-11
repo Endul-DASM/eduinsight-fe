@@ -56,11 +56,12 @@ export function SubjectGrid({ subjects }: { subjects: Subject[] }) {
         </div>
       </div>
 
-      <SubjectFormModal onClose={closeModal} open={modal?.kind === "create"} />
+      <SubjectFormModal onClose={closeModal} open={modal?.kind === "create"} subjects={subjects} />
       <SubjectFormModal
         onClose={closeModal}
         open={modal?.kind === "edit"}
         subject={modal?.kind === "edit" ? modal.subject : undefined}
+        subjects={subjects}
       />
       <DeleteSubjectModal onClose={closeModal} subject={modal?.kind === "delete" ? modal.subject : undefined} />
 

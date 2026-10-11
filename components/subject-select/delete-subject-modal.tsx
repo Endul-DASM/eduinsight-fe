@@ -4,7 +4,8 @@ import { useActionState, useEffect } from "react";
 import { Modal } from "@/components/ui/modal";
 import { deleteSubjectAction } from "@/lib/actions/subjects";
 import type { Subject } from "@/lib/api/types";
-import { dangerButtonClassName, outlineButtonClassName } from "./form-field";
+import { outlineButtonClassName } from "@/components/auth/styles";
+import { dangerButtonClassName, subjectModalClassName } from "./styles";
 
 function DeleteForm({ subject, onClose }: { subject: Subject; onClose: () => void }) {
   const [state, formAction, pending] = useActionState(deleteSubjectAction, undefined);
@@ -16,8 +17,8 @@ function DeleteForm({ subject, onClose }: { subject: Subject; onClose: () => voi
   return (
     <form action={formAction} className="flex flex-col gap-6">
       <input name="subjectId" type="hidden" value={subject.id} />
-      <p className="text-center text-base leading-6 text-[#45474c]">
-        <span className="font-semibold text-[#111c2d]">
+      <p className="text-center text-base leading-normal text-[#45474c]">
+        <span className="font-semibold text-[#1b1b1d]">
           {subject.name} · {subject.class.name} ({subject.class.academicYear})
         </span>{" "}
         akan dihapus dari daftar Anda.
@@ -41,7 +42,7 @@ function DeleteForm({ subject, onClose }: { subject: Subject; onClose: () => voi
 
 export function DeleteSubjectModal({ subject, onClose }: { subject?: Subject; onClose: () => void }) {
   return (
-    <Modal onClose={onClose} open={Boolean(subject)} title="Hapus Mata Pelajaran?">
+    <Modal className={subjectModalClassName} onClose={onClose} open={Boolean(subject)} title="Hapus Mata Pelajaran?">
       {subject && <DeleteForm key={subject.id} onClose={onClose} subject={subject} />}
     </Modal>
   );

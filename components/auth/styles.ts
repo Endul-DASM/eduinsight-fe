@@ -1,7 +1,7 @@
 // Button styles from the auth designs (Figma New Design). Kept as class strings because they are used on links and
 // buttons alike.
 
-const buttonBaseClassName =
+export const buttonBaseClassName =
   "inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-xl px-4 py-3 text-base font-semibold leading-6 drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0058be] disabled:cursor-not-allowed disabled:opacity-60";
 
 export const primaryButtonClassName = `${buttonBaseClassName} bg-[#0058be] text-[#f5f3f4] hover:bg-[#004695]`;

@@ -1,40 +1,61 @@
 import { notFound } from "next/navigation";
-import { AssessmentWizard } from "@/components/assessment/assessment-wizard";
+import { AiStep } from "@/components/assessment/ai-step";
+import { BuilderShell } from "@/components/assessment/builder-shell";
+import { OcrStep } from "@/components/assessment/ocr-step";
+import { PublishDone, ReviewStep } from "@/components/assessment/review-step";
+import { SpecificationStep } from "@/components/assessment/specification-step";
+import { TemplateStep } from "@/components/assessment/template-step";
+import { TypedQuestionsStep } from "@/components/assessment/typed-questions-step";
+import { ApiError } from "@/lib/api/client";
 import { getAssessment } from "@/lib/api/assessments";
-import { getLearningObjectives } from "@/lib/api/curriculum";
-import { getQuestionsForLearningObjectives } from "@/lib/api/questions";
+import { getCurriculum } from "@/lib/api/curriculum";
+import { getQuestionImport, type QuestionImport } from "@/lib/api/questions";
 import { getSubject } from "@/lib/api/subjects";
-import { wizardStepOf } from "@/lib/assessment-form";
+import { builderMethodOf, builderStepOf } from "@/lib/assessment-form";
 
-export default async function AssessmentWizardRoute({
-  params,
-  searchParams,
-}: PageProps<"/[subject]/assessment/[id]">) {
+// /{slug}/assessment/{id}?method=…&step=spesifikasi|soal|review|selesai — the Buat Asesmen steps of one draft.
+// Without a step, a draft opens at Spesifikasi and a published assessment at Review.
+export default async function AssessmentBuilderRoute({ params, searchParams }: PageProps<"/[subject]/assessment/[id]">) {
   const { subject: slug, id } = await params;
-  const step = wizardStepOf((await searchParams).step);
+  const query = await searchParams;
+  const method = builderMethodOf(query.method);
 
   const [subject, assessment] = await Promise.all([getSubject(slug), getAssessment(id)]);
   // An assessment of another subject is not shown under this one's URL.
   if (!subject || !assessment || assessment.subjectId !== subject.id) notFound();
 
+  const step = query.step ? builderStepOf(query.step) : assessment.status === "draft" ? "spesifikasi" : "review";
+
   // Each step only loads what it shows.
-  const learningObjectives = step === "tp" ? await getLearningObjectives(subject.id) : [];
-  const bank =
-    step === "soal"
-      ? await getQuestionsForLearningObjectives(
-          subject.id,
-          assessment.learningObjectives.map((objective) => objective.id),
-        )
-      : { items: [], total: 0 };
+  const tree = step === "spesifikasi" ? await getCurriculum(subject.id) : null;
+  let result: QuestionImport | null = null;
+  if (step === "soal" && typeof query.import === "string") {
+    try {
+      result = await getQuestionImport(query.import);
+    } catch (error) {
+      // An old or foreign import id just shows the upload again.
+      if (!(error instanceof ApiError && error.status < 500)) throw error;
+    }
+  }
+
+  const common = { slug, method, assessment };
 
   return (
-    <AssessmentWizard
-      assessment={assessment}
-      bank={bank}
-      learningObjectives={learningObjectives}
-      slug={slug}
-      step={step}
-      subject={subject}
-    />
+    <BuilderShell method={method} step={step}>
+      {step === "spesifikasi" && (
+        <SpecificationStep
+          {...common}
+          chapters={tree?.chapters.filter((chapter) => chapter.status === "final") ?? []}
+          kkmDefault={subject.kkmDefault}
+          subjectId={subject.id}
+        />
+      )}
+      {step === "soal" && method === "ketik" && <TypedQuestionsStep {...common} subjectId={subject.id} />}
+      {step === "soal" && method === "template" && <TemplateStep {...common} result={result} subjectId={subject.id} />}
+      {step === "soal" && method === "ocr" && <OcrStep {...common} result={result} subjectId={subject.id} />}
+      {step === "soal" && method === "ai" && <AiStep {...common} />}
+      {step === "review" && <ReviewStep {...common} />}
+      {step === "selesai" && <PublishDone slug={slug} />}
+    </BuilderShell>
   );
 }

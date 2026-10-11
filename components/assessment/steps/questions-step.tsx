@@ -22,7 +22,7 @@ function QuestionMeta({ question }: { question: Question }) {
       )}
       {question.learningObjectives.length > 0 ? (
         <span>
-          TP {question.learningObjectives.map((objective) => objective.code ?? objective.description).join(", ")}
+          TP {question.learningObjectives.map((objective) => objective.number).join(", ")}
         </span>
       ) : (
         <span className="text-[#ba1a1a]">Belum ada TP</span>

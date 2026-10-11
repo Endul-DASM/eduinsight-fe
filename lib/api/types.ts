@@ -66,26 +66,50 @@ export type GoogleSignupRequired = {
 
 export type GoogleExchangeResponse = LoginResponse | GoogleSignupRequired;
 
-// Curriculum, Kurikulum Merdeka (GET /subjects/:id/curriculum): CP → TP and Bab → Subbab, joined by the
-// TP ↔ Bab mapping (FR-G-023). The TP is what gets assessed.
+// Curriculum v3.2 (GET /subjects/:id/curriculum, SRS FR-G-020 – 025): CPs on their own, and Babs that pick one or
+// more CPs and hold the TPs. Every TP belongs to one Bab and one of that Bab's CPs. The TP is what gets assessed.
 
 export type LearningObjectiveRef = {
   id: string;
-  code: string | null;
+  // Bab number and position, e.g. "3.2".
+  number: string;
   description: string;
   cpId: string;
+  chapterId: string;
 };
 
-type CurriculumTreeNode = { id: string; code: string | null; description: string; position: number };
+export type Fase = "D" | "E" | "F";
+
+export type CurriculumCp = {
+  id: string;
+  code: string | null;
+  // Elemen of the CP, e.g. Bilangan.
+  element: string;
+  fase: Fase;
+  description: string;
+  source: "guru" | "resmi";
+  officialCpId: string | null;
+  position: number;
+};
+
+export type CurriculumChapter = {
+  id: string;
+  number: number;
+  name: string;
+  notes: string | null;
+  // Draft Babs are left out of Pilih TP, question tags and diagnosis (FR-G-023).
+  status: "draft" | "final";
+  cpIds: string[];
+  learningObjectives: { id: string; number: string; cpId: string; description: string; keywords: string[]; position: number }[];
+  subchapters: { id: string; name: string; position: number }[];
+};
 
 export type CurriculumTree = {
   subjectId: string;
-  cps: (CurriculumTreeNode & {
-    // Elemen of the CP, e.g. Bilangan.
-    element: string | null;
-    learningObjectives: (CurriculumTreeNode & { keywords: string[]; chapterIds: string[] })[];
-  })[];
-  chapters: (CurriculumTreeNode & { learningObjectiveIds: string[]; subchapters: CurriculumTreeNode[] })[];
+  // Suggested from the class name for the CP import prompt; null when the grade cannot be read.
+  suggestedFase: Fase | null;
+  cps: CurriculumCp[];
+  chapters: CurriculumChapter[];
 };
 
 // Bank Soal (GET /subjects/:id/questions).

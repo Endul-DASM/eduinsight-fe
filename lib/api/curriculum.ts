@@ -4,31 +4,37 @@ import type { CurriculumTree } from "./types";
 
 export type LearningObjectiveOption = {
   id: string;
+  // TP number, e.g. "1.2" (Bab 1, second TP).
   code: string | null;
   description: string;
-  // The CP it belongs to, e.g. "CP-E Bilangan berpangkat (Bilangan)".
+  // The CP it belongs to, e.g. "Bilangan (Fase E)".
   cpLabel: string;
-  // The Babs that cover it (FR-G-023), for the Bab filter in Pilih TP.
+  // The Bab that holds it, for the Bab filter in Pilih TP.
   chapters: { id: string; label: string }[];
 };
 
-function label(node: { code: string | null; description: string }) {
-  return node.code ? `${node.code} ${node.description}` : node.description;
-}
+// GET /subjects/:id/curriculum (v3.2). Mock mode has no curriculum.
+export const getCurriculum = cache(async (subjectId: string): Promise<CurriculumTree | null> => {
+  if (isMockMode) return null;
 
-// GET /subjects/:id/curriculum, flattened to the TPs in curriculum order (for Pilih TP).
+  return apiFetch<CurriculumTree>(`/subjects/${encodeURIComponent(subjectId)}/curriculum`);
+});
+
+// The TPs of final Babs, in curriculum order (for Pilih TP). Draft Babs are left out (FR-G-023).
 export const getLearningObjectives = cache(async (subjectId: string): Promise<LearningObjectiveOption[]> => {
-  if (isMockMode) return [];
+  const tree = await getCurriculum(subjectId);
+  if (!tree) return [];
 
-  const tree = await apiFetch<CurriculumTree>(`/subjects/${encodeURIComponent(subjectId)}/curriculum`);
-  const chapters = new Map(tree.chapters.map((chapter) => [chapter.id, { id: chapter.id, label: label(chapter) }]));
-  return tree.cps.flatMap((cp) =>
-    cp.learningObjectives.map((objective) => ({
-      id: objective.id,
-      code: objective.code,
-      description: objective.description,
-      cpLabel: cp.element ? `${label(cp)} (${cp.element})` : label(cp),
-      chapters: objective.chapterIds.flatMap((id) => chapters.get(id) ?? []),
-    })),
-  );
+  const cps = new Map(tree.cps.map((cp) => [cp.id, `${cp.element} (Fase ${cp.fase})`]));
+  return tree.chapters
+    .filter((chapter) => chapter.status === "final")
+    .flatMap((chapter) =>
+      chapter.learningObjectives.map((objective) => ({
+        id: objective.id,
+        code: objective.number,
+        description: objective.description,
+        cpLabel: cps.get(objective.cpId) ?? "",
+        chapters: [{ id: chapter.id, label: `Bab ${chapter.number} ${chapter.name}` }],
+      })),
+    );
 });

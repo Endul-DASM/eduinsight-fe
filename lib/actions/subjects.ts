@@ -31,7 +31,8 @@ function valuesFrom(formData: FormData): SubjectFormValues {
   return {
     name: text(formData, "name"),
     className: text(formData, "className"),
-    academicYear: text(formData, "academicYear"),
+    // "2026 / 2027" is accepted as 2026/2027.
+    academicYear: text(formData, "academicYear").replace(/\s/g, ""),
   };
 }
 

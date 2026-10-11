@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/components/ui/cn";
+import type { Material } from "@/lib/api/materials";
 import type { CurriculumTree, Subject } from "@/lib/api/types";
+import { MaterialsBoard } from "@/components/materials/materials-board";
 import { CurriculumBoard } from "./curriculum-board";
-import { sectionClassName } from "./styles";
 
 const tabs = [
   { id: "kurikulum", label: "Kurikulum" },
@@ -12,7 +12,7 @@ const tabs = [
 
 export type CurriculumTab = (typeof tabs)[number]["id"];
 
-// Kurikulum (PRD 5.3.1; Figma New Design 93:6201, 50:3478). The Upload Materi tab comes in a later change.
+// Kurikulum (PRD 5.3.1 – 5.3.2; Figma New Design 93:6201, 50:3478, 54:6193).
 export function CurriculumPage({
   subject,
   teacherName,
@@ -20,6 +20,7 @@ export function CurriculumPage({
   tree,
   error,
   selectedChapterId,
+  materials,
 }: {
   subject: Subject;
   teacherName: string;
@@ -27,6 +28,8 @@ export function CurriculumPage({
   tree: CurriculumTree | null;
   error?: string;
   selectedChapterId: string | null;
+  // Only loaded for the Upload Materi tab, with the confirmed TP numbers of each material.
+  materials?: { items: Material[]; objectiveNumbers: Record<string, string[]> };
 }) {
   const baseHref = `/${subject.slug}/curriculum`;
 
@@ -60,16 +63,15 @@ export function CurriculumPage({
         })}
       </nav>
 
-      {tab === "materi" ? (
-        <section className={cn(sectionClassName, "items-center py-12 text-center")}>
-          <span className="grid size-24 place-items-center rounded-full bg-[#e6eff9]">
-            <Image alt="" height={48} src="/curriculum/chapter-list.svg" width={48} />
-          </span>
-          <p className="text-xl font-semibold text-[#1b1b1d]">Unggah materi segera tersedia</p>
-          <p className="max-w-[520px] text-sm leading-normal text-[#45474c]">
-            Di sini nanti Anda bisa mengunggah PDF, DOCX, atau PPTX, lalu mengaitkannya ke Bab dan TP.
-          </p>
-        </section>
+      {tab === "materi" && tree && materials ? (
+        <MaterialsBoard
+          chapters={tree.chapters}
+          classLabel={subject.class.name}
+          materials={materials.items}
+          objectiveNumbers={materials.objectiveNumbers}
+          slug={subject.slug}
+          subjectId={subject.id}
+        />
       ) : !tree ? (
         <p className="rounded-3xl bg-[#ffdad6] px-6 py-4 text-sm leading-normal text-[#93000a]" role="alert">
           {error ?? "Kurikulum belum dapat dimuat."}

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { type CurriculumTab, CurriculumPage } from "@/components/curriculum/curriculum-page";
 import { ApiError } from "@/lib/api/client";
 import { getCurriculum } from "@/lib/api/curriculum";
+import { getMaterial, getMaterials, type Material } from "@/lib/api/materials";
 import { getSubject } from "@/lib/api/subjects";
 import type { CurriculumTree } from "@/lib/api/types";
 import { getCurrentUser } from "@/lib/api/users";
@@ -27,8 +28,34 @@ export default async function CurriculumRoute({ params, searchParams }: PageProp
         : "Kurikulum belum dapat dimuat dari server. Coba muat ulang halaman.";
   }
 
+  let materials: { items: Material[]; objectiveNumbers: Record<string, string[]> } | undefined;
+  if (activeTab === "materi" && tree) {
+    try {
+      const items = await getMaterials(subject.id);
+      // The list has no TPs; read them from each confirmed material (FR-G-034 shows them per row).
+      const confirmed = items.filter((material) => material.mappingConfirmedAt);
+      const details = await Promise.all(confirmed.map((material) => getMaterial(material.id)));
+      const objectiveNumbers = Object.fromEntries(
+        details.map((detail) => [
+          detail.id,
+          [...new Set(detail.mappings.map((mapping) => mapping.learningObjective.number))].sort((a, b) =>
+            a.localeCompare(b, undefined, { numeric: true }),
+          ),
+        ]),
+      );
+      materials = { items, objectiveNumbers };
+    } catch (caught) {
+      tree = null;
+      error =
+        caught instanceof ApiError && caught.code
+          ? caught.message
+          : "Materi belum dapat dimuat dari server. Coba muat ulang halaman.";
+    }
+  }
+
   return (
     <CurriculumPage
+      materials={materials}
       error={error}
       selectedChapterId={typeof bab === "string" ? bab : null}
       subject={subject}

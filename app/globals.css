@@ -3,7 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #091426;
-  /* Same value as the zoom on <html> in app/layout.tsx; change both together. */
+  /* Fallback only: <html> and the subject workspaces set it inline with their zoom (lib/zoom.ts). */
   --app-zoom: 0.9;
 }
 

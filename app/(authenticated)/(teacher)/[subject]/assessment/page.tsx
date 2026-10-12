@@ -2,15 +2,29 @@ import { notFound } from "next/navigation";
 import { AssessmentListPage } from "@/components/assessment/assessment-list-page";
 import { AssessmentPage, assessmentTabOf } from "@/components/assessment/assessment-page";
 import { MethodPicker } from "@/components/assessment/method-picker";
-import { sectionClassName } from "@/components/curriculum/styles";
-import { cn } from "@/components/ui/cn";
+import { ResultsPage, resultsViewOf } from "@/components/assessment/results/results-page";
 import { getAssessments } from "@/lib/api/assessments";
+import { getAssessmentResults } from "@/lib/api/results";
 import { getSubject } from "@/lib/api/subjects";
 import { getCurrentUser } from "@/lib/api/users";
 import { isAssessmentStatus, isAssessmentType } from "@/lib/assessment-form";
+import { getAssessmentCards } from "@/lib/assessment-list";
 import { firstName } from "@/lib/display-name";
 
-// /{slug}/assessment: Buat Asesmen, ?tab=daftar (with ?type= and ?status=) and ?tab=hasil.
+// Hasil Asesmen: the published assessments for the picker, and the results of the chosen one (?assessment=,
+// otherwise the most recently opened one).
+async function hasilTab(slug: string, subjectId: string, assessmentParam: unknown, viewParam: unknown) {
+  const published = (await getAssessments(subjectId))
+    .filter((assessment) => assessment.status !== "draft")
+    .sort((a, b) => (b.opensAt ?? "").localeCompare(a.opensAt ?? ""));
+  const selectedId = published.find((assessment) => assessment.id === assessmentParam)?.id ?? published[0]?.id ?? null;
+  const results = selectedId ? await getAssessmentResults(selectedId) : null;
+  return (
+    <ResultsPage assessments={published} results={results} selectedId={selectedId} slug={slug} view={resultsViewOf(viewParam)} />
+  );
+}
+
+// /{slug}/assessment: Buat Asesmen, ?tab=daftar (with ?type= and ?status=) and ?tab=hasil (with ?assessment= and ?view=).
 export default async function AssessmentRoute({ params, searchParams }: PageProps<"/[subject]/assessment">) {
   const { subject: slug } = await params;
   const query = await searchParams;
@@ -27,20 +41,12 @@ export default async function AssessmentRoute({ params, searchParams }: PageProp
       {tab === "buat" && <MethodPicker slug={slug} />}
       {tab === "daftar" && (
         <AssessmentListPage
-          assessments={await getAssessments(subject.id, { type, status })}
+          cards={await getAssessmentCards(subject, { type, status })}
           filtered={Boolean(type || status)}
           slug={slug}
         />
       )}
-      {tab === "hasil" && (
-        <section className={cn(sectionClassName, "items-center py-12 text-center")}>
-          <p className="text-xl font-semibold text-[#1b1b1d]">Hasil Asesmen segera tersedia</p>
-          <p className="max-w-[520px] text-sm leading-normal text-[#45474c]">
-            Di sini nanti Anda bisa melihat performa kelas, siswa, per TP, dan per soal dari asesmen yang sudah
-            dikerjakan.
-          </p>
-        </section>
-      )}
+      {tab === "hasil" && (await hasilTab(slug, subject.id, query.assessment, query.view))}
     </AssessmentPage>
   );
 }

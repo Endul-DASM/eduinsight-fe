@@ -1,0 +1,19 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Status Indicator">
+<g clip-path="url(#clip0_0_234)">
+<g id="Track">
+</g>
+<g id="Progress Arc">
+<mask id="path-2-inside-1_0_234" fill="white">
+<path d="M22.531 6.24689C23.8379 8.63912 24.2913 11.405 23.8167 14.0893C23.3421 16.7736 21.9677 19.2163 19.9198 21.0154C17.8719 22.8144 15.2724 23.8626 12.5494 23.9874C9.8263 24.1122 7.14189 23.3062 4.93799 21.702L12 12L22.531 6.24689Z"/>
+</mask>
+<path d="M22.531 6.24689C23.8379 8.63912 24.2913 11.405 23.8167 14.0893C23.3421 16.7736 21.9677 19.2163 19.9198 21.0154C17.8719 22.8144 15.2724 23.8626 12.5494 23.9874C9.8263 24.1122 7.14189 23.3062 4.93799 21.702L12 12L22.531 6.24689Z" stroke="#F59E0A" stroke-width="5" mask="url(#path-2-inside-1_0_234)"/>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_234">
+<rect width="24" height="24" rx="12" fill="white"/>
+</clipPath>
+</defs>
+</svg>

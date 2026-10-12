@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClass, getClasses } from "@/lib/api/classes";
 import { ApiError, isMockMode } from "@/lib/api/client";
+import { copyCurriculum } from "@/lib/api/curriculum";
 import { createSubject, deleteSubject, updateSubject } from "@/lib/api/subjects";
 import type { SchoolClass } from "@/lib/api/types";
 import {
@@ -18,7 +19,8 @@ const SERVER_UNREACHABLE_MESSAGE = "Tidak dapat terhubung ke server. Coba lagi b
 // "saved" carries a timestamp so the modal can tell two successful saves apart and close each time.
 export type SubjectFormState =
   | { status: "error"; message?: string; fields?: SubjectFormErrors; values: SubjectFormValues }
-  | { status: "saved"; savedAt: number }
+  // notice reports the optional Salin Kurikulum step, which runs after the class is saved.
+  | { status: "saved"; savedAt: number; notice?: string }
   | undefined;
 
 export type DeleteSubjectState = { status: "error"; message: string } | { status: "saved"; savedAt: number } | undefined;
@@ -41,9 +43,21 @@ function messageOf(error: unknown): string {
   return error instanceof ApiError && error.code ? error.message : SERVER_UNREACHABLE_MESSAGE;
 }
 
-function saved() {
+function saved(notice?: string) {
   revalidatePath("/choose-subject");
-  return { status: "saved" as const, savedAt: Date.now() };
+  return { status: "saved" as const, savedAt: Date.now(), notice };
+}
+
+// FR-G-024: copies another subject's curriculum once the class is saved. Only into an empty curriculum, so a failure
+// leaves the saved class as it is and is reported instead.
+async function copyCurriculumFrom(subjectId: string, sourceSubjectId: string): Promise<string | undefined> {
+  if (!sourceSubjectId) return undefined;
+  try {
+    await copyCurriculum(subjectId, sourceSubjectId);
+    return "Kelas tersimpan dan kurikulum berhasil disalin.";
+  } catch (error) {
+    return `Kelas tersimpan, tetapi kurikulum belum tersalin: ${messageOf(error)}`;
+  }
 }
 
 class ClassFieldError extends Error {
@@ -97,14 +111,15 @@ export async function createSubjectAction(
 
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE, values };
 
+  let created;
   try {
     const schoolClass = await findOrCreateClass(values);
     // KKM is left to the backend default (BR-01).
-    await createSubject({ name: values.name, classId: schoolClass.id });
+    created = await createSubject({ name: values.name, classId: schoolClass.id });
   } catch (error) {
     return errorState(error, values);
   }
-  return saved();
+  return saved(await copyCurriculumFrom(created.id, text(formData, "copyCurriculumFrom")));
 }
 
 export async function updateSubjectAction(
@@ -127,7 +142,7 @@ export async function updateSubjectAction(
   } catch (error) {
     return errorState(error, values);
   }
-  return saved();
+  return saved(await copyCurriculumFrom(subjectId, text(formData, "copyCurriculumFrom")));
 }
 
 export async function deleteSubjectAction(

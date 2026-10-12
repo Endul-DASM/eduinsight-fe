@@ -9,6 +9,7 @@ import { firstName } from "@/lib/display-name";
 // Page title per section of the subject workspace, e.g. /{slug}/assessment → "Asesmen".
 const sectionTitles: Record<string, string> = {
   dashboard: "Dashboard",
+  curriculum: "Kurikulum",
   assessment: "Asesmen",
   remedial: "Remedial",
   analysis: "Analisis Soal",
@@ -28,6 +29,8 @@ function useCrumbs(): Crumb[] {
   // Detail Bab on the dashboard (?bab={number}) and an assessment's wizard (/assessment/{id}).
   const chapter = section === "dashboard" ? searchParams.get("bab") : null;
   if (chapter) crumbs.push({ label: `Detail Bab ${chapter}` });
+  if (section === "curriculum" && searchParams.get("tab") === "materi") crumbs.push({ label: "Upload Materi" });
+  if (section === "curriculum" && searchParams.get("bab")) crumbs.push({ label: "Detail Bab" });
   if (section === "assessment" && detail) crumbs.push({ label: "Detail Asesmen" });
   return crumbs;
 }

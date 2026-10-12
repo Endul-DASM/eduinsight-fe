@@ -171,8 +171,8 @@ export function AssessmentSummaryCard({ slug, assessment }: { slug: string; asse
               {summary.blueprint.map((row) => (
                 <li className="space-y-1" key={row.learningObjective.id}>
                   <p className="text-sm text-[#1b1b1d]">
-                    {row.learningObjective.code && (
-                      <span className="font-semibold">{row.learningObjective.code} </span>
+                    {row.learningObjective.number && (
+                      <span className="font-semibold">{row.learningObjective.number} </span>
                     )}
                     {row.learningObjective.description}
                     <span className="text-[#5c6470]"> · {row.questionCount} soal</span>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { APP_ZOOM, zoomStyle } from "@/lib/zoom";
 
 export const metadata: Metadata = {
   title: "EduInsight",
@@ -12,9 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // The whole app is shown at 90%, like browser zoom at 90%: at 100% the designs feel too large on laptop
-    // screens. Set inline because the CSS build drops `zoom` from globals.css.
-    <html lang="en" className="h-full antialiased" style={{ zoom: 0.9 }}>
+    // Shown at 90% like browser zoom; subject workspaces go down to 80% (lib/zoom.ts).
+    <html lang="en" className="h-full antialiased" style={zoomStyle(APP_ZOOM)}>
       <body className="min-h-full bg-background font-sans text-foreground">
         {children}
       </body>

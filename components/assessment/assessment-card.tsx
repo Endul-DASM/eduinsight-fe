@@ -174,7 +174,7 @@ export function AssessmentCard({ slug, card }: { slug: string; card: Card }) {
           </Link>
         )}
         {assessment.status === "closed" && (
-          <Link className={cn(ghostButtonClassName, "w-full")} href={`/${slug}/assessment?tab=hasil`}>
+          <Link className={cn(ghostButtonClassName, "w-full")} href={`/${slug}/assessment?tab=hasil&assessment=${assessment.id}`}>
             Lihat Hasil
           </Link>
         )}

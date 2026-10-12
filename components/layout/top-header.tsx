@@ -31,6 +31,7 @@ function useCrumbs(): Crumb[] {
   const chapter = section === "dashboard" ? searchParams.get("bab") : null;
   if (chapter) crumbs.push({ label: `Detail Bab ${chapter}` });
   if (section === "curriculum" && searchParams.get("tab") === "materi") crumbs.push({ label: "Upload Materi" });
+  if (section === "remedial" && detail === "jadwal") crumbs.push({ label: "Jadwalkan Remedial" });
   if (section === "curriculum" && searchParams.get("bab")) crumbs.push({ label: "Detail Bab" });
   if (section === "assessment" && detail) {
     // Buat Asesmen: "Asesmen > Buat Soal Manual > Ketik di EduInsight" (Figma New Design 61:8772).

@@ -23,11 +23,11 @@ import {
 import { saveSummaryPreference, useSummaryPreference } from "@/lib/summary-preference";
 import { Field, FormMessage, InfoMessage, SelectInput, TextInput } from "./builder-fields";
 
-function initialValues(assessment: AssessmentDetail | null): SpecificationValues {
+function initialValues(assessment: AssessmentDetail | null, initialType: string): SpecificationValues {
   const duration = durationParts(assessment?.durationMinutes ?? null);
   return {
     title: assessment?.title ?? "",
-    type: assessment?.type ?? "",
+    type: assessment?.type ?? initialType,
     objectiveIds: assessment?.learningObjectives.map((objective) => objective.id) ?? [],
     hours: duration.hours,
     minutes: duration.minutes,
@@ -48,6 +48,7 @@ export function SpecificationStep({
   slug,
   subjectId,
   kkmDefault,
+  initialType = "",
   method,
   assessment,
   chapters,
@@ -55,6 +56,8 @@ export function SpecificationStep({
   slug: string;
   subjectId: string;
   kkmDefault: number;
+  // Jenis for a new assessment, e.g. "remedial" when started from the Remedial page.
+  initialType?: string;
   method: BuilderMethod;
   assessment: AssessmentDetail | null;
   // Final Babs only: TPs of a draft Bab cannot be tested yet (FR-G-023).
@@ -65,7 +68,7 @@ export function SpecificationStep({
   const objectiveById = new Map(objectives.map((objective) => [objective.id, objective]));
   const locked = Boolean(assessment && assessment.status !== "draft");
 
-  const [values, setValues] = useState(() => initialValues(assessment));
+  const [values, setValues] = useState(() => initialValues(assessment, initialType));
   // The Bab only narrows the TP list; it starts on the Bab of the chosen TPs when they share one.
   const [chapterId, setChapterId] = useState(() => {
     const ids = new Set(values.objectiveIds.map((id) => objectiveById.get(id)?.chapter.id));

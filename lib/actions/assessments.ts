@@ -29,6 +29,7 @@ import {
   updateQuestion,
 } from "@/lib/api/questions";
 import type { AssessmentMode, AssessmentType } from "@/lib/api/types";
+import { type RemedialScheduleValues, validateRemedialSchedule } from "@/lib/remedial-figures";
 import {
   type BuilderMethod,
   builderPath,
@@ -350,4 +351,39 @@ export async function deleteAssessmentAction(slug: string, assessmentId: string)
   }
   revalidatePath(`/${slug}/assessment`);
   redirect(`/${slug}/assessment?tab=daftar`);
+}
+
+// Jadwalkan Remedial (FR-G-107): the remedial assessment's title and schedule, then publishing it when asked.
+// Who may take it is not limited to the Perlu Remedial students yet (FR-G-105 waits for the backend).
+export async function scheduleRemedialAction(
+  slug: string,
+  assessmentId: string,
+  values: RemedialScheduleValues,
+  publish: boolean,
+): Promise<PublishState & { fields?: Record<string, string> }> {
+  const fields = validateRemedialSchedule(values, publish);
+  if (Object.keys(fields).length > 0) {
+    return { status: "error", message: "Periksa lagi isian jadwal.", fields: fields as Record<string, string> };
+  }
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+
+  const at = (time: string) => (values.date && time ? wibInputToIso(`${values.date}T${time}`) : null);
+  try {
+    await updateAssessment(assessmentId, {
+      title: values.title.trim(),
+      opensAt: at(values.start),
+      closesAt: at(values.end),
+      durationMinutes: values.duration ? Number(values.duration) : null,
+    });
+  } catch (error) {
+    return { status: "error", message: messageOf(error) };
+  }
+  revalidatePath(`/${slug}/remedial`);
+  if (!publish) {
+    refresh(slug, assessmentId);
+    return { status: "saved" };
+  }
+  const result = await publishAction(slug, assessmentId);
+  revalidatePath(`/${slug}/remedial`);
+  return result ?? { status: "saved" };
 }

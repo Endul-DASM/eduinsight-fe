@@ -15,7 +15,9 @@ export default function RootLayout({
   return (
     // Shown at 90% like browser zoom; subject workspaces go down to 80% (lib/zoom.ts).
     <html lang="en" className="h-full antialiased" style={zoomStyle(APP_ZOOM)}>
-      <body className="min-h-full bg-background font-sans text-foreground">
+      {/* Extensions such as Grammarly add attributes to <body> before React loads (data-gr-ext-installed, …);
+          only this element's own attributes are exempt from the hydration check, not its children. */}
+      <body className="min-h-full bg-background font-sans text-foreground" suppressHydrationWarning>
         {children}
       </body>
     </html>

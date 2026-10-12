@@ -1,0 +1,342 @@
+"use client";
+
+import Link from "next/link";
+import { useId, useState, useTransition } from "react";
+import { primaryButtonClassName } from "@/components/auth/styles";
+import { ObjectivePicker, objectivesOf } from "@/components/curriculum/objective-picker";
+import { greyButtonClassName, iconButtonClassName } from "@/components/curriculum/styles";
+import { cn } from "@/components/ui/cn";
+import { saveSpecificationAction } from "@/lib/actions/assessments";
+import type { AssessmentDetail, CurriculumChapter } from "@/lib/api/types";
+import {
+  assessmentModeLabels,
+  assessmentTypeLabels,
+  assessmentTypes,
+  type BuilderMethod,
+  builderPath,
+  durationParts,
+  isoToWibInput,
+  type SpecificationErrors,
+  type SpecificationValues,
+  validateSpecification,
+} from "@/lib/assessment-form";
+import { saveSummaryPreference, useSummaryPreference } from "@/lib/summary-preference";
+import { Field, FormMessage, InfoMessage, SelectInput, TextInput } from "./builder-fields";
+
+function initialValues(assessment: AssessmentDetail | null): SpecificationValues {
+  const duration = durationParts(assessment?.durationMinutes ?? null);
+  return {
+    title: assessment?.title ?? "",
+    type: assessment?.type ?? "",
+    objectiveIds: assessment?.learningObjectives.map((objective) => objective.id) ?? [],
+    hours: duration.hours,
+    minutes: duration.minutes,
+    // A new draft has no mode yet; the backend's default (daring) is only applied once it is saved.
+    mode: assessment?.mode ?? "",
+    opensAt: isoToWibInput(assessment?.opensAt ?? null),
+    closesAt: isoToWibInput(assessment?.closesAt ?? null),
+    kkm: assessment ? String(assessment.kkm) : "",
+    maxAttempts: String(assessment?.maxAttempts ?? 1),
+    remedialThreshold: assessment?.remedialThreshold === null || !assessment ? "" : String(assessment.remedialThreshold),
+  };
+}
+
+// Langkah 1 Spesifikasi Soal (Figma New Design 65:11718), shared by every method: Informasi (FR-G-041), Pilih TP
+// (FR-G-042) and Pengaturan (FR-G-044). Jadwal, KKM, percobaan and ambang remedial are not in the design but are
+// required by the SRS, so they follow the design's fields.
+export function SpecificationStep({
+  slug,
+  subjectId,
+  kkmDefault,
+  method,
+  assessment,
+  chapters,
+}: {
+  slug: string;
+  subjectId: string;
+  kkmDefault: number;
+  method: BuilderMethod;
+  assessment: AssessmentDetail | null;
+  // Final Babs only: TPs of a draft Bab cannot be tested yet (FR-G-023).
+  chapters: CurriculumChapter[];
+}) {
+  const formId = useId();
+  const objectives = objectivesOf(chapters);
+  const objectiveById = new Map(objectives.map((objective) => [objective.id, objective]));
+  const locked = Boolean(assessment && assessment.status !== "draft");
+
+  const [values, setValues] = useState(() => initialValues(assessment));
+  // The Bab only narrows the TP list; it starts on the Bab of the chosen TPs when they share one.
+  const [chapterId, setChapterId] = useState(() => {
+    const ids = new Set(values.objectiveIds.map((id) => objectiveById.get(id)?.chapter.id));
+    return ids.size === 1 ? ([...ids][0] ?? "") : "";
+  });
+  const showSummary = useSummaryPreference(assessment?.id ?? null);
+  const [errors, setErrors] = useState<SpecificationErrors>({});
+  const [message, setMessage] = useState<string>();
+  const [saved, setSaved] = useState(false);
+  const [pending, startTransition] = useTransition();
+
+  const set = (name: keyof SpecificationValues, value: string) => {
+    setValues((current) => ({ ...current, [name]: value }));
+    setErrors((current) => ({ ...current, [name]: undefined }));
+    setSaved(false);
+  };
+
+  function toggleObjective(id: string) {
+    setValues((current) => ({
+      ...current,
+      objectiveIds: current.objectiveIds.includes(id)
+        ? current.objectiveIds.filter((entry) => entry !== id)
+        : [...current.objectiveIds, id],
+    }));
+    setErrors((current) => ({ ...current, objectiveIds: undefined }));
+    setSaved(false);
+  }
+
+  function save(next: boolean) {
+    const found = validateSpecification(values, next);
+    setErrors(found);
+    setMessage(undefined);
+    if (Object.keys(found).length > 0) return;
+    startTransition(async () => {
+      const result = await saveSpecificationAction(slug, subjectId, assessment?.id ?? null, method, values, next);
+      if (result.status === "saved") return setSaved(true);
+      setErrors((result.fields ?? {}) as SpecificationErrors);
+      setMessage(result.fields ? undefined : result.message);
+    });
+  }
+
+  const field = (name: keyof SpecificationValues | "chapter" | "summary") => `${formId}-${name}`;
+  const chosenObjectives = values.objectiveIds
+    .map((id) => objectiveById.get(id))
+    .filter((objective) => objective !== undefined);
+
+  return (
+    <form
+      className="flex flex-col gap-4"
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        save(true);
+      }}
+    >
+      {locked && (
+        <InfoMessage>
+          Asesmen ini sudah dipublikasikan sehingga spesifikasinya tidak dapat diubah.{" "}
+          <Link className="font-semibold underline" href={builderPath(slug, assessment!.id, method, "review")}>
+            Lihat Review
+          </Link>
+        </InfoMessage>
+      )}
+      <fieldset className="flex min-w-0 flex-col gap-4" disabled={locked || pending}>
+        <Field error={errors.title} htmlFor={field("title")} label="Judul Asesmen">
+          <TextInput
+            id={field("title")}
+            invalid={Boolean(errors.title)}
+            maxLength={200}
+            onChange={(event) => set("title", event.target.value)}
+            placeholder="Masukkan Judul Asesmen"
+            value={values.title}
+          />
+        </Field>
+        <Field error={errors.type} htmlFor={field("type")} label="Jenis Asesmen">
+          <SelectInput
+            id={field("type")}
+            invalid={Boolean(errors.type)}
+            onChange={(event) => set("type", event.target.value)}
+            value={values.type}
+          >
+            <option value="">Pilih Jenis Asesmen</option>
+            {assessmentTypes.map((type) => (
+              <option key={type} value={type}>
+                {assessmentTypeLabels[type]}
+              </option>
+            ))}
+          </SelectInput>
+        </Field>
+        <Field htmlFor={field("chapter")} label="Bab">
+          <SelectInput id={field("chapter")} onChange={(event) => setChapterId(event.target.value)} value={chapterId}>
+            <option value="">{chapters.length === 0 ? "Belum ada Bab final di Kurikulum" : "Semua Bab"}</option>
+            {[...chapters]
+              .sort((a, b) => a.number - b.number)
+              .map((chapter) => (
+                <option key={chapter.id} value={chapter.id}>
+                  Bab {chapter.number}: {chapter.name}
+                </option>
+              ))}
+          </SelectInput>
+        </Field>
+        <Field
+          error={errors.objectiveIds}
+          hint="*Bisa pilih lebih dari 1"
+          htmlFor={field("objectiveIds")}
+          label="Tujuan Pembelajaran (TP)"
+        >
+          <ObjectivePicker
+            chapterId={chapterId}
+            chosen={values.objectiveIds}
+            disabled={locked || pending}
+            id={field("objectiveIds")}
+            invalid={Boolean(errors.objectiveIds)}
+            objectives={objectives}
+            onToggle={toggleObjective}
+            placeholder="Pilih TP yang ingin diuji..."
+          />
+        </Field>
+        {chosenObjectives.length > 0 && (
+          <ul className="flex flex-col gap-3">
+            {chosenObjectives.map((objective) => (
+              <li className="flex items-center gap-4" key={objective.id}>
+                <span aria-hidden className="size-4 shrink-0 rounded-full bg-[#00376f]" />
+                <span className="flex min-w-0 flex-1 items-center gap-3 rounded-xl border border-[#c5c6cd] bg-[#e6eff9] px-3 py-2 text-base leading-normal text-[#1b1b1d]">
+                  <span className="min-w-0 flex-1">
+                    TP {objective.number}: {objective.description}
+                  </span>
+                  {!locked && (
+                    <button
+                      aria-label={`Hapus TP ${objective.number}`}
+                      className={cn(iconButtonClassName, "shrink-0 text-lg leading-none")}
+                      onClick={() => toggleObjective(objective.id)}
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <Field error={errors.hours ?? errors.minutes} label="Durasi Pengerjaan">
+          <div
+            className={cn(
+              "flex h-[50px] items-center gap-2 rounded-xl border bg-[#fbf8fa] px-[13px] focus-within:border-[#0058be] focus-within:ring-2 focus-within:ring-[rgba(0,88,190,0.15)]",
+              errors.hours ? "border-[#dc2626]" : "border-[#c5c6cd]",
+            )}
+          >
+            <input
+              aria-label="Jam"
+              className="w-12 bg-transparent text-center text-base outline-none placeholder:text-[#75777d]"
+              inputMode="numeric"
+              maxLength={2}
+              onChange={(event) => set("hours", event.target.value.replace(/\D/g, ""))}
+              placeholder="_"
+              value={values.hours}
+            />
+            <span className="text-sm text-[#45474c]">jam :</span>
+            <input
+              aria-label="Menit"
+              className="w-12 bg-transparent text-center text-base outline-none placeholder:text-[#75777d]"
+              inputMode="numeric"
+              maxLength={2}
+              onChange={(event) => set("minutes", event.target.value.replace(/\D/g, ""))}
+              placeholder="_"
+              value={values.minutes}
+            />
+            <span className="text-sm text-[#45474c]">menit</span>
+          </div>
+        </Field>
+        <Field error={errors.mode} htmlFor={field("mode")} label="Mode (Daring/Luring)">
+          <SelectInput
+            id={field("mode")}
+            invalid={Boolean(errors.mode)}
+            onChange={(event) => set("mode", event.target.value)}
+            value={values.mode}
+          >
+            <option value="">Pilih Mode...</option>
+            {Object.entries(assessmentModeLabels).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </SelectInput>
+        </Field>
+        <Field
+          hint="Menampilkan ringkasan kisi-kisi (jumlah soal, estimasi durasi, TP, dan level kognitif) di langkah Review."
+          htmlFor={field("summary")}
+          label="Tampilkan Ringkasan (Ya/Tidak)"
+        >
+          <SelectInput
+            id={field("summary")}
+            onChange={(event) => saveSummaryPreference(assessment?.id ?? null, event.target.value === "ya")}
+            value={showSummary ? "ya" : "tidak"}
+          >
+            <option value="ya">Ya</option>
+            <option value="tidak">Tidak</option>
+          </SelectInput>
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field error={errors.opensAt} hint="Waktu Indonesia Barat (WIB)" htmlFor={field("opensAt")} label="Jadwal Buka">
+            <TextInput
+              id={field("opensAt")}
+              invalid={Boolean(errors.opensAt)}
+              onChange={(event) => set("opensAt", event.target.value)}
+              type="datetime-local"
+              value={values.opensAt}
+            />
+          </Field>
+          <Field error={errors.closesAt} hint="Waktu Indonesia Barat (WIB)" htmlFor={field("closesAt")} label="Jadwal Tutup">
+            <TextInput
+              id={field("closesAt")}
+              invalid={Boolean(errors.closesAt)}
+              onChange={(event) => set("closesAt", event.target.value)}
+              type="datetime-local"
+              value={values.closesAt}
+            />
+          </Field>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field error={errors.kkm} hint={`Kosongkan untuk KKM mapel (${kkmDefault})`} htmlFor={field("kkm")} label="KKM">
+            <TextInput
+              id={field("kkm")}
+              inputMode="numeric"
+              invalid={Boolean(errors.kkm)}
+              onChange={(event) => set("kkm", event.target.value.replace(/\D/g, ""))}
+              placeholder={String(kkmDefault)}
+              value={values.kkm}
+            />
+          </Field>
+          <Field error={errors.maxAttempts} htmlFor={field("maxAttempts")} label="Jumlah Percobaan">
+            <TextInput
+              id={field("maxAttempts")}
+              inputMode="numeric"
+              invalid={Boolean(errors.maxAttempts)}
+              onChange={(event) => set("maxAttempts", event.target.value.replace(/\D/g, ""))}
+              value={values.maxAttempts}
+            />
+          </Field>
+          <Field
+            error={errors.remedialThreshold}
+            hint="Opsional, default sama dengan KKM"
+            htmlFor={field("remedialThreshold")}
+            label="Ambang Remedial"
+          >
+            <TextInput
+              id={field("remedialThreshold")}
+              inputMode="numeric"
+              invalid={Boolean(errors.remedialThreshold)}
+              onChange={(event) => set("remedialThreshold", event.target.value.replace(/\D/g, ""))}
+              placeholder="KKM"
+              value={values.remedialThreshold}
+            />
+          </Field>
+        </div>
+      </fieldset>
+
+      {message && <FormMessage>{message}</FormMessage>}
+      {saved && <InfoMessage>Draf tersimpan.</InfoMessage>}
+
+      {!locked && (
+        <div className="flex flex-wrap justify-end gap-3">
+          <button className={greyButtonClassName} disabled={pending} onClick={() => save(false)} type="button">
+            Simpan Draft
+          </button>
+          <button className={primaryButtonClassName} disabled={pending} type="submit">
+            {pending ? "Menyimpan..." : "Selanjutnya"}
+          </button>
+        </div>
+      )}
+    </form>
+  );
+}

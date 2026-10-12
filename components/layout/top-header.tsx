@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import type { CurrentUser } from "@/lib/api/types";
+import { builderMethodOf, builderMethods } from "@/lib/assessment-form";
 import { firstName } from "@/lib/display-name";
 
 // Page title per section of the subject workspace, e.g. /{slug}/assessment → "Asesmen".
@@ -26,12 +27,23 @@ function useCrumbs(): Crumb[] {
   const title = sectionTitles[section] ?? "Dashboard";
   const crumbs: Crumb[] = [{ label: title, href: `/${subject}/${section}` }];
 
-  // Detail Bab on the dashboard (?bab={number}) and an assessment's wizard (/assessment/{id}).
+  // Detail Bab on the dashboard (?bab={number}) and the Buat Asesmen pages (/assessment/{manual,new,id}).
   const chapter = section === "dashboard" ? searchParams.get("bab") : null;
   if (chapter) crumbs.push({ label: `Detail Bab ${chapter}` });
   if (section === "curriculum" && searchParams.get("tab") === "materi") crumbs.push({ label: "Upload Materi" });
   if (section === "curriculum" && searchParams.get("bab")) crumbs.push({ label: "Detail Bab" });
-  if (section === "assessment" && detail) crumbs.push({ label: "Detail Asesmen" });
+  if (section === "assessment" && detail) {
+    // Buat Asesmen: "Asesmen > Buat Soal Manual > Ketik di EduInsight" (Figma New Design 61:8772).
+    if (detail === "manual") {
+      crumbs.push({ label: "Buat Soal Manual" });
+    } else {
+      const method = builderMethodOf(searchParams.get("method"));
+      const [first, second] = builderMethods[method].crumbs;
+      crumbs.push({ label: first, href: second ? `/${subject}/assessment/manual` : undefined });
+      if (second) crumbs.push({ label: second });
+      if (searchParams.get("step") === "selesai") crumbs.push({ label: "Succeed" });
+    }
+  }
   return crumbs;
 }
 

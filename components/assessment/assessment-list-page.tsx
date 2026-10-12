@@ -1,48 +1,28 @@
 import Link from "next/link";
+import { sectionClassName } from "@/components/curriculum/styles";
 import { Card } from "@/components/ui/card";
+import { cn } from "@/components/ui/cn";
 import { ClipboardIcon } from "@/components/ui/icons";
 import { Table, TableBody, TableCell, TableHead, TableHeaderCell, TableRow } from "@/components/ui/table";
 import type { Assessment } from "@/lib/api/types";
 import { formatSchedule } from "@/lib/assessment-form";
 import { AssessmentStatusBadge, AssessmentTypeBadge } from "./assessment-badges";
 import { AssessmentFilters } from "./assessment-filters";
-import { CreateAssessmentButton } from "./create-assessment-modal";
 
-// Daftar Assessment (PRD G-ASM-00, FR-G-040).
+// Daftar Asesmen tab (PRD G-ASM-00, FR-G-040). The table is the previous design; its redesign (Figma New Design
+// 54:7817) comes next.
 export function AssessmentListPage({
   slug,
-  subjectId,
   assessments,
   filtered,
-  openCreate,
 }: {
   slug: string;
-  subjectId: string;
   assessments: Assessment[];
   // A type or status filter is active, so an empty list means "no match", not "none yet".
   filtered: boolean;
-  openCreate: boolean;
 }) {
   return (
-    <div className="space-y-8 px-5 py-6 sm:px-6 lg:px-10 lg:py-10">
-      <section className="flex flex-wrap items-end justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-[clamp(2rem,4vw,2.75rem)] font-semibold tracking-[-0.04em] text-[#1b1b1d]">
-            Daftar Assessment
-          </h1>
-          <p className="text-sm text-[#5c6470]">
-            Buat asesmen dari Bank Soal, periksa kisi-kisinya, lalu publikasikan sesuai jadwal.
-          </p>
-        </div>
-        {/* Remounts when ?new=1 appears, e.g. from the sidebar while this page is open. */}
-        <CreateAssessmentButton
-          initiallyOpen={openCreate}
-          key={String(openCreate)}
-          slug={slug}
-          subjectId={subjectId}
-        />
-      </section>
-
+    <div className={cn(sectionClassName, "gap-6")}>
       <AssessmentFilters />
 
       {assessments.length === 0 ? (

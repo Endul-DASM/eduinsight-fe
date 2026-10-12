@@ -53,6 +53,14 @@ export const getMaterials = cache(async (subjectId: string): Promise<Material[]>
   return apiFetch<Material[]>(`/subjects/${encodeURIComponent(subjectId)}/materials`);
 });
 
+// GET /subjects/:id/materials?learningObjectiveId= — materials for one TP (FR-G-034), e.g. the Rujukan materi of
+// Remedial (FR-G-102).
+export const getMaterialsForObjective = cache(async (subjectId: string, learningObjectiveId: string): Promise<Material[]> => {
+  if (isMockMode) return [];
+  const query = new URLSearchParams({ learningObjectiveId });
+  return apiFetch<Material[]>(`/subjects/${encodeURIComponent(subjectId)}/materials?${query}`);
+});
+
 // GET /materials/:id
 export async function getMaterial(id: string): Promise<MaterialDetail> {
   return apiFetch<MaterialDetail>(`/materials/${encodeURIComponent(id)}`);

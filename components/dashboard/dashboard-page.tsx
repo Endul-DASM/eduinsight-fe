@@ -184,7 +184,7 @@ export function DashboardPage({
         </>
       ) : (
         <>
-          <StatCards data={data} diagnosisHref={`/${subject.slug}/diagnosis`} />
+          <StatCards data={data} diagnosisHref={`/${subject.slug}/analysis?tab=diagnosis`} />
           <div className="grid gap-6 lg:grid-cols-[minmax(0,611fr)_minmax(0,419fr)] lg:items-start">
             <DiagnosisCard
               baseHref={baseHref}

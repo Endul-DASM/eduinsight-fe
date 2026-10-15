@@ -13,7 +13,7 @@ const sectionTitles: Record<string, string> = {
   curriculum: "Kurikulum",
   assessment: "Asesmen",
   remedial: "Remedial",
-  analysis: "Analisis Soal",
+  analysis: "Analisis",
   diagnosis: "Diagnosis",
 };
 
@@ -32,6 +32,11 @@ function useCrumbs(): Crumb[] {
   if (chapter) crumbs.push({ label: `Detail Bab ${chapter}` });
   if (section === "curriculum" && searchParams.get("tab") === "materi") crumbs.push({ label: "Upload Materi" });
   if (section === "remedial" && detail === "jadwal") crumbs.push({ label: "Jadwalkan Remedial" });
+  if (section === "analysis") {
+    // Analisis > Diagnosis (Figma New Design 65:15809).
+    const tab = searchParams.get("tab");
+    crumbs.push({ label: tab === "soal" ? "Analisis Soal" : tab === "remedial" ? "Analisis Remedial" : "Diagnosis" });
+  }
   if (section === "curriculum" && searchParams.get("bab")) crumbs.push({ label: "Detail Bab" });
   if (section === "assessment" && detail) {
     // Buat Asesmen: "Asesmen > Buat Soal Manual > Ketik di EduInsight" (Figma New Design 61:8772).

@@ -6,10 +6,10 @@ import { cn } from "@/components/ui/cn";
 function HelpLink() {
   return (
     <Link
-      className="flex items-center gap-2 rounded-xl px-3 py-2 text-base font-semibold leading-6 text-[#1b1b1d] transition-colors hover:bg-[#eef2f7]"
+      className="flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-semibold leading-6 text-[#1b1b1d] transition-colors hover:bg-[#eef2f7]"
       href="#"
     >
-      <Image alt="" height={24} src="/auth/help-circle.svg" width={24} />
+      <Image alt="" height={20} src="/auth/help-circle.svg" width={20} />
       Help
     </Link>
   );
@@ -21,13 +21,13 @@ export function SiteHeader({ action = <HelpLink />, className }: { action?: Reac
   return (
     <header
       className={cn(
-        "relative z-10 flex min-h-[84px] items-center justify-between gap-4 bg-[#fafbfd] px-4 py-3 drop-shadow-[0_8px_12px_rgba(0,0,0,0.08)] sm:px-8 lg:px-16",
+        "relative z-10 flex min-h-16 items-center justify-between gap-4 bg-[#fafbfd] px-4 py-2 drop-shadow-[0_8px_12px_rgba(0,0,0,0.08)] sm:px-8 lg:px-16",
         className,
       )}
     >
-      <Link className="flex items-center gap-3" href="/">
-        <Image alt="" className="size-10 sm:size-[50px]" height={50} src="/auth/logo.svg" width={50} />
-        <span className="text-2xl font-semibold leading-normal text-[#1b1b1d] sm:text-[32px]">EduInsight</span>
+      <Link className="flex items-center gap-2" href="/">
+        <Image alt="" className="size-9" height={36} src="/auth/logo.svg" width={36} />
+        <span className="text-lg font-semibold leading-normal text-[#1b1b1d]">EduInsight</span>
       </Link>
       {action}
     </header>

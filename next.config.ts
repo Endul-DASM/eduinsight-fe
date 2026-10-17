@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Built in GitHub Actions; the VM only runs .next/standalone/server.js.
+  output: "standalone",
   experimental: {
     // Material uploads go through a Server Function; the backend accepts files up to 25 MB (FR-G-030).
     serverActions: { bodySizeLimit: "26mb" },

@@ -16,8 +16,16 @@ function HelpLink() {
 }
 
 // The top bar of the pages outside a subject (Figma New Design 22:2837, 22:3476): the logo, and Help unless the page
-// puts something else on the right, such as Logout.
-export function SiteHeader({ action = <HelpLink />, className }: { action?: ReactNode; className?: string }) {
+// puts something else on the right, such as Logout. mobileMenu, when given, replaces action below md (a hamburger).
+export function SiteHeader({
+  action = <HelpLink />,
+  mobileMenu,
+  className,
+}: {
+  action?: ReactNode;
+  mobileMenu?: ReactNode;
+  className?: string;
+}) {
   return (
     <header
       className={cn(
@@ -29,7 +37,8 @@ export function SiteHeader({ action = <HelpLink />, className }: { action?: Reac
         <Image alt="" className="size-10 sm:size-[50px]" height={50} src="/auth/logo.svg" width={50} />
         <span className="text-2xl font-semibold leading-normal text-[#1b1b1d] sm:text-[32px]">EduInsight</span>
       </Link>
-      {action}
+      {mobileMenu ? <div className="hidden md:block">{action}</div> : action}
+      {mobileMenu}
     </header>
   );
 }

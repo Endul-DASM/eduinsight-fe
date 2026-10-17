@@ -46,7 +46,7 @@ export function GoogleSignupForm({
       </div>
       {state?.message && <AuthNoticeMessage notice={{ message: state.message, wrongRole: state.wrongRole }} />}
       <div className="flex justify-end">
-        <button className={primaryButtonClassName} disabled={pending} type="submit">
+        <button className={`${primaryButtonClassName} w-full sm:w-auto`} disabled={pending} type="submit">
           {pending ? "Memproses..." : "Daftarkan Akun"}
         </button>
       </div>

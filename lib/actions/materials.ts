@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { ApiError, isMockMode } from "@/lib/api/client";
 import {
   deleteMaterial,
@@ -44,6 +45,8 @@ export async function uploadMaterialAction(
     refresh(slug);
     return { status: "ok", material };
   } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
 }
@@ -56,6 +59,7 @@ export async function getMaterialAction(
   try {
     return { status: "ok", material: await getMaterial(id) };
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
 }
@@ -92,6 +96,7 @@ export async function saveMaterialAction(
       await replaceMappings(id, mappingsFor(material, input.objectiveIds));
     }
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   refresh(slug);
@@ -104,6 +109,7 @@ export async function setVisibilityAction(slug: string, id: string, visible: boo
   try {
     await updateMaterial(id, { visibleToStudents: visible });
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   refresh(slug);
@@ -115,6 +121,7 @@ export async function retryExtractionAction(slug: string, id: string): Promise<M
   try {
     await retryExtraction(id);
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   refresh(slug);
@@ -126,6 +133,7 @@ export async function deleteMaterialAction(slug: string, id: string): Promise<Ma
   try {
     await deleteMaterial(id);
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   refresh(slug);

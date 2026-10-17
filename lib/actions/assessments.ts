@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import { redirect, unstable_rethrow } from "next/navigation";
 import {
   type AssessmentInput,
   createAssessment,
@@ -113,6 +113,8 @@ export async function saveSpecificationAction(
     // Pilih TP (FR-G-042) needs at least one, so a draft without TPs keeps whatever it had.
     if (values.objectiveIds.length > 0) await replaceAssessmentLearningObjectives(id, values.objectiveIds);
   } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
+    unstable_rethrow(error);
     if (id && !assessmentId) {
       // The draft exists even though a later call failed; continue on its page.
       refresh(slug, id);
@@ -147,6 +149,7 @@ async function deleteUnused(questionIds: string[]) {
     try {
       await deleteQuestion(id);
     } catch (error) {
+      unstable_rethrow(error);
       if (!(error instanceof ApiError && error.code === "in_use")) throw error;
     }
   }
@@ -186,6 +189,7 @@ export async function saveTypedQuestionsAction(
     );
     await deleteUnused(removedIds);
   } catch (error) {
+    unstable_rethrow(error);
     refresh(slug, assessmentId);
     // Questions saved before the failure keep their ids, so retrying does not duplicate them.
     return { ...errorResult(error), questionIds };
@@ -208,6 +212,7 @@ export async function removeQuestionAction(
     await replaceAssessmentQuestions(assessmentId, remainingIds);
     await deleteUnused([questionId]);
   } catch (error) {
+    unstable_rethrow(error);
     return errorResult(error);
   }
   refresh(slug, assessmentId);
@@ -232,6 +237,7 @@ export async function importQuestionsAction(
   try {
     importId = (await importQuestions(subjectId, form)).id;
   } catch (error) {
+    unstable_rethrow(error);
     return errorResult(error);
   }
   redirect(`${builderPath(slug, assessmentId, method, "soal")}&import=${importId}`);
@@ -258,6 +264,7 @@ export async function saveImportAction(
     await deleteUnused(droppedIds);
     await replaceAssessmentQuestions(assessmentId, [...new Set([...currentQuestionIds, ...keptIds])]);
   } catch (error) {
+    unstable_rethrow(error);
     return errorResult(error);
   }
   refresh(slug, assessmentId);
@@ -281,6 +288,7 @@ export async function generateQuestionsAction(
   try {
     await generateQuestions(assessmentId, input);
   } catch (error) {
+    unstable_rethrow(error);
     return errorResult(error);
   }
   refresh(slug, assessmentId);
@@ -303,6 +311,7 @@ export async function scanQuestionsAction(
   try {
     importId = (await scanQuestions(subjectId, form)).id;
   } catch (error) {
+    unstable_rethrow(error);
     return errorResult(error);
   }
   redirect(`${builderPath(slug, assessmentId, method, "soal")}&import=${importId}`);
@@ -314,6 +323,7 @@ export async function publishAction(slug: string, assessmentId: string): Promise
   try {
     await publishAssessment(assessmentId);
   } catch (error) {
+    unstable_rethrow(error);
     if (error instanceof ApiError && error.code === "publish_blocked") {
       // The backend names the missing fields and the questions at fault (FR-G-050).
       const questions = (error.extra?.questions ?? []) as PublishBlockedQuestion[];
@@ -335,6 +345,7 @@ export async function unpublishAction(slug: string, assessmentId: string): Promi
   try {
     await unpublishAssessment(assessmentId);
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   refresh(slug, assessmentId);
@@ -347,6 +358,7 @@ export async function deleteAssessmentAction(slug: string, assessmentId: string)
   try {
     await deleteAssessment(assessmentId);
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   revalidatePath(`/${slug}/assessment`);
@@ -376,6 +388,7 @@ export async function scheduleRemedialAction(
       durationMinutes: values.duration ? Number(values.duration) : null,
     });
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   revalidatePath(`/${slug}/remedial`);

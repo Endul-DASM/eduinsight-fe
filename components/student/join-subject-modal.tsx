@@ -2,6 +2,7 @@
 
 import { type FormEvent, useActionState, useEffect, useState } from "react";
 import { FormField, outlineButtonClassName, primaryButtonClassName } from "@/components/subject-select/form-field";
+import { subjectModalClassName } from "@/components/subject-select/styles";
 import { Modal } from "@/components/ui/modal";
 import { joinSubjectAction } from "@/lib/actions/student-subjects";
 import { validateJoinCode } from "@/lib/join-code";
@@ -49,7 +50,7 @@ function JoinForm({
         label="Kode Kelas"
         maxLength={32}
         name="joinCode"
-        placeholder="1234..."
+        placeholder="Masukkan Kode Kelas"
       />
       {failed?.message && (
         <p className="rounded-lg bg-[#ffdad6] px-4 py-3 text-sm leading-5 text-[#93000a]" role="alert">
@@ -68,7 +69,7 @@ function JoinForm({
   );
 }
 
-// Figma 236:3753.
+// "Ikut Kelas Baru" (Figma New Design 181:8716).
 export function JoinSubjectModal({
   open,
   initialCode,
@@ -81,7 +82,7 @@ export function JoinSubjectModal({
   onJoined: (subjectName: string) => void;
 }) {
   return (
-    <Modal description="Masukkan kode kelas dari guru kamu!" onClose={onClose} open={open} title="Ikuti Kelas Baru">
+    <Modal className={subjectModalClassName} onClose={onClose} open={open} title="Ikut Kelas Baru">
       <JoinForm initialCode={initialCode} onClose={onClose} onJoined={onJoined} />
     </Modal>
   );

@@ -54,7 +54,7 @@ export function StudentSubjectGrid({ subjects, initialJoinCode }: { subjects: Su
           {subjects.map((subject) => (
             <SubjectCard href={`/student/${subject.slug}/dashboard`} key={subject.id} subject={subject} />
           ))}
-          <AddSubjectCard label="Tambah Kelas Baru" onClick={() => setJoinOpen(true)} />
+          <AddSubjectCard label="Ikut Kelas Baru" onClick={() => setJoinOpen(true)} />
         </div>
       </div>
 

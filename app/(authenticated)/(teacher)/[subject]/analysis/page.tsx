@@ -1,22 +1,23 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AnalysisPage } from "@/components/analysis/analysis-page";
 import { AnalysisShell, analysisTabOf } from "@/components/analysis/analysis-shell";
 import { DiagnosisPage } from "@/components/analysis/diagnosis/diagnosis-page";
 import { diagnosisParamsOf } from "@/components/analysis/diagnosis/links";
-import { primaryButtonClassName } from "@/components/auth/styles";
-import { sectionClassName } from "@/components/curriculum/styles";
-import { cn } from "@/components/ui/cn";
+import { RemedialAnalysisPage } from "@/components/analysis/remedial/remedial-analysis-page";
+import { QuestionAnalysisPage } from "@/components/analysis/soal/question-analysis-page";
+import { getAssessmentAnalysis } from "@/lib/api/analysis";
 import { getAssessment, getAssessments } from "@/lib/api/assessments";
 import { getCurriculum } from "@/lib/api/curriculum";
 import { getClassDiagnosis, getStudentDiagnosis, type DiagnosisFilters } from "@/lib/api/diagnosis";
 import { getSubject } from "@/lib/api/subjects";
 import type { AssessmentType, Subject } from "@/lib/api/types";
+import { getMaterialReferences, getRemedialPair } from "@/lib/remedial";
+
+type Query = Record<string, string | string[] | undefined>;
 
 // The assessment types diagnosis reads by default (BR-03): pre-test and remedial are left out.
 const diagnosedTypes: AssessmentType[] = ["post_test", "ulangan_harian", "uts", "uas"];
 
-async function diagnosisTab(slug: string, subject: Subject, query: Record<string, string | string[] | undefined>) {
+async function diagnosisTab(slug: string, subject: Subject, query: Query) {
   const params = diagnosisParamsOf(query);
   const filters: DiagnosisFilters = { assessmentId: params.assessment, semester: params.semester, chapterId: params.chapter };
 
@@ -54,22 +55,26 @@ async function diagnosisTab(slug: string, subject: Subject, query: Record<string
   );
 }
 
-// Analisis Remedial (Figma New Design: empty frame) — the remedial results live under the Remedial menu for now.
-function RemedialTab({ slug }: { slug: string }) {
-  return (
-    <section className={cn(sectionClassName, "items-center py-12 text-center")}>
-      <p className="text-base font-semibold text-[#1b1b1d]">Analisis remedial ada di menu Remedial.</p>
-      <p className="max-w-[560px] text-sm leading-normal text-[#45474c]">
-        Bandingkan asesmen asal dengan remedial, lihat peningkatan per siswa dan per TP, lalu jadwalkan remedial berikutnya.
-      </p>
-      <Link className={cn(primaryButtonClassName, "px-6 py-2 text-sm")} href={`/${slug}/remedial`}>
-        Buka Remedial
-      </Link>
-    </section>
-  );
+// Analisis Soal: the published assessments for the picker and the analysis of the chosen one (?assessment=,
+// otherwise the most recent).
+async function soalTab(slug: string, subject: Subject, assessmentParam: unknown) {
+  const published = (await getAssessments(subject.id))
+    .filter((assessment) => assessment.status !== "draft")
+    .sort((a, b) => (b.opensAt ?? b.updatedAt).localeCompare(a.opensAt ?? a.updatedAt));
+  const selectedId = published.find((assessment) => assessment.id === assessmentParam)?.id ?? published[0]?.id ?? null;
+  const analysis = selectedId ? await getAssessmentAnalysis(selectedId) : null;
+  return <QuestionAnalysisPage analysis={analysis} assessments={published} selectedId={selectedId} slug={slug} />;
 }
 
-// /{slug}/analysis: ?tab=diagnosis (with view, scope filters, tp, student and item), ?tab=soal and ?tab=remedial.
+// Analisis Remedial: the source assessment (?source=) and the remedial one it is compared with (?remedial=).
+async function remedialTab(slug: string, subject: Subject, query: Query) {
+  const pair = await getRemedialPair(subject, query.source, query.remedial);
+  const references = pair.sourceResults ? await getMaterialReferences(subject, pair.sourceResults, pair.targets) : [];
+  return <RemedialAnalysisPage pair={pair} references={references} slug={slug} />;
+}
+
+// /{slug}/analysis: ?tab=diagnosis (with view, scope filters, tp, student and item), ?tab=soal (with assessment) and
+// ?tab=remedial (with source and remedial).
 export default async function AnalysisRoute({ params, searchParams }: PageProps<"/[subject]/analysis">) {
   const { subject: slug } = await params;
   const query = await searchParams;
@@ -81,8 +86,8 @@ export default async function AnalysisRoute({ params, searchParams }: PageProps<
   return (
     <AnalysisShell slug={slug} tab={tab}>
       {tab === "diagnosis" && (await diagnosisTab(slug, subject, query))}
-      {tab === "soal" && <AnalysisPage />}
-      {tab === "remedial" && <RemedialTab slug={slug} />}
+      {tab === "soal" && (await soalTab(slug, subject, query.assessment))}
+      {tab === "remedial" && (await remedialTab(slug, subject, query))}
     </AnalysisShell>
   );
 }

@@ -1,13 +1,23 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { completeGoogleSignupRequest, loginRequest, registerRequest, resendVerificationRequest } from "@/lib/api/auth";
+import { redirect, unstable_rethrow } from "next/navigation";
+import {
+  changePasswordRequest,
+  completeGoogleSignupRequest,
+  forgotPasswordRequest,
+  loginRequest,
+  registerRequest,
+  resendVerificationRequest,
+  resetPasswordRequest,
+  verifyEmailRequest,
+} from "@/lib/api/auth";
 import { ApiError, isMockMode } from "@/lib/api/client";
 import { clearSessionToken, setSessionToken } from "@/lib/api/session";
-import type { LoginResponse, UserRole } from "@/lib/api/types";
+import type { LoginResponse, NewPasswordInput, RegisterResponse, UserRole } from "@/lib/api/types";
 import { clearGoogleSignup, getGoogleSignup } from "@/lib/auth/google";
 import {
   type AuthNotice,
+  MOCK_ACCOUNT_MESSAGE,
   MOCK_MODE_MESSAGE,
   REQUEST_FAILED_MESSAGE,
   SERVER_UNREACHABLE_MESSAGE,
@@ -20,6 +30,9 @@ import {
   INVALID_CREDENTIALS_MESSAGE,
   type RegisterField,
   type RegisterValues,
+  validateEmail,
+  validatePassword,
+  validatePasswordConfirmation,
   validateRegister,
   validateUsername,
 } from "@/lib/auth/validation";
@@ -93,7 +106,7 @@ export async function login(role: AuthRole, _previous: LoginState, formData: For
       // Admin accounts have no sign-in page, so they read as wrong credentials.
       return { ...(accountRole ? wrongRoleNotice(accountRole) : { message: INVALID_CREDENTIALS_MESSAGE }), identifier };
     }
-    // Not sent by the backend yet: email verification (FR-X-008) is not built.
+    // FR-X-008: the password is right but the email is not verified yet; the form offers a new link.
     if (error instanceof ApiError && error.code === "email_not_verified") {
       return { message: "Verifikasi email Anda terlebih dahulu.", identifier, unverified: true };
     }
@@ -129,11 +142,13 @@ export type RegisterState =
       values: Pick<RegisterValues, "username" | "name" | "email">;
       // The account exists; the form gives way to "Akun Berhasil Dibuat!".
       created?: boolean;
+      // The account exists but its email must be verified first (FR-X-008); the form gives way to "Periksa Email".
+      verificationSentTo?: string;
     }
   | undefined;
 
-// Creates the account without signing it in: the page then shows "Akun Berhasil Dibuat!" and the user signs in
-// (Figma New Design 22:3160).
+// Creates the account without signing it in. With email verification on (FR-X-008) the page asks the user to open
+// the emailed link; otherwise it shows "Akun Berhasil Dibuat!" and the user signs in (Figma New Design 22:3160).
 export async function register(role: AuthRole, _previous: RegisterState, formData: FormData): Promise<RegisterState> {
   assertRole(role);
   const values: RegisterValues = {
@@ -154,7 +169,7 @@ export async function register(role: AuthRole, _previous: RegisterState, formDat
   // Mock mode has no accounts, but the success screen can still be tried.
   if (isMockMode) return { created: true, values: kept };
 
-  let result: LoginResponse;
+  let result: RegisterResponse;
   try {
     result = await registerRequest(role, values);
   } catch (error) {
@@ -165,7 +180,8 @@ export async function register(role: AuthRole, _previous: RegisterState, formDat
     return { message: fields ? undefined : messageOf(error), fields, values: kept };
   }
 
-  // The backend also returns a session; it is not kept, so the user signs in on the role's page.
+  if ("status" in result) return { verificationSentTo: result.email, values: kept };
+  // Verification is off and the backend returned a session; it is not kept, so the user signs in on the role's page.
   if (authRoleOf(result.user.role) !== role) return { message: REQUEST_FAILED_MESSAGE, values: kept };
   return { created: true, values: kept };
 }
@@ -199,6 +215,136 @@ export async function completeGoogleSignup(
   await clearGoogleSignup();
   if (notice) return { ...notice, username };
   redirect(await pageAfterSignIn(role));
+}
+
+// Signs in with the session returned by an emailed link and opens the account's home page. Admin accounts have no
+// sign-in page here, so they only get a message.
+async function signInFromLink(result: LoginResponse, done: string): Promise<{ message: string }> {
+  const role = authRoleOf(result.user.role);
+  if (!role) return { message: done };
+  await setSessionToken(result.accessToken);
+  redirect(authRoles[role].homePath);
+}
+
+export type LinkState = { message: string; invalidLink?: boolean } | undefined;
+
+// FR-X-008: the token comes from the emailed link (/verify-email?token=) and is bound to the action.
+export async function verifyEmail(token: string): Promise<LinkState> {
+  if (isMockMode) return { message: MOCK_ACCOUNT_MESSAGE };
+  let result: LoginResponse;
+  try {
+    result = await verifyEmailRequest(token);
+  } catch (error) {
+    if (error instanceof ApiError && error.code === "token_invalid") {
+      return { message: error.message, invalidLink: true };
+    }
+    return { message: messageOf(error) };
+  }
+  // Outside the try: redirect() works by throwing.
+  return signInFromLink(result, "Email berhasil diverifikasi.");
+}
+
+export type ForgotPasswordState = { message?: string; error?: string; email: string; sent?: boolean } | undefined;
+
+// FR-X-004: the backend answers the same whether or not the email is registered, and so does this.
+export async function requestPasswordReset(
+  _previous: ForgotPasswordState,
+  formData: FormData,
+): Promise<ForgotPasswordState> {
+  const email = text(formData, "email");
+  const emailError = validateEmail(email);
+  if (emailError) return { error: emailError, email };
+  if (isMockMode) return { message: MOCK_ACCOUNT_MESSAGE, email };
+
+  try {
+    await forgotPasswordRequest(email);
+  } catch (error) {
+    const fieldError = error instanceof ApiError ? error.fields?.email : undefined;
+    return fieldError ? { error: fieldError, email } : { message: messageOf(error), email };
+  }
+  return {
+    sent: true,
+    email,
+    message: "Jika email tersebut terdaftar, kami telah mengirim tautan untuk mengatur ulang kata sandi.",
+  };
+}
+
+type PasswordField = "currentPassword" | "password" | "passwordConfirmation";
+export type PasswordErrors = Partial<Record<PasswordField, string>>;
+
+function newPasswordOf(formData: FormData): NewPasswordInput {
+  return {
+    password: String(formData.get("password") ?? ""),
+    passwordConfirmation: String(formData.get("passwordConfirmation") ?? ""),
+  };
+}
+
+function validateNewPassword({ password, passwordConfirmation }: NewPasswordInput): PasswordErrors {
+  const errors: PasswordErrors = {
+    password: validatePassword(password),
+    passwordConfirmation: validatePasswordConfirmation(password, passwordConfirmation),
+  };
+  return Object.fromEntries(Object.entries(errors).filter(([, message]) => message));
+}
+
+// Keeps only the fields the form shows, like pickFields for the sign-up form.
+function passwordFieldsOf(error: unknown, names: PasswordField[]): PasswordErrors | undefined {
+  const fields = error instanceof ApiError ? error.fields : undefined;
+  if (!fields) return undefined;
+  const picked = Object.fromEntries(names.filter((name) => fields[name]).map((name) => [name, fields[name]]));
+  return Object.keys(picked).length > 0 ? picked : undefined;
+}
+
+export type ResetPasswordState = { message?: string; invalidLink?: boolean; fields?: PasswordErrors } | undefined;
+
+// FR-X-004: sets the new password from the emailed link (/reset-password?token=) and signs the user in.
+export async function resetPassword(
+  token: string,
+  _previous: ResetPasswordState,
+  formData: FormData,
+): Promise<ResetPasswordState> {
+  const input = newPasswordOf(formData);
+  const fields = validateNewPassword(input);
+  if (Object.keys(fields).length > 0) return { fields };
+  if (isMockMode) return { message: MOCK_ACCOUNT_MESSAGE };
+
+  let result: LoginResponse;
+  try {
+    result = await resetPasswordRequest(token, input);
+  } catch (error) {
+    if (error instanceof ApiError && error.code === "token_invalid") {
+      return { message: error.message, invalidLink: true };
+    }
+    const fields = passwordFieldsOf(error, ["password", "passwordConfirmation"]);
+    return fields ? { fields } : { message: messageOf(error) };
+  }
+  // Outside the try: redirect() works by throwing.
+  return signInFromLink(result, "Kata sandi berhasil diatur ulang.");
+}
+
+export type ChangePasswordState = { message?: string; changed?: boolean; fields?: PasswordErrors } | undefined;
+
+// Changes the signed-in user's password. Every other session is signed out, and this browser gets a new one.
+export async function changePassword(_previous: ChangePasswordState, formData: FormData): Promise<ChangePasswordState> {
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const input = newPasswordOf(formData);
+  const fields: PasswordErrors = {
+    ...(currentPassword ? {} : { currentPassword: "Kata sandi saat ini wajib diisi." }),
+    ...validateNewPassword(input),
+  };
+  if (Object.keys(fields).length > 0) return { fields };
+  if (isMockMode) return { message: MOCK_ACCOUNT_MESSAGE };
+
+  try {
+    const result = await changePasswordRequest(currentPassword, input);
+    await setSessionToken(result.accessToken);
+  } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing.
+    unstable_rethrow(error);
+    const fields = passwordFieldsOf(error, ["currentPassword", "password", "passwordConfirmation"]);
+    return fields ? { fields } : { message: messageOf(error) };
+  }
+  return { changed: true, message: "Kata sandi berhasil diubah. Sesi di perangkat lain telah dikeluarkan." };
 }
 
 export async function logout() {

@@ -25,3 +25,12 @@ export function AuthNoticeMessage({ notice, children }: { notice: AuthNotice; ch
     </div>
   );
 }
+
+// A confirmation above or inside an auth form, e.g. "the link has been sent".
+export function AuthSuccessMessage({ children }: { children: ReactNode }) {
+  return (
+    <div className="w-full rounded-lg bg-[#dcefe0] px-4 py-3 text-sm leading-5 text-[#14532d]" role="status">
+      {children}
+    </div>
+  );
+}

@@ -1,5 +1,11 @@
 import { apiFetch } from "./client";
-import type { GoogleExchangeResponse, LoginResponse, RegisterRequest } from "./types";
+import type {
+  GoogleExchangeResponse,
+  LoginResponse,
+  NewPasswordInput,
+  RegisterRequest,
+  RegisterResponse,
+} from "./types";
 import type { AuthRole } from "@/lib/auth/roles";
 import { authRoles } from "@/lib/auth/roles";
 
@@ -13,22 +19,57 @@ export async function loginRequest(identifier: string, password: string, role: A
   });
 }
 
-// POST /auth/register/{guru|siswa} — the account is active right away, so this returns a session.
-// Email verification (FR-X-008) is not built yet.
-export async function registerRequest(role: AuthRole, input: RegisterRequest): Promise<LoginResponse> {
-  return apiFetch<LoginResponse>(`/auth/register/${authRoles[role].apiRole}`, {
+// POST /auth/register/{guru|siswa} — sends a verification email (FR-X-008); returns a session instead only when
+// the backend has verification turned off.
+export async function registerRequest(role: AuthRole, input: RegisterRequest): Promise<RegisterResponse> {
+  return apiFetch<RegisterResponse>(`/auth/register/${authRoles[role].apiRole}`, {
     method: "POST",
     body: JSON.stringify(input),
     withSession: false,
   });
 }
 
-// POST /auth/verify-email/resend
+// POST /auth/verify-email — redeems the emailed link and signs the user in.
+export async function verifyEmailRequest(token: string): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>("/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+    withSession: false,
+  });
+}
+
+// POST /auth/verify-email/resend — always 202, so it never reveals whether the account exists.
 export async function resendVerificationRequest(identifier: string): Promise<void> {
   await apiFetch<unknown>("/auth/verify-email/resend", {
     method: "POST",
     body: JSON.stringify({ identifier }),
     withSession: false,
+  });
+}
+
+// POST /auth/password/forgot (FR-X-004) — always 202 for a well-formed email.
+export async function forgotPasswordRequest(email: string): Promise<void> {
+  await apiFetch<unknown>("/auth/password/forgot", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+    withSession: false,
+  });
+}
+
+// POST /auth/password/reset — sets the new password from the emailed link and signs the user in.
+export async function resetPasswordRequest(token: string, input: NewPasswordInput): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>("/auth/password/reset", {
+    method: "POST",
+    body: JSON.stringify({ token, ...input }),
+    withSession: false,
+  });
+}
+
+// POST /auth/password/change — signs out every other session, so it returns a new one for this browser.
+export async function changePasswordRequest(currentPassword: string, input: NewPasswordInput): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>("/auth/password/change", {
+    method: "POST",
+    body: JSON.stringify({ currentPassword, ...input }),
   });
 }
 

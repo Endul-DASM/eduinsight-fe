@@ -13,6 +13,7 @@ import {
 } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { getMaterialAction, saveMaterialAction } from "@/lib/actions/materials";
 import type { Material, MaterialDetail } from "@/lib/api/materials";
 import type { CurriculumChapter } from "@/lib/api/types";
@@ -160,28 +161,14 @@ function MaterialForm({
         <label className={fieldLabelClassName} htmlFor={`${formId}-chapter`}>
           Bab
         </label>
-        <div className="relative">
-          <select
-            className={cn(inputBoxClassName, "h-[50px] appearance-none pr-12", !chapterId && "text-[#75777d]")}
-            id={`${formId}-chapter`}
-            onChange={(event) => setChapterId(event.target.value)}
-            value={chapterId}
-          >
-            <option value="">{chapters.length === 0 ? "Belum ada Bab final" : "Pilih bab..."}</option>
-            {chapters.map((entry) => (
-              <option key={entry.id} value={entry.id}>
-                Bab {entry.number}: {entry.name}
-              </option>
-            ))}
-          </select>
-          <Image
-            alt=""
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-            height={24}
-            src="/materials/chevron-down.svg"
-            width={24}
-          />
-        </div>
+        <SelectMenu id={`${formId}-chapter`} onChange={(event) => setChapterId(event.target.value)} value={chapterId}>
+          <option value="">{chapters.length === 0 ? "Belum ada Bab final" : "Pilih bab..."}</option>
+          {chapters.map((entry) => (
+            <option key={entry.id} value={entry.id}>
+              Bab {entry.number}: {entry.name}
+            </option>
+          ))}
+        </SelectMenu>
       </div>
       <div className="flex flex-col gap-2">
         <span className={fieldLabelClassName}>Tujuan Pembelajaran (TP)</span>
@@ -276,7 +263,7 @@ function MaterialForm({
                     <li className="flex flex-col gap-1 border-b border-[#c5c6cd] pb-3 last:border-b-0" key={section.id}>
                       <p className="font-semibold text-[#1b1b1d]">
                         {section.heading || `Bagian ${section.position}`}
-                        {section.sourcePage && <span className="font-normal text-[#75777d]"> · hlm. {section.sourcePage}</span>}
+                        {section.sourcePage && <span className="font-normal text-[#75777d]"> (hlm. {section.sourcePage})</span>}
                       </p>
                       <p className="line-clamp-2 text-[#45474c]">{section.body}</p>
                       <p className="text-xs text-[#004695]">

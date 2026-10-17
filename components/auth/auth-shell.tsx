@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
+import { SiteMobileMenu } from "@/components/layout/site-mobile-menu";
 import { cn } from "@/components/ui/cn";
 
 // The auth designs use Poppins; it is scoped to these pages so the rest of the app keeps its font.
@@ -50,8 +51,21 @@ export function AuthShell({ children, variant = "form" }: { children: ReactNode;
   return (
     <div className={cn(poppins.className, "relative flex min-h-screen flex-col overflow-hidden bg-[#fafbfd]")}>
       <Curves variant={variant} />
-      <SiteHeader />
-      <main className="relative flex flex-1 items-center justify-center px-4 py-12 sm:px-6 md:py-20">
+      <SiteHeader
+        mobileMenu={
+          <SiteMobileMenu
+            actions={[
+              { label: "Login", href: "/login" },
+              { label: "Sign Up", href: "/#mulai", primary: true },
+            ]}
+            links={[
+              { label: "Home", href: "/" },
+              { label: "About", href: "/about" },
+            ]}
+          />
+        }
+      />
+      <main className="relative flex flex-1 items-center justify-center px-6 py-12 sm:px-6 md:py-20">
         <div className="flex w-full max-w-[80rem] flex-col items-center gap-8">{children}</div>
       </main>
       <SiteFooter />

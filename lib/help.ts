@@ -12,7 +12,7 @@ export const faqs: Faq[] = [
   {
     question: "Apa itu EduInsight?",
     answer:
-      "EduInsight adalah platform berbasis AI untuk guru matematika Kurikulum Merdeka. EduInsight membantu Anda menyusun asesmen dari materi ajar sendiri, mendiagnosis ketercapaian Tujuan Pembelajaran (TP) dan miskonsepsi siswa, lalu menyiapkan remedial per kebutuhan belajar. Setiap keluaran AI tetap ditinjau dan disetujui guru sebelum sampai ke siswa.",
+      "EduInsight adalah platform berbasis AI untuk guru semua mata pelajaran dan jenjang kelas yang menerapkan Kurikulum Merdeka. EduInsight membantu Anda menyusun asesmen dari materi ajar sendiri, mendiagnosis ketercapaian Tujuan Pembelajaran (TP) dan miskonsepsi siswa, lalu menyiapkan remedial per kebutuhan belajar. Setiap keluaran AI tetap ditinjau dan disetujui guru sebelum sampai ke siswa.",
   },
   {
     question: "Bagaimana cara menambahkan siswa ke kelas saya?",

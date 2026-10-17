@@ -43,14 +43,14 @@ function HeroIllustration() {
     <div className="relative mx-auto aspect-[734/567] w-full max-w-[734px]">
       <span className="absolute left-[70%] top-0 size-[12%] rotate-[21deg] rounded-[20px] bg-[#e6eff9]" />
       <span className="absolute left-[11%] top-[78%] size-[12%] -rotate-[16deg] rounded-[20px] bg-[#e6eff9]" />
-      <div className="absolute left-[15.5%] top-[6.8%] w-[64.5%] shadow-[0_25px_25px_rgba(0,0,0,0.15)]">
+      <div className="absolute left-[15.5%] top-[6.8%] w-[64.5%]">
         <Image
           alt="Ilustrasi guru memegang tablet EduInsight"
           className="h-auto w-full"
           height={512}
           priority
           sizes="(min-width: 1024px) 474px, 64vw"
-          src="/landing/teacher-3d.jpg"
+          src="/landing/teacher-3d.png"
           width={512}
         />
       </div>

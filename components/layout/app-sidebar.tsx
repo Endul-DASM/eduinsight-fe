@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
+import { useState } from "react";
 import { outlineButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import { MaskIcon } from "@/components/ui/mask-icon";
-import { logout } from "@/lib/actions/auth";
+import { SIDEBAR_COLLAPSED, SIDEBAR_COOKIE } from "@/lib/sidebar";
 
 type NavItem = {
   label: string;
@@ -26,17 +27,20 @@ const navItems: NavItem[] = [
 
 const itemClassName = "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-base font-semibold leading-normal";
 
-function NavLink({ item, subject, pathname }: { item: NavItem; subject: string; pathname: string }) {
+function NavLink({ item, subject, pathname, collapsed }: { item: NavItem; subject: string; pathname: string; collapsed: boolean }) {
   const icon = <MaskIcon className="size-6" src={item.icon} />;
+  // Collapsed, only the icon shows; the label stays for screen readers and as a tooltip.
+  const label = collapsed ? <span className="sr-only">{item.label}</span> : item.label;
+  const shape = collapsed && "justify-center px-0";
 
   if (!item.href) {
     return (
-      <span aria-disabled className={cn(itemClassName, "cursor-not-allowed text-[#75777d]")}>
+      <span aria-disabled className={cn(itemClassName, shape, "cursor-not-allowed text-[#75777d]")} title={item.label}>
         {icon}
-        {item.label}
-        <span className="ml-auto rounded-3xl bg-[rgba(153,188,229,0.6)] px-2 py-0.5 text-[10px] text-[#004695]">
-          Segera
-        </span>
+        {label}
+        {!collapsed && (
+          <span className="ml-auto rounded-3xl bg-[rgba(153,188,229,0.6)] px-2 py-0.5 text-[10px] text-[#004695]">Segera</span>
+        )}
       </span>
     );
   }
@@ -50,43 +54,81 @@ function NavLink({ item, subject, pathname }: { item: NavItem; subject: string; 
       aria-current={active ? "page" : undefined}
       className={cn(
         itemClassName,
+        shape,
         "transition-colors",
         active ? "bg-[#0058be] text-[#f5f3f4]" : "text-[#1b1b1d] hover:bg-[#e6eff9] hover:text-[#0058be]",
       )}
       href={href}
+      title={collapsed ? item.label : undefined}
     >
       {icon}
-      {item.label}
+      {label}
     </Link>
   );
 }
 
-export function AppSidebar() {
+export function AppSidebar({ initialCollapsed = false }: { initialCollapsed?: boolean }) {
   const pathname = usePathname();
   const { subject } = useParams<{ subject: string }>();
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+
+  function toggle() {
+    const next = !collapsed;
+    setCollapsed(next);
+    document.cookie = `${SIDEBAR_COOKIE}=${next ? SIDEBAR_COLLAPSED : "expanded"}; path=/; max-age=31536000; samesite=lax`;
+  }
+
+  const toggleButton = (
+    <button
+      aria-expanded={!collapsed}
+      aria-label={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+      className="grid size-9 shrink-0 place-items-center rounded-xl text-[#45474c] transition-colors hover:bg-[#e6eff9] hover:text-[#0058be]"
+      onClick={toggle}
+      title={collapsed ? "Buka sidebar" : "Tutup sidebar"}
+      type="button"
+    >
+      <MaskIcon className={cn("size-6", collapsed && "rotate-180")} src="/assessment/chevron-left.svg" />
+    </button>
+  );
 
   return (
-    <aside className="relative z-10 flex w-full shrink-0 flex-col gap-6 bg-[#fafbfd] px-4 py-4 md:sticky md:top-0 md:h-[calc(100vh/var(--app-zoom))] md:w-[312px] md:justify-between md:px-8 md:py-6">
+    <aside
+      className={cn(
+        "relative z-10 flex w-full shrink-0 flex-col gap-6 bg-[#fafbfd] px-4 py-4 transition-[width] duration-100 ease-out motion-reduce:transition-none md:sticky md:top-0 md:h-[calc(100vh/var(--app-zoom))] md:justify-between md:py-6",
+        collapsed ? "md:w-24 md:px-4" : "md:w-[312px] md:px-8",
+      )}
+    >
       <div className="flex flex-col gap-4 md:gap-9">
-        <Link className="flex items-center gap-2 px-2 py-2 md:py-4" href="/choose-subject">
-          <Image alt="" className="size-10" height={40} src="/auth/logo.svg" width={40} />
-          <span className="text-xl font-bold leading-normal text-[#1b1b1d]">EduInsight</span>
-        </Link>
-        <nav className="flex flex-col gap-2">
+        <div className={cn("flex items-center justify-between gap-2", collapsed && "md:flex-col md:justify-start")}>
+          <Link className="flex items-center gap-2 px-2 py-2 md:py-4" href="/choose-subject" title="EduInsight">
+            <Image alt="" className="size-10 shrink-0" height={40} src="/auth/logo.svg" width={40} />
+            <span className={cn("text-xl font-bold leading-normal text-[#1b1b1d]", collapsed && "md:sr-only")}>EduInsight</span>
+          </Link>
+          {toggleButton}
+        </div>
+        <nav className={cn("flex flex-col gap-2", collapsed && "max-md:hidden")}>
           {navItems.map((item) => (
-            <NavLink item={item} key={item.label} pathname={pathname} subject={subject} />
+            <NavLink collapsed={collapsed} item={item} key={item.label} pathname={pathname} subject={subject} />
           ))}
         </nav>
       </div>
-      <div className="flex flex-col gap-[19px]">
-        <form action={logout}>
-          <button className={cn(outlineButtonClassName, "w-full")} type="submit">
-            Logout
-          </button>
-        </form>
-        <Link className={cn(itemClassName, "text-[#1b1b1d] hover:bg-[#e6eff9]")} href="#">
+      <div className={cn("flex flex-col gap-[19px]", collapsed && "max-md:hidden")}>
+        {/* Back to the subject select (Figma New Design 22:4162); Logout moved to the top bar's account menu. */}
+        <Link
+          className={cn(outlineButtonClassName, "w-full gap-3", collapsed && "px-0")}
+          href="/choose-subject"
+          title={collapsed ? "Halaman Mapel" : undefined}
+        >
+          <MaskIcon className="size-5.5" src="/assessment/arrow-left.svg" />
+          {collapsed ? <span className="sr-only">Halaman Mapel</span> : "Halaman Mapel"}
+        </Link>
+        <Link
+          className={cn(itemClassName, "text-[#1b1b1d] hover:bg-[#e6eff9]", collapsed && "justify-center px-0")}
+          href="#"
+          title={collapsed ? "Help" : undefined}
+        >
           <MaskIcon className="size-6" src="/auth/help-circle.svg" />
-          Help
+          {collapsed ? <span className="sr-only">Help</span> : "Help"}
         </Link>
       </div>
     </aside>

@@ -1,4 +1,5 @@
 import { Poppins } from "next/font/google";
+import { cookies } from "next/headers";
 import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -8,6 +9,7 @@ import { WorkspaceFooter } from "@/components/layout/workspace-footer";
 import { cn } from "@/components/ui/cn";
 import { getSubject } from "@/lib/api/subjects";
 import { getCurrentUser } from "@/lib/api/users";
+import { SIDEBAR_COLLAPSED, SIDEBAR_COOKIE } from "@/lib/sidebar";
 import { APP_ZOOM, WORKSPACE_ZOOM, zoomStyle } from "@/lib/zoom";
 
 // The new workspace design uses Poppins; it is scoped to the subject pages.
@@ -57,7 +59,7 @@ export default async function TeacherLayout({ children, params }: LayoutProps<"/
       <Background />
       {/* Printing a page (e.g. Unduh Soal) leaves out the workspace around it. */}
       <div className="contents print:hidden">
-        <AppSidebar />
+        <AppSidebar initialCollapsed={(await cookies()).get(SIDEBAR_COOKIE)?.value === SIDEBAR_COLLAPSED} />
       </div>
       <div className="relative flex min-h-screen min-w-0 flex-1 flex-col">
         {/* The header reads ?bab= for its breadcrumb. */}

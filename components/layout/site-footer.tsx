@@ -9,7 +9,7 @@ const footerLinks = [
 // The footer of the pages outside a subject (Figma New Design 22:3060).
 export function SiteFooter() {
   return (
-    <footer className="relative z-10 flex flex-col items-center justify-center gap-3 px-4 py-6 text-xs leading-normal text-[#45474c] sm:flex-row sm:gap-6 sm:px-16">
+    <footer className="relative z-10 flex flex-col items-center justify-center gap-5 px-4 py-6 sm:gap-3 text-xs leading-normal text-[#45474c] sm:flex-row sm:gap-6 sm:px-16">
       <p className="text-center">© 2024 EduInsight AI. Systematic &amp; Encouraging Learning.</p>
       <div className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
         {footerLinks.map((link) => (

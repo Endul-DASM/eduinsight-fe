@@ -13,7 +13,7 @@ export default function ForgotPasswordRoute() {
           Fitur atur ulang kata sandi lewat email sedang disiapkan. Untuk sementara, hubungi guru pengampu atau tim
           EduInsight. Jika akun Anda terhubung dengan Google, Anda tetap dapat masuk dengan Google.
         </p>
-        <Link className={`${primaryButtonClassName} self-center`} href="/login">
+        <Link className={`${primaryButtonClassName} w-full sm:w-auto sm:self-center`} href="/login">
           Kembali ke Halaman Masuk
         </Link>
       </AuthCard>

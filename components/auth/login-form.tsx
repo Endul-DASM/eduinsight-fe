@@ -55,7 +55,7 @@ export function LoginForm({ role, initialNotice }: { role: AuthRole; initialNoti
           )}
         </AuthNoticeMessage>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <AuthFootnote>
           Belum punya akun?{" "}
           <Link className={textLinkClassName} href={authRoles[role].registerPath}>
@@ -67,7 +67,7 @@ export function LoginForm({ role, initialNotice }: { role: AuthRole; initialNoti
         </Link>
       </div>
       <div className="flex justify-end">
-        <button className={primaryButtonClassName} disabled={pending} type="submit">
+        <button className={`${primaryButtonClassName} w-full sm:w-auto`} disabled={pending} type="submit">
           {pending ? "Memproses..." : "Login"}
         </button>
       </div>

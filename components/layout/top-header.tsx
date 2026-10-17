@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams, usePathname, useSearchParams } from "next/navigation";
 import type { CurrentUser } from "@/lib/api/types";
 import { builderMethodOf, builderMethods } from "@/lib/assessment-form";
-import { firstName } from "@/lib/display-name";
+import { ProfileMenu } from "./profile-menu";
 
 // Page title per section of the subject workspace, e.g. /{slug}/assessment → "Asesmen".
 const sectionTitles: Record<string, string> = {
@@ -15,6 +15,7 @@ const sectionTitles: Record<string, string> = {
   remedial: "Remedial",
   analysis: "Analisis",
   diagnosis: "Diagnosis",
+  profile: "Profile",
 };
 
 type Crumb = { label: string; href?: string };
@@ -58,11 +59,12 @@ function useCrumbs(): Crumb[] {
 // Figma New Design 22:4162 (top bar of the subject workspace).
 export function TopHeader({ subjectLabel, user }: { subjectLabel: string; user: CurrentUser }) {
   const crumbs = useCrumbs();
+  const { subject } = useParams<{ subject: string }>();
 
   return (
-    <header className="sticky top-0 z-20 flex min-h-[93px] items-center justify-between gap-4 border-b border-[#c5c6cd] bg-[rgba(250,251,253,0.6)] px-4 py-3 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-xs sm:px-8">
-      <div className="flex min-w-0 flex-col gap-1">
-        <h1 className="truncate text-xl font-semibold leading-normal text-black sm:text-2xl">{crumbs[0].label}</h1>
+    <header className="sticky top-0 z-20 flex min-h-18 items-center justify-between gap-4 border-b border-[#c5c6cd] bg-[rgba(250,251,253,0.6)] px-4 py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-xs sm:px-8">
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <h1 className="truncate text-xl font-semibold leading-normal text-black">{crumbs[0].label}</h1>
         <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-xs leading-normal">
           {crumbs.map((crumb, index) => {
             const last = index === crumbs.length - 1;
@@ -86,16 +88,10 @@ export function TopHeader({ subjectLabel, user }: { subjectLabel: string; user: 
       <div className="flex shrink-0 items-center gap-4">
         {/* Notifications (FR-X-041) are not built yet. */}
         <span aria-hidden className="hidden sm:block">
-          <Image alt="" height={30} src="/dashboard/bell-dot.svg" width={30} />
+          <Image alt="" height={24} src="/dashboard/bell-dot.svg" width={24} />
         </span>
-        <div className="flex items-center gap-3 border-l-2 border-[#75777d] pl-4 sm:gap-6">
-          <div className="grid size-12 place-items-center rounded-full bg-[#e6eff9] text-base font-bold text-[#004695] sm:size-[65px] sm:text-xl">
-            {user.initials}
-          </div>
-          <div className="hidden max-w-[220px] leading-normal text-[#1b1b1d] sm:block">
-            <p className="truncate text-xl font-semibold lg:text-2xl">{firstName(user.name)}</p>
-            <p className="truncate text-sm lg:text-base">{subjectLabel}</p>
-          </div>
+        <div className="border-l-2 border-[#75777d] pl-3">
+          <ProfileMenu slug={subject} subjectLabel={subjectLabel} user={user} />
         </div>
       </div>
     </header>

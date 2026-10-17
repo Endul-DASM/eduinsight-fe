@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { createClass, getClasses } from "@/lib/api/classes";
 import { ApiError, isMockMode } from "@/lib/api/client";
 import { copyCurriculum } from "@/lib/api/curriculum";
@@ -56,6 +57,8 @@ async function copyCurriculumFrom(subjectId: string, sourceSubjectId: string): P
     await copyCurriculum(subjectId, sourceSubjectId);
     return "Kelas tersimpan dan kurikulum berhasil disalin.";
   } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
+    unstable_rethrow(error);
     return `Kelas tersimpan, tetapi kurikulum belum tersalin: ${messageOf(error)}`;
   }
 }
@@ -81,6 +84,7 @@ async function findOrCreateClass(values: SubjectFormValues): Promise<SchoolClass
   try {
     return await createClass({ name: values.className, level, academicYear: values.academicYear });
   } catch (error) {
+    unstable_rethrow(error);
     if (!(error instanceof ApiError) || !error.fields) throw error;
     const { name, level: levelError, academicYear } = error.fields;
     throw new ClassFieldError({
@@ -117,6 +121,7 @@ export async function createSubjectAction(
     // KKM is left to the backend default (BR-01).
     created = await createSubject({ name: values.name, classId: schoolClass.id });
   } catch (error) {
+    unstable_rethrow(error);
     return errorState(error, values);
   }
   return saved(await copyCurriculumFrom(created.id, text(formData, "copyCurriculumFrom")));
@@ -140,6 +145,7 @@ export async function updateSubjectAction(
     const classId = schoolClass.id === currentClassId ? undefined : schoolClass.id;
     await updateSubject(subjectId, { name: values.name, classId });
   } catch (error) {
+    unstable_rethrow(error);
     return errorState(error, values);
   }
   return saved(await copyCurriculumFrom(subjectId, text(formData, "copyCurriculumFrom")));
@@ -153,6 +159,7 @@ export async function deleteSubjectAction(
   try {
     await deleteSubject(text(formData, "subjectId"));
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: messageOf(error) };
   }
   return saved();

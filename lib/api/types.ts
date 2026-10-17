@@ -47,11 +47,25 @@ export type LoginResponse = {
 };
 
 // POST /auth/register/{guru|siswa} (SRS FR-X-006). The role comes from the endpoint, never from the body.
-// name is not stored by the backend yet; until it is, the app shows the username (BR-11).
 export type RegisterRequest = {
   username: string;
   name: string;
   email: string;
+  password: string;
+  passwordConfirmation: string;
+};
+
+// Sign-up while email verification is on (FR-X-008): no session until the emailed link is opened.
+export type VerificationSent = {
+  status: "verification_sent";
+  email: string;
+};
+
+// With EMAIL_VERIFICATION_REQUIRED=false the backend signs the new account in straight away.
+export type RegisterResponse = VerificationSent | LoginResponse;
+
+// POST /auth/password/reset and /auth/password/change (FR-X-004).
+export type NewPasswordInput = {
   password: string;
   passwordConfirmation: string;
 };

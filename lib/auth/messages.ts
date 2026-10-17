@@ -12,6 +12,8 @@ export const REQUEST_FAILED_MESSAGE = "Permintaan belum dapat diproses oleh serv
 // /login?reason=session_expired, after the session ran out (JWT_EXPIRE_MINUTES on the backend).
 export const SESSION_EXPIRED_MESSAGE = "Sesi Anda telah berakhir. Silakan masuk kembali.";
 export const MOCK_MODE_MESSAGE = "Mode demo: sambungkan backend (API_BASE_URL) untuk mendaftar atau masuk dengan Google.";
+// Email links and password changes need the backend.
+export const MOCK_ACCOUNT_MESSAGE = "Mode demo: sambungkan backend (API_BASE_URL) untuk memakai fitur akun.";
 
 // FR-X-001: the credentials are right, but the account belongs on the other role's page.
 export function wrongRoleNotice(accountRole: AuthRole): AuthNotice {

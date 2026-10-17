@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import { type CurriculumTab, CurriculumPage } from "@/components/curriculum/curriculum-page";
 import { ApiError } from "@/lib/api/client";
 import { getCurriculum } from "@/lib/api/curriculum";
@@ -22,6 +22,8 @@ export default async function CurriculumRoute({ params, searchParams }: PageProp
     // Mock mode has no curriculum; show it empty so the page can still be explored.
     tree = (await getCurriculum(subject.id)) ?? { subjectId: subject.id, suggestedFase: null, cps: [], chapters: [] };
   } catch (caught) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
+    unstable_rethrow(caught);
     error =
       caught instanceof ApiError && caught.code
         ? caught.message
@@ -45,6 +47,7 @@ export default async function CurriculumRoute({ params, searchParams }: PageProp
       );
       materials = { items, objectiveNumbers };
     } catch (caught) {
+      unstable_rethrow(caught);
       tree = null;
       error =
         caught instanceof ApiError && caught.code

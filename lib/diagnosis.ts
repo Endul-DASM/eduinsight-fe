@@ -115,7 +115,7 @@ export function patternsForObjective(
 // "Butir 2 · opsi A" for a pattern's evidence.
 export function sourceLabel(pattern: MisconceptionPattern): string {
   return pattern.sources
-    .map((source) => `butir ${source.number}${source.option ? ` · opsi ${source.option}` : ""}`)
+    .map((source) => `butir ${source.number}${source.option ? ` opsi ${source.option}` : ""}`)
     .join(", ");
 }
 

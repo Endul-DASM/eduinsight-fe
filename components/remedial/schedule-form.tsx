@@ -97,7 +97,7 @@ export function ScheduleForm({
           <SelectInput id={field("paket")} onChange={(event) => pick(event.target.value)} value={remedial.id}>
             {remedials.map((assessment) => (
               <option key={assessment.id} value={assessment.id}>
-                {assessment.title} · {assessment.questionCount} soal · {cardStatus[assessment.status].label}
+                {assessment.title} ({assessment.questionCount} soal, {cardStatus[assessment.status].label})
               </option>
             ))}
           </SelectInput>

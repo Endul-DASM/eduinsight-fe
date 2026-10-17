@@ -6,6 +6,7 @@ import { outlineButtonClassName, primaryButtonClassName } from "@/components/aut
 import { TextField } from "@/components/auth/text-field";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { SelectMenu as SelectInput } from "@/components/ui/select-menu";
 import { saveChapterAction } from "@/lib/actions/curriculum";
 import type { ChapterInput } from "@/lib/api/curriculum";
 import type { CurriculumChapter, CurriculumCp } from "@/lib/api/types";
@@ -277,33 +278,20 @@ function ChapterForm({
                   </button>
                 )}
               </div>
-              <div className="relative">
-                <select
-                  className={cn(
-                    inputBoxClassName,
-                    "h-[50px] appearance-none pr-12",
-                    block.cpId ? "font-semibold" : "text-[#75777d]",
-                    errors.cpIds && !block.cpId && "border-[#dc2626]",
-                  )}
-                  id={`${formId}-cp-${block.key}`}
-                  onChange={(event) => updateBlock(block.key, (current) => ({ ...current, cpId: event.target.value }))}
-                  value={block.cpId}
-                >
-                  <option value="">{cps.length === 0 ? "Belum ada CP, tambahkan di Daftar CP" : "Pilih CP..."}</option>
-                  {options.map((cp) => (
-                    <option key={cp.id} value={cp.id}>
-                      {cp.element} (Fase {cp.fase})
-                    </option>
-                  ))}
-                </select>
-                <Image
-                  alt=""
-                  className="pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2"
-                  height={24}
-                  src="/subjects/chevron-down.svg"
-                  width={24}
-                />
-              </div>
+              <SelectInput
+                className={block.cpId ? "font-semibold" : undefined}
+                id={`${formId}-cp-${block.key}`}
+                invalid={Boolean(errors.cpIds && !block.cpId)}
+                onChange={(event) => updateBlock(block.key, (current) => ({ ...current, cpId: event.target.value }))}
+                value={block.cpId}
+              >
+                <option value="">{cps.length === 0 ? "Belum ada CP, tambahkan di Daftar CP" : "Pilih CP..."}</option>
+                {options.map((cp) => (
+                  <option key={cp.id} value={cp.id}>
+                    {cp.element} (Fase {cp.fase})
+                  </option>
+                ))}
+              </SelectInput>
               {block.cpId && <p className="text-xs leading-normal text-[#45474c]">{cpById.get(block.cpId)?.description}</p>}
             </div>
 

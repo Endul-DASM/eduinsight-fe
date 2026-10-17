@@ -145,6 +145,6 @@ export function chapterLabelOf(results: AssessmentResults, question: QuestionPer
   );
   return [...chapters.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([number, name]) => `Bab ${number} · ${name}`)
+    .map(([number, name]) => `Bab ${number}: ${name}`)
     .join(", ");
 }

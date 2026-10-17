@@ -117,7 +117,7 @@ export function ObjectivePicker({
                   <span className="flex flex-col gap-0.5">
                     <span className="flex flex-wrap items-center gap-2 font-semibold">
                       TP {objective.number}
-                      <span className="font-normal text-[#75777d]">· Bab {objective.chapter.number}</span>
+                      <span className="font-normal text-[#75777d]">(Bab {objective.chapter.number})</span>
                       {suggested.has(objective.id) && (
                         <span className="rounded-3xl bg-[rgba(153,188,229,0.6)] px-2 py-0.5 text-[10px] text-[#004695]">
                           Disarankan

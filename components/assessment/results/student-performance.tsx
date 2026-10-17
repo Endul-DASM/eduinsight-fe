@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/components/ui/cn";
+import { SelectMenu } from "@/components/ui/select-menu";
 import type { AssessmentResults, StudentPerformance } from "@/lib/api/results";
 import {
   answerKeyOf,
@@ -35,7 +36,7 @@ function ItemCell({ student, questionId, essay }: { student: StudentPerformance;
         item.isCorrect ? "bg-[#dcfce7] text-[#14532d]" : "bg-[#fee2e2] text-[#991b1b]",
       )}
     >
-      {item.answer ?? "–"} · {item.isCorrect ? 1 : 0}
+      {item.answer ?? "–"} ({item.isCorrect ? 1 : 0})
     </span>
   );
 }
@@ -64,7 +65,7 @@ export function StudentPerformanceView({ results }: { results: AssessmentResults
           </p>
         </div>
         <span className="rounded-lg bg-[#e6eff9] px-2 py-1 text-xs font-semibold text-[#004695]">
-          {results.students.length} Siswa · {questionCount} Butir
+          {results.students.length} Siswa, {questionCount} Butir
         </span>
       </div>
 
@@ -79,21 +80,23 @@ export function StudentPerformanceView({ results }: { results: AssessmentResults
             value={query}
           />
         </label>
-        <select
-          aria-label="Filter status"
-          className="h-[50px] rounded-xl bg-transparent px-2 text-base font-semibold text-[#1b1b1d] outline-none focus-visible:ring-2 focus-visible:ring-[#0058be]"
-          onChange={(event) => setStatus(event.target.value as ResultLabel | "")}
-          value={status}
-        >
-          <option value="">Semua status</option>
-          {Object.entries(resultLabels).map(([value, { label }]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
+        <div className="w-[220px]">
+          <SelectMenu
+            aria-label="Filter status"
+            className="border-transparent bg-transparent font-semibold text-[#1b1b1d]"
+            onChange={(event) => setStatus(event.target.value as ResultLabel | "")}
+            value={status}
+          >
+            <option value="">Semua status</option>
+            {Object.entries(resultLabels).map(([value, { label }]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </SelectMenu>
+        </div>
         <p className="ml-auto flex items-center gap-3 text-xs text-[#45474c]">
-          Isi sel: opsi · skor
+          Isi sel: opsi (skor)
           <span className="flex items-center gap-1">
             <span className="size-2 rounded-full bg-[#22c55e]" /> Benar = 1
           </span>

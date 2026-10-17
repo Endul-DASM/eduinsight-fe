@@ -20,7 +20,7 @@ function Reassessment({ pair }: { pair: RemedialPair }) {
         <div className="leading-normal">
           <h3 className="text-base font-semibold text-[#1b1b1d]">Hasil reassessment sebelumnya</h3>
           <p className="text-xs text-[#45474c]">
-            {pair.remedial?.title} · {formatLongSchedule(pair.remedial?.opensAt ?? null)} · {done.length} peserta selesai ·
+            {pair.remedial?.title}, {formatLongSchedule(pair.remedial?.opensAt ?? null)}, {done.length} peserta selesai,
             hasil dari Hasil Asesmen
           </p>
         </div>
@@ -151,7 +151,7 @@ export function SchedulePage({ slug, pair, history }: { slug: string; pair: Reme
       {pair.remedial && pair.remedial.status !== "draft" && (
         <p className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#dcfce7] px-4 py-3 text-xs leading-normal text-[#14532d]">
           <span>
-            Remedial sudah dipublikasikan · buka {formatLongSchedule(pair.remedial.opensAt)} untuk{" "}
+            Remedial sudah dipublikasikan, buka {formatLongSchedule(pair.remedial.opensAt)} untuk{" "}
             {pair.targets.filter((target) => target.mastery === "perlu_remedial").length} siswa yang masih Perlu Remedial.
           </span>
           <span className={cn(chip, "bg-[#bbf7d0] text-[#16a34a]")}>Dipublikasikan</span>

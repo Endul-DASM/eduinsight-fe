@@ -35,7 +35,7 @@ export function SourceSelect({
         {!sourceId && <option value="">Pilih asesmen sumber...</option>}
         {sources.map((assessment) => (
           <option key={assessment.id} value={assessment.id}>
-            {assessment.title} · {assessmentTypeLabels[assessment.type]}
+            {assessment.title} ({assessmentTypeLabels[assessment.type]})
           </option>
         ))}
       </SelectInput>

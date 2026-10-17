@@ -1,10 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import { SUPPORT_EMAIL } from "@/lib/help";
 
 const footerLinks = [
   { label: "Privacy Policy", href: "#" },
   { label: "Terms of Service", href: "#" },
-  { label: "Contact Support", href: "#" },
+  { label: "Contact Support", href: `mailto:${SUPPORT_EMAIL}` },
 ];
 
 // The footer inside a subject workspace (Figma New Design 22:2816).

@@ -29,7 +29,7 @@ export function AssessmentSummary({ assessment }: { assessment: AssessmentDetail
       <div className="grid gap-6 lg:grid-cols-2">
         <dl>
           <Row label="Total Soal" tone="text-[#0058be]" value={`${summary.totalQuestions} soal`} />
-          <Row label="Pilihan Ganda · Essay" value={`${summary.byType.pg} · ${summary.byType.uraian}`} />
+          <Row label="Pilihan Ganda / Essay" value={`${summary.byType.pg} / ${summary.byType.uraian}`} />
           <Row label="Estimasi Durasi" value={`${summary.estimatedMinutes} menit`} />
           <Row
             label="Durasi Diatur"
@@ -37,7 +37,7 @@ export function AssessmentSummary({ assessment }: { assessment: AssessmentDetail
           />
           <Row label="Jadwal Buka" value={formatSchedule(assessment.opensAt)} />
           <Row label="Jadwal Tutup" value={formatSchedule(assessment.closesAt)} />
-          <Row label="KKM · Percobaan" value={`${assessment.kkm} · ${assessment.maxAttempts}×`} />
+          <Row label="KKM / Percobaan" value={`${assessment.kkm} / ${assessment.maxAttempts}×`} />
         </dl>
 
         <div className="flex flex-col gap-4">
@@ -51,7 +51,7 @@ export function AssessmentSummary({ assessment }: { assessment: AssessmentDetail
                   <li className="text-sm leading-normal text-[#1b1b1d]" key={row.learningObjective.id}>
                     <span className="font-semibold">TP {row.learningObjective.number}</span>{" "}
                     {row.learningObjective.description}
-                    <span className="text-[#45474c]"> · {row.questionCount} soal</span>
+                    <span className="text-[#45474c]"> ({row.questionCount} soal)</span>
                     {row.questionNumbers.length > 0 && (
                       <span className="block text-xs text-[#75777d]">Soal {row.questionNumbers.join(", ")}</span>
                     )}

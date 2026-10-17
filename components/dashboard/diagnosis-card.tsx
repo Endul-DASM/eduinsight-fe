@@ -61,7 +61,7 @@ function CountButton({
       disabled={students.length === 0}
       onClick={() =>
         onOpen({
-          title: `${title} · ${diagnosisLabelNames[label]}`,
+          title: `${title}: ${diagnosisLabelNames[label]}`,
           description: `${students.length} dari ${total} siswa`,
           students,
         })
@@ -226,7 +226,7 @@ export function ObjectiveTable({ chapter, baseHref }: { chapter: ChapterDiagnosi
               {chapter.objectives.map((objective) => (
                 <tr className={cn(weakest?.objective.id === objective.id && "bg-[#e6eff9]/60")} key={objective.id}>
                   <th className="px-3 py-2 font-normal text-[#0058be]" scope="row">
-                    <span className="font-semibold">TP {objective.number}</span> · {objective.description}
+                    <span className="font-semibold">TP {objective.number}:</span> {objective.description}
                     {objective.itemCount < MIN_ITEMS_PER_TP && (
                       <span className="ml-2 whitespace-nowrap rounded-3xl bg-[#ffedd5] px-2 py-0.5 text-[10px] font-semibold text-[#7c2d12]">
                         data terbatas
@@ -252,7 +252,7 @@ export function ObjectiveTable({ chapter, baseHref }: { chapter: ChapterDiagnosi
         </div>
       )}
       <p className="text-xs leading-normal text-[#45474c]">
-        Label mengikuti BR-04: SB ≥ 90 · B 75–89 · C 60–74 · K &lt; 60. TP bertanda &ldquo;data terbatas&rdquo; dinilai
+        Label mengikuti BR-04: SB ≥ 90, B 75–89, C 60–74, K &lt; 60. TP bertanda &ldquo;data terbatas&rdquo; dinilai
         dari kurang dari {MIN_ITEMS_PER_TP} butir soal (BR-05).
       </p>
       {weakest && (

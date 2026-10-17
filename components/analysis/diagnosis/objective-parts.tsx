@@ -93,7 +93,7 @@ export function ObjectiveStudentTable({
           <Image alt="" height={20} src="/assessment/search.svg" width={20} />
         </label>
         <span className="text-xs text-[#75777d]">
-          {shown.length} dari {rows.length} siswa · urut nama A–Z
+          {shown.length} dari {rows.length} siswa, urut nama A–Z
         </span>
       </div>
       <p className="text-xs text-[#45474c]">Klik nama atau &quot;Buka siswa&quot; untuk membuka Diagnosis Siswa.</p>

@@ -62,7 +62,7 @@ function QuestionDetail({
       <section className={card}>
         <h4 className="text-base font-semibold text-[#1b1b1d]">Soal sumber</h4>
         <p className="text-sm text-[#0058be]">
-          TP {objectiveNumber} · {question?.type === "uraian" ? "uraian" : "pilihan ganda"} · {item.assessmentTitle}
+          TP {objectiveNumber}, {question?.type === "uraian" ? "uraian" : "pilihan ganda"}, {item.assessmentTitle}
         </p>
         {!question ? (
           <p className="text-sm text-[#45474c]">Naskah soal tidak dapat dimuat.</p>
@@ -86,9 +86,9 @@ function QuestionDetail({
                       <span className="flex-1">{option.text}</span>
                       {isKey && <span className="text-xs font-semibold text-[#16a34a]">Jawaban benar</span>}
                       {picked && !isKey && (
-                        <span className="text-xs font-semibold text-[#dc2626]">Jawaban {student.student.name} · salah</span>
+                        <span className="text-xs font-semibold text-[#dc2626]">Jawaban {student.student.name} (salah)</span>
                       )}
-                      {picked && isKey && <span className="text-xs font-semibold text-[#16a34a]">· dipilih {student.student.name}</span>}
+                      {picked && isKey && <span className="text-xs font-semibold text-[#16a34a]">(dipilih {student.student.name})</span>}
                     </li>
                   );
                 })}
@@ -115,9 +115,9 @@ function QuestionDetail({
           {pattern ? (
             <>
               <p className="flex flex-wrap justify-between gap-2 text-sm font-semibold text-[#0058be]">
-                Pola #{pattern.rank} · {patternTitle(pattern)}
+                Pola #{pattern.rank}: {patternTitle(pattern)}
                 <span className="text-xs text-[#1b1b1d]">
-                  {pattern.affectedCount} siswa · {formatPercent(pattern.affectedPct)}
+                  {pattern.affectedCount} siswa ({formatPercent(pattern.affectedPct)})
                 </span>
               </p>
               <p className="text-sm text-[#45474c]">
@@ -149,8 +149,8 @@ function QuestionDetail({
           <p className={cn("text-3xl font-bold", item.isCorrect ? "text-[#16a34a]" : "text-[#dc2626]")}>{formatScore(item.score)} / 100</p>
           <p className="text-xs text-[#45474c]">
             Jawaban siswa: {item.answer ?? "–"}
-            {question?.options && ` · kunci: ${question.answerKey}`}
-            {item.misconceptionTag && ` · tag: ${item.misconceptionTag}`}
+            {question?.options && `, kunci: ${question.answerKey}`}
+            {item.misconceptionTag && `, tag: ${item.misconceptionTag}`}
           </p>
         </section>
       </div>
@@ -213,7 +213,7 @@ export function StudentView({
           <p className="text-xl font-bold text-[#1b1b1d]">{student.student.name}</p>
           <p className="text-xs text-[#45474c]">
             {className}
-            {student.student.nis && ` · NIS ${student.student.nis}`} · {student.assessments.length} asesmen dalam cakupan
+            {student.student.nis && `, NIS ${student.student.nis}`}, {student.assessments.length} asesmen dalam cakupan
           </p>
         </div>
         <div className="leading-normal">
@@ -244,7 +244,7 @@ export function StudentView({
                 <span className="size-2 rounded-sm bg-[#0058be]" /> {student.student.name}
               </span>
               <span className="flex items-center gap-1">
-                <span className="size-2 rounded-sm bg-[#99bce5]" /> Rata-rata kelas · skala 0–100
+                <span className="size-2 rounded-sm bg-[#99bce5]" /> Rata-rata kelas (skala 0–100)
               </span>
             </div>
             <ul className="flex flex-col gap-4">
@@ -303,7 +303,7 @@ export function StudentView({
                             href={diagnosisHref(slug, params, { tp: objective.learningObjective.id, item: undefined })}
                             scroll={false}
                           >
-                            TP {objective.learningObjective.number} · {objective.learningObjective.description} →
+                            TP {objective.learningObjective.number}: {objective.learningObjective.description} →
                           </Link>
                           {objective.limitedData && <span className="ml-2 text-[10px] text-[#c2410c]">data terbatas</span>}
                         </td>
@@ -332,11 +332,11 @@ export function StudentView({
           {selected && (
             <section className={card}>
               <h3 className="text-xl font-semibold leading-normal text-[#1b1b1d]">
-                Bukti jawaban · TP {selected.learningObjective.number} terpilih
+                Bukti jawaban TP {selected.learningObjective.number}
               </h3>
               <p className="text-base text-[#1b1b1d]">
-                {formatPercent(selected.score)} · {selected.items.filter((item) => item.isCorrect).length} dari {selected.items.length} butir
-                benar · label {toLabel(selected.label) ?? "–"}
+                {formatPercent(selected.score)}, {selected.items.filter((item) => item.isCorrect).length} dari {selected.items.length} butir
+                benar, label {toLabel(selected.label) ?? "–"}
               </p>
               <p className="text-xs text-[#45474c]">Klik butir untuk melihat soal, jawaban siswa, dan kunci.</p>
               <div className="overflow-x-auto">
@@ -376,7 +376,7 @@ export function StudentView({
               {patterns.map((pattern) => (
                 <div className="rounded-xl bg-[#e6eff9] px-4 py-3 text-xs leading-normal text-[#45474c]" key={pattern.rank}>
                   <p className="text-sm font-semibold text-[#0058be]">
-                    Terlibat pola #{pattern.rank} · bersama {pattern.affectedCount - 1} siswa lainnya
+                    Terlibat pola #{pattern.rank} bersama {pattern.affectedCount - 1} siswa lainnya
                   </p>
                   {patternTitle(pattern)} ({pattern.sources.map((source) => `butir ${source.number}${source.option ? ` opsi ${source.option}` : ""}`).join(", ")}).
                   Indikasi perlu divalidasi guru.

@@ -102,7 +102,7 @@ export async function getMaterialReferences(
         objectiveNumber: objective.learningObjective.number,
         objectiveDescription: objective.learningObjective.description,
         average,
-        location: `Bab ${objective.chapterNumber} · ${objective.chapterName}`,
+        location: `Bab ${objective.chapterNumber}: ${objective.chapterName}`,
         materials: linked,
       };
     }),

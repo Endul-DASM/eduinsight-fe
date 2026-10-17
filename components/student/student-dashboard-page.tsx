@@ -273,7 +273,7 @@ function AiRecommendationCard() {
               Video: Trik Cepat Perkalian Pecahan
             </p>
             <p className="text-[10px] font-bold uppercase tracking-[0.05em] text-[#adc6ff]">
-              7 Menit • Matematika
+              7 Menit, Matematika
             </p>
           </div>
         </div>

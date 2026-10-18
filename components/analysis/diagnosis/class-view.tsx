@@ -67,21 +67,21 @@ export function ClassView({
       <div className="grid gap-4 md:grid-cols-3">
         <Stat
           label="Rata-rata ketercapaian"
-          note={`${summary.objectiveCount} tujuan pembelajaran · ${diagnosis.analyzedStudents} siswa`}
+          note={`${summary.objectiveCount} tujuan pembelajaran, ${diagnosis.analyzedStudents} siswa`}
           value={formatPercent(summary.average)}
         />
         <Stat
           label="Prioritas penguatan"
           note={
             summary.weakest
-              ? `${summary.weakest.learningObjective.description.slice(0, 60)} · rata-rata ${formatPercent(summary.weakest.classAverage)}`
+              ? `${summary.weakest.learningObjective.description.slice(0, 60)}, rata-rata ${formatPercent(summary.weakest.classAverage)}`
               : "Belum ada skor TP"
           }
           value={summary.weakest ? `TP ${summary.weakest.learningObjective.number}` : "–"}
         />
         <Stat
           label="Pola terbesar"
-          note={summary.topPattern ? `${formatPercent(summary.topPattern.affectedPct)} kelas · ${patternTitle(summary.topPattern)}` : "Belum ada pola kesalahan"}
+          note={summary.topPattern ? `${formatPercent(summary.topPattern.affectedPct)} kelas, ${patternTitle(summary.topPattern)}` : "Belum ada pola kesalahan"}
           value={summary.topPattern ? `${summary.topPattern.affectedCount} siswa` : "–"}
         />
       </div>
@@ -117,7 +117,7 @@ export function ClassView({
           {heatScale.map((step) => (
             <span className={cn("h-2 w-6 rounded-full", step.className)} key={step.from} />
           ))}
-          Skor tinggi · rentang 0–100%
+          Skor tinggi (rentang 0–100%)
         </div>
         <p className="text-xs text-[#45474c]">
           Persentase = skor TP rata-rata siswa (BR-03). Skala warna bukan ambang kategori SB/B/C/K.
@@ -186,7 +186,7 @@ export function ClassView({
                   <tr key={objective.learningObjective.id}>
                     <td className="border-b border-[#eae7e9] px-2 py-2.5">
                       <Link className="text-[#0058be] hover:underline" href={tpHref(objective.learningObjective.id)}>
-                        TP {objective.learningObjective.number} · {objective.learningObjective.description} →
+                        TP {objective.learningObjective.number}: {objective.learningObjective.description} →
                       </Link>
                       {objective.limitedData && <span className="ml-2 text-[10px] text-[#c2410c]">data terbatas</span>}
                     </td>
@@ -212,7 +212,7 @@ export function ClassView({
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-xl font-semibold leading-normal text-[#1b1b1d]">Akar masalah</h3>
-        <span className="text-xs text-[#75777d]">Indikasi pola · perlu validasi guru</span>
+        <span className="text-xs text-[#75777d]">Indikasi pola, perlu validasi guru</span>
       </div>
       {!top ? (
         <section className={cn(card, "items-center py-10 text-center text-sm text-[#45474c]")}>
@@ -224,8 +224,8 @@ export function ClassView({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="leading-normal">
                 <p className="text-[10px] font-semibold uppercase text-[#0058be]">
-                  Pola #1 · dampak terbesar
-                  {patternObjectives(top, questionObjectives, numbers).map((number) => ` · TP ${number}`)}
+                  Pola #1, dampak terbesar
+                  {patternObjectives(top, questionObjectives, numbers).map((number) => `, TP ${number}`)}
                 </p>
                 <p className="text-xl font-semibold text-[#1b1b1d]">{patternTitle(top)}</p>
               </div>
@@ -241,7 +241,7 @@ export function ClassView({
               miskonsepsi sama; perlu validasi guru.
             </p>
             <p className="text-xs font-semibold text-[#1b1b1d]">
-              Bukti: {top.affectedCount} siswa · {sourceLabel(top)} · {[...new Set(top.sources.map((source) => source.assessmentTitle))].join(", ")}
+              Bukti: {top.affectedCount} siswa, {sourceLabel(top)}, {[...new Set(top.sources.map((source) => source.assessmentTitle))].join(", ")}
             </p>
             <ul className="grid gap-x-4 gap-y-1 text-xs text-[#45474c] sm:grid-cols-3">
               {top.studentIds.map((id) => (
@@ -269,12 +269,12 @@ export function ClassView({
                 <div className="min-w-0 flex-1 leading-normal">
                   <p className="text-sm font-semibold text-[#1b1b1d]">{patternTitle(pattern)}</p>
                   <p className="text-xs text-[#45474c]">
-                    {patternObjectives(pattern, questionObjectives, numbers).map((number) => `TP ${number} · `)}
-                    {sourceLabel(pattern)} · indikasi, perlu validasi guru
+                    {patternObjectives(pattern, questionObjectives, numbers).map((number) => `TP ${number}, `)}
+                    {sourceLabel(pattern)}, indikasi, perlu validasi guru
                   </p>
                 </div>
                 <span className="text-sm font-semibold text-[#1b1b1d]">
-                  {pattern.affectedCount} siswa · {formatPercent(pattern.affectedPct)}
+                  {pattern.affectedCount} siswa ({formatPercent(pattern.affectedPct)})
                 </span>
                 {firstTp && (
                   <Link

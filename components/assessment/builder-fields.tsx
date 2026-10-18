@@ -1,7 +1,8 @@
 import Image from "next/image";
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 import { fieldLabelClassName, inputBoxClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
+import { SelectMenu, type SelectMenuProps } from "@/components/ui/select-menu";
 
 // Field pieces of the Buat Asesmen forms, in the Input Bar style of Figma New Design 65:11718.
 
@@ -53,36 +54,9 @@ export function TextInput({ invalid, className, ...props }: InputHTMLAttributes<
   );
 }
 
-export function SelectInput({
-  invalid,
-  className,
-  children,
-  ...props
-}: SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean }) {
-  return (
-    <div className="relative">
-      <select
-        aria-invalid={invalid || undefined}
-        className={cn(
-          inputBoxClassName,
-          "h-[50px] appearance-none pr-12 disabled:cursor-not-allowed disabled:bg-[#f0edef]",
-          !props.value && "text-[#75777d]",
-          invalid && "border-[#dc2626]",
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </select>
-      <Image
-        alt=""
-        className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2"
-        height={24}
-        src="/assessment/chevron-down.svg"
-        width={24}
-      />
-    </div>
-  );
+// The dropdown of the forms: SelectMenu (components/ui/select-menu.tsx) with the same props as a <select>.
+export function SelectInput(props: SelectMenuProps) {
+  return <SelectMenu {...props} />;
 }
 
 export function FormMessage({ children }: { children: ReactNode }) {

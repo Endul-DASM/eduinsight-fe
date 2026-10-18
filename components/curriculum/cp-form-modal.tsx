@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useTransition } from "react";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { TextField } from "@/components/auth/text-field";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { subjectModalClassName } from "@/components/subject-select/styles";
 import { saveCpAction } from "@/lib/actions/curriculum";
 import type { CurriculumCp, Fase } from "@/lib/api/types";
@@ -70,27 +70,13 @@ function CpForm({
           <label className={fieldLabelClassName} htmlFor="cp-fase">
             Fase
           </label>
-          <div className="relative">
-            <select
-              className={cn(inputBoxClassName, "h-[50px] appearance-none pr-12")}
-              id="cp-fase"
-              onChange={(event) => setFase(event.target.value as Fase)}
-              value={fase}
-            >
-              {fases.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label} ({option.grades})
-                </option>
-              ))}
-            </select>
-            <Image
-              alt=""
-              className="pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2"
-              height={24}
-              src="/subjects/chevron-down.svg"
-              width={24}
-            />
-          </div>
+          <SelectMenu id="cp-fase" onChange={(event) => setFase(event.target.value as Fase)} value={fase}>
+            {fases.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label} ({option.grades})
+              </option>
+            ))}
+          </SelectMenu>
         </div>
         <TextField
           error={errors.code}

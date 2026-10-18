@@ -10,7 +10,7 @@ function OptionDistribution({ question }: { question: QuestionPerformance }) {
   if (!question.options) {
     return (
       <p className="text-xs text-[#45474c]">
-        Uraian · {question.gradedCount ?? 0} dinilai · {question.pendingCount ?? 0} menunggu penilaian
+        Uraian: {question.gradedCount ?? 0} dinilai, {question.pendingCount ?? 0} menunggu penilaian
       </p>
     );
   }
@@ -73,7 +73,7 @@ export function QuestionPerformanceView({ slug, results }: { slug: string; resul
             <span className="size-2.5 rounded-sm bg-[#c5c6cd]" /> Opsi pengecoh
           </span>
         </div>
-        <span>Distribusi: jumlah siswa (persentase) · setiap baris = 100%</span>
+        <span>Distribusi: jumlah siswa (persentase), setiap baris = 100%</span>
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-[#eae7e9]">
@@ -116,7 +116,7 @@ export function QuestionPerformanceView({ slug, results }: { slug: string; resul
                       {question.correctCount !== null && (
                         <span className="font-normal text-[#45474c]">
                           {" "}
-                          · {question.correctCount}/{question.responseCount} siswa
+                          ({question.correctCount}/{question.responseCount} siswa)
                         </span>
                       )}
                     </p>
@@ -137,7 +137,7 @@ export function QuestionPerformanceView({ slug, results }: { slug: string; resul
       {weakest && (
         <p className={cn("flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl bg-[#e6eff9] px-4 py-3 text-xs leading-normal text-[#1b1b1d]")}>
           <span className="font-semibold uppercase text-[#004695]">
-            Butir {weakest.number} · {formatPercent(proportionOf(weakest))} benar
+            Butir {weakest.number}: {formatPercent(proportionOf(weakest))} benar
           </span>
           <span>
             Butir {weakest.number} memiliki proporsi benar terendah

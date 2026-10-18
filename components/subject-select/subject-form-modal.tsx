@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { type FormEvent, useActionState, useEffect, useState } from "react";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { TextField } from "@/components/auth/text-field";
 import { Modal } from "@/components/ui/modal";
+import { SelectMenu } from "@/components/ui/select-menu";
 import { createSubjectAction, updateSubjectAction } from "@/lib/actions/subjects";
 import type { Subject } from "@/lib/api/types";
 import { type SubjectFormErrors, type SubjectFormValues, validateSubjectForm } from "@/lib/subject-form";
@@ -25,30 +25,20 @@ function CopyCurriculumField({ sources }: { sources: Subject[] }) {
       <label className="text-xs font-semibold leading-normal text-[#1b1b1d]" htmlFor="copyCurriculumFrom">
         Salin Kurikulum (Opsional)
       </label>
-      <div className="relative">
-        <select
-          aria-describedby="copyCurriculumFrom-note"
-          className="h-[50px] w-full appearance-none rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] pl-[13px] pr-12 text-base leading-normal text-[#1b1b1d] outline-none focus:border-[#0058be] focus:ring-2 focus:ring-[rgba(0,88,190,0.15)] disabled:cursor-not-allowed disabled:opacity-70"
-          defaultValue=""
-          disabled={sources.length === 0}
-          id="copyCurriculumFrom"
-          name="copyCurriculumFrom"
-        >
-          <option value="">Salin Kurikulum dari Kelas Anda yang Lain</option>
-          {sources.map((source) => (
-            <option key={source.id} value={source.id}>
-              {source.name} · {source.class.name} ({source.class.academicYear})
-            </option>
-          ))}
-        </select>
-        <Image
-          alt=""
-          className="pointer-events-none absolute right-[13px] top-1/2 -translate-y-1/2"
-          height={24}
-          src="/subjects/chevron-down.svg"
-          width={24}
-        />
-      </div>
+      <SelectMenu
+        aria-describedby="copyCurriculumFrom-note"
+        defaultValue=""
+        disabled={sources.length === 0}
+        id="copyCurriculumFrom"
+        name="copyCurriculumFrom"
+      >
+        <option value="">Salin Kurikulum dari Kelas Anda yang Lain</option>
+        {sources.map((source) => (
+          <option key={source.id} value={source.id}>
+            {source.name}, {source.class.name} ({source.class.academicYear})
+          </option>
+        ))}
+      </SelectMenu>
       <p className="text-xs leading-normal text-[#75777d]" id="copyCurriculumFrom-note">
         {sources.length === 0
           ? "Belum ada kelas lain untuk disalin."

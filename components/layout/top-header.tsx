@@ -15,7 +15,8 @@ const sectionTitles: Record<string, string> = {
   remedial: "Remedial",
   analysis: "Analisis",
   diagnosis: "Diagnosis",
-  profile: "Profile",
+  profile: "Edit Profile",
+  help: "Bantuan",
 };
 
 type Crumb = { label: string; href?: string };

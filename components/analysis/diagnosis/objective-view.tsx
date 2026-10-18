@@ -53,12 +53,12 @@ function SelectedObjective({
             <div className="leading-normal">
               <p className="text-[28px] font-bold text-[#0058be]">{formatPercent(objective.classAverage)}</p>
               <p className="text-xs text-[#45474c]">
-                Rata-rata kelas · {scored} siswa
+                Rata-rata kelas, {scored} siswa
               </p>
             </div>
             <div className="leading-normal">
               <p className="text-sm text-[#1b1b1d]">
-                Bab {objective.chapterNumber} · {objective.chapterName} · {objective.itemCount} butir sumber
+                Bab {objective.chapterNumber}: {objective.chapterName}, {objective.itemCount} butir sumber
                 {objective.limitedData && <span className="ml-2 text-xs text-[#c2410c]">data terbatas (&lt; 3 butir)</span>}
               </p>
               <p className="text-xs text-[#45474c]">
@@ -84,7 +84,7 @@ function SelectedObjective({
           {diagnosisLabels.map((label) => (
             <span className="flex items-center gap-1 text-[#45474c]" key={label}>
               <span className={cn("size-2 rounded-full", labelBar[label])} />
-              {label} · {countOf(counts, label)} ({formatPercent(scored ? (countOf(counts, label) / scored) * 100 : 0)})
+              {label}: {countOf(counts, label)} ({formatPercent(scored ? (countOf(counts, label) / scored) * 100 : 0)})
             </span>
           ))}
         </div>
@@ -104,10 +104,10 @@ function SelectedObjective({
           patterns.map((pattern) => (
             <div className="flex flex-col gap-2 border-b border-[#eae7e9] pb-4 last:border-b-0 last:pb-0" key={pattern.rank}>
               <p className="text-base font-semibold text-[#1b1b1d]">
-                Detail pola #{pattern.rank} · {patternTitle(pattern)}
+                Detail pola #{pattern.rank}: {patternTitle(pattern)}
               </p>
               <p className="text-sm text-[#0058be]">
-                {pattern.affectedCount} siswa · {formatPercent(pattern.affectedPct)} kelas · {sourceLabel(pattern)}
+                {pattern.affectedCount} siswa ({formatPercent(pattern.affectedPct)} kelas), {sourceLabel(pattern)}
               </p>
               <p className="text-xs text-[#45474c]">Narasi AI segera tersedia; indikasi pola perlu validasi guru.</p>
               <ul className="grid gap-x-4 gap-y-1 text-xs text-[#45474c] sm:grid-cols-3">

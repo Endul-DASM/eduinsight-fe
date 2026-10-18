@@ -50,7 +50,7 @@ function ReferencesCard({ slug, references }: { slug: string; references: Materi
               {references.map((reference) => (
                 <tr className="align-top" key={reference.objectiveId}>
                   <td className="w-[38%] border-b border-[#eae7e9] px-2 py-4 text-[#1b1b1d]">
-                    <span className="font-semibold">TP {reference.objectiveNumber}</span> · {reference.objectiveDescription}
+                    <span className="font-semibold">TP {reference.objectiveNumber}:</span> {reference.objectiveDescription}
                     <span className="block text-[#dc2626]">Rata-rata siswa target {formatScore(reference.average)}</span>
                   </td>
                   <td className="border-b border-[#eae7e9] px-2 py-4 text-[#1b1b1d]">{reference.location}</td>

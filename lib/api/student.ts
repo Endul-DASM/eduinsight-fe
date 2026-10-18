@@ -177,3 +177,39 @@ export const getMyDiagnosis = cache(async (subjectId: string): Promise<MyDiagnos
     throw error;
   }
 });
+
+// Remedial siswa (FR-S-050, 051, FR-G-105). The package (materials and weak TPs) only appears once the teacher
+// approved it; `assessments` holds only the remedial assessments the student may take.
+export type RemedialStatus = "perlu_remedial" | "menunggu_materi" | "mengerjakan" | "reassessment" | "tuntas";
+
+export type MyRemedialPackage = {
+  level: "belum_paham" | "paham_sebagian" | "butuh_latihan";
+  weakObjectives: { learningObjective: LearningObjectiveRef; chapterNumber: number; chapterName: string; average: number }[];
+  materials: {
+    id: string;
+    title: string;
+    chapterId: string | null;
+    subchapterId: string | null;
+    sections: { id: string; heading: string | null; sourcePage: number | null }[];
+  }[];
+};
+
+export type MyRemedial = {
+  subjectId: string;
+  subjectName: string;
+  sourceAssessment: { id: string; title: string; type: AssessmentType; kkm: number };
+  sourceScore: number;
+  status: RemedialStatus;
+  cycle: number;
+  finalScore: number;
+  package: MyRemedialPackage | null;
+  assessments: StudentAssessment[];
+};
+
+export type MyRemedials = { activeCount: number; remedials: MyRemedial[] };
+
+// GET /my-remedials — across subjects; the pages keep the ones of their subject.
+export const getMyRemedials = cache(async (): Promise<MyRemedials> => {
+  if (isMockMode) return { activeCount: 0, remedials: [] };
+  return apiFetch<MyRemedials>("/my-remedials");
+});

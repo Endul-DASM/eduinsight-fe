@@ -5,9 +5,24 @@ import { useState, useTransition } from "react";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import { startAttemptAction } from "@/lib/actions/student-assessments";
+import { type AttemptSection, sectionNames } from "@/lib/student-assessment";
 
-// Mulai / Lanjutkan Asesmen (FR-S-010). The Server Function opens the attempt, or returns why it cannot start.
-export function StartButton({ slug, assessmentId, resume, disabled }: { slug: string; assessmentId: string; resume: boolean; disabled: boolean }) {
+// Mulai / Lanjutkan Asesmen or Remedial (FR-S-010). The Server Function opens the attempt, or returns why it cannot
+// start.
+export function StartButton({
+  slug,
+  section = "assessment",
+  assessmentId,
+  resume,
+  disabled,
+}: {
+  slug: string;
+  section?: AttemptSection;
+  assessmentId: string;
+  resume: boolean;
+  disabled: boolean;
+}) {
+  const { noun, title } = sectionNames[section];
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string>();
 
@@ -18,13 +33,13 @@ export function StartButton({ slug, assessmentId, resume, disabled }: { slug: st
         disabled={disabled || pending}
         onClick={() =>
           startTransition(async () => {
-            const result = await startAttemptAction(slug, assessmentId);
+            const result = await startAttemptAction(slug, assessmentId, section);
             setMessage(result?.message);
           })
         }
         type="button"
       >
-        {pending ? "Membuka asesmen..." : resume ? "Lanjutkan Asesmen" : "Mulai Asesmen"}
+        {pending ? `Membuka ${noun}...` : resume ? `Lanjutkan ${title}` : `Mulai ${title}`}
         {!pending && <Image alt="" height={24} src="/assessment/arrow-right.svg" width={24} />}
       </button>
       {message && (

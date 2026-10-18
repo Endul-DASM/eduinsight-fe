@@ -8,8 +8,24 @@ import { cn } from "@/components/ui/cn";
 
 export type AssessmentTab = "belum" | "selesai";
 
-// Search and the Belum Dikerjakan / Sudah Selesai tabs (Figma New Design 175:32308, 181:7800), kept in the URL.
-export function ListControls({ tab, query }: { tab: AssessmentTab; query: string }) {
+const assessmentTabs = [
+  { id: "belum", label: "Belum Dikerjakan" },
+  { id: "selesai", label: "Sudah Selesai" },
+];
+
+// Search and the two status tabs, kept in the URL: Belum Dikerjakan / Sudah Selesai on Asesmen (Figma New Design
+// 175:32308, 181:7800), Perlu Remedial / Sudah Tuntas on Remedial (175:33620).
+export function ListControls({
+  tab,
+  query,
+  tabs = assessmentTabs,
+  placeholder = "Cari asesmen atau TP...",
+}: {
+  tab: string;
+  query: string;
+  tabs?: { id: string; label: string }[];
+  placeholder?: string;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -27,7 +43,7 @@ export function ListControls({ tab, query }: { tab: AssessmentTab; query: string
     return () => clearTimeout(timer);
   }, [value, query, pathname, router, searchParams]);
 
-  const tabHref = (next: AssessmentTab) => {
+  const tabHref = (next: string) => {
     const params = new URLSearchParams(searchParams);
     params.set("tab", next);
     return `${pathname}?${params}`;
@@ -38,20 +54,15 @@ export function ListControls({ tab, query }: { tab: AssessmentTab; query: string
       <label className="flex h-[50px] w-full items-center gap-3 rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] px-3 focus-within:border-[#0058be] sm:max-w-[400px]">
         <Image alt="" height={22} src="/assessment/search.svg" width={22} />
         <input
-          aria-label="Cari asesmen"
+          aria-label={placeholder.replace("...", "")}
           className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-[#75777d]"
           onChange={(event) => setValue(event.target.value)}
-          placeholder="Cari asesmen atau TP..."
+          placeholder={placeholder}
           value={value}
         />
       </label>
-      <nav aria-label="Status asesmen" className="flex gap-2">
-        {(
-          [
-            { id: "belum", label: "Belum Dikerjakan" },
-            { id: "selesai", label: "Sudah Selesai" },
-          ] as const
-        ).map((item) => (
+      <nav aria-label="Status" className="flex gap-2">
+        {tabs.map((item) => (
           <Link
             aria-current={tab === item.id ? "page" : undefined}
             className={cn(

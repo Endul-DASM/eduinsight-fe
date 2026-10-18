@@ -41,15 +41,22 @@ export default async function StudentSubjectLayout({ children, params }: LayoutP
       className={cn(poppins.className, "relative min-h-screen bg-white text-[#1b1b1d] md:flex")}
       style={zoomStyle(WORKSPACE_ZOOM, APP_ZOOM)}
     >
-      <WorkspaceBackground />
-      <StudentSidebar initialCollapsed={(await cookies()).get(SIDEBAR_COOKIE)?.value === SIDEBAR_COLLAPSED} />
+      {/* Printing (Unduh PDF on Diagnosis) keeps only the page content. */}
+      <div className="contents print:hidden">
+        <WorkspaceBackground />
+        <StudentSidebar initialCollapsed={(await cookies()).get(SIDEBAR_COOKIE)?.value === SIDEBAR_COLLAPSED} />
+      </div>
       <div className="relative flex min-h-screen min-w-0 flex-1 flex-col">
         {/* The header reads ?detail= for its breadcrumb. */}
-        <Suspense fallback={null}>
-          <StudentTopHeader slug={slug} subjectLabel={`${subject.name}, ${subject.class.name}`} user={user} />
-        </Suspense>
+        <div className="contents print:hidden">
+          <Suspense fallback={null}>
+            <StudentTopHeader slug={slug} subjectLabel={`${subject.name}, ${subject.class.name}`} user={user} />
+          </Suspense>
+        </div>
         <main className="min-w-0 flex-1">{children}</main>
-        <WorkspaceFooter links={footerLinks} tagline="Belajar terarah, tumbuh bersama." />
+        <div className="contents print:hidden">
+          <WorkspaceFooter links={footerLinks} tagline="Belajar terarah, tumbuh bersama." />
+        </div>
       </div>
     </div>
   );

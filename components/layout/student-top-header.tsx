@@ -12,6 +12,7 @@ type Crumb = { label: string; href?: string };
 const sectionTitles: Record<string, string> = {
   dashboard: "Dashboard",
   profile: "Profile",
+  help: "Bantuan",
 };
 
 function useCrumbs(slug: string): Crumb[] {

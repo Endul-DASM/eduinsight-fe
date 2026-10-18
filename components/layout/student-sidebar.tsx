@@ -11,7 +11,8 @@ const studentNavItems: NavItem[] = [
   { label: "Remedial", href: null, icon: "/dashboard/nav-remedial.svg" },
 ];
 
-const help: NavItem = { label: "Bantuan", href: null, icon: "/auth/help-circle.svg" };
+// FAQ and Pusat Bantuan (SRS FR-X-030).
+const help: NavItem = { label: "Bantuan", href: "/help", icon: "/auth/help-circle.svg" };
 
 export function StudentSidebar({ initialCollapsed }: { initialCollapsed?: boolean }) {
   const { subject } = useParams<{ subject: string }>();

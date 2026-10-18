@@ -11,6 +11,7 @@ import { isMockMode } from "@/lib/api/client";
 import { mockStudent } from "@/lib/api/mocks";
 import { getSubject } from "@/lib/api/subjects";
 import { getCurrentUser } from "@/lib/api/users";
+import { SUPPORT_EMAIL } from "@/lib/help";
 import { SIDEBAR_COLLAPSED, SIDEBAR_COOKIE } from "@/lib/sidebar";
 import { APP_ZOOM, WORKSPACE_ZOOM, zoomStyle } from "@/lib/zoom";
 
@@ -20,7 +21,7 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 const footerLinks = [
   { label: "Kebijakan Privasi", href: "#" },
   { label: "Ketentuan Layanan", href: "#" },
-  { label: "Hubungi Bantuan", href: "mailto:hello@eduinsight.id" },
+  { label: "Hubungi Bantuan", href: `mailto:${SUPPORT_EMAIL}` },
 ];
 
 // A student's workspace for one subject: /student/{slug}/... (Figma New Design 175:32037), laid out like the

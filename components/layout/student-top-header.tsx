@@ -15,10 +15,18 @@ const sectionTitles: Record<string, string> = {
   help: "Bantuan",
 };
 
-function useCrumbs(slug: string): Crumb[] {
+function useCrumbs(slug: string, subjectLabel: string): Crumb[] {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const section = pathname.split("/")[3] ?? "dashboard";
+  const [, , , section = "dashboard", assessmentId, step] = pathname.split("/");
+  if (section === "assessment") {
+    const list = `/student/${slug}/assessment`;
+    // Figma New Design 175:32308 (Daftar Asesmen), 181:8150, 175:32740, 175:33141.
+    if (!assessmentId) return [{ label: "Daftar Asesmen" }, { label: subjectLabel }];
+    if (step === "kerjakan") return [{ label: "Pengerjaan Asesmen" }, { label: subjectLabel }];
+    if (step === "selesai") return [{ label: "Asesmen Selesai" }, { label: subjectLabel }];
+    return [{ label: "Asesmen", href: list }, { label: "Persiapan Asesmen" }];
+  }
   const crumbs: Crumb[] = [{ label: sectionTitles[section] ?? "Dashboard", href: `/student/${slug}/${section}` }];
   if (section === "dashboard" && searchParams.get("detail") === "penguasaan") {
     crumbs.push({ label: "Level Penguasaan Materi" });
@@ -28,7 +36,7 @@ function useCrumbs(slug: string): Crumb[] {
 
 // Top bar of the student workspace (Figma New Design 175:32037), in the style of the teacher's.
 export function StudentTopHeader({ slug, subjectLabel, user }: { slug: string; subjectLabel: string; user: CurrentUser }) {
-  const crumbs = useCrumbs(slug);
+  const crumbs = useCrumbs(slug, subjectLabel);
 
   return (
     <header className="sticky top-0 z-20 flex min-h-18 items-center justify-between gap-4 border-b border-[#c5c6cd] bg-[rgba(250,251,253,0.6)] px-4 py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-xs sm:px-8">

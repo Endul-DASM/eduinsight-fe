@@ -87,3 +87,54 @@ export const getMyDashboard = cache(async (subjectId: string): Promise<MyDashboa
     throw error;
   }
 });
+
+// GET /subjects/:id/my-assessments — published assessments of the subject, with the student's own attempts
+// (FR-G-051, FR-G-105: official remedials only for students who need them).
+export const getMyAssessments = cache(async (subjectId: string): Promise<StudentAssessment[]> => {
+  if (isMockMode) return [];
+  return apiFetch<StudentAssessment[]>(`/subjects/${encodeURIComponent(subjectId)}/my-assessments`);
+});
+
+// Taking an assessment (FR-S-010 – 013). The questions never carry the answer key.
+export type AttemptQuestion = {
+  id: string;
+  // Position in the assessment, starting at 1.
+  number: number;
+  type: "pg" | "uraian";
+  stem: string;
+  options: { key: string; text: string }[] | null;
+};
+
+export type AttemptAnswer = { questionId: string; answer: string | null; answeredAt: string | null; isCorrect: boolean | null };
+
+export type Attempt = {
+  id: string;
+  assessmentId: string;
+  assessmentTitle: string;
+  number: number;
+  status: "in_progress" | "submitted";
+  startedAt: string;
+  deadlineAt: string;
+  // Lets the timer run on server time.
+  serverNow: string;
+  submittedAt: string | null;
+  autoSubmitted: boolean;
+  questions: AttemptQuestion[];
+  responses: AttemptAnswer[];
+  // Set once submitted; score stays null while essays wait for the teacher.
+  score: number | null;
+  pgCorrect: number | null;
+  pgTotal: number | null;
+  essaysPending: number | null;
+};
+
+// GET /attempts/:id — null when it is not the student's.
+export const getAttempt = cache(async (attemptId: string): Promise<Attempt | null> => {
+  if (isMockMode) return null;
+  try {
+    return await apiFetch<Attempt>(`/attempts/${encodeURIComponent(attemptId)}`);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+});

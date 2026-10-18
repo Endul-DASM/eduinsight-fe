@@ -187,7 +187,7 @@ function RecommendationCard({ dashboard }: { dashboard: MyDashboard }) {
 }
 
 // Upcoming Test (FR-S-002): scheduled or ongoing assessments.
-function UpcomingTests({ dashboard }: { dashboard: MyDashboard }) {
+function UpcomingTests({ slug, dashboard }: { slug: string; dashboard: MyDashboard }) {
   const tests = dashboard.upcoming;
   return (
     <section className="flex flex-col gap-4">
@@ -209,7 +209,9 @@ function UpcomingTests({ dashboard }: { dashboard: MyDashboard }) {
                 {test.learningObjectives.length > 0 &&
                   `, TP fokus: ${test.learningObjectives.map((objective) => objective.number).join(", ")}`}
               </p>
-              <SoonButton className="mt-auto w-full" label="Lihat Detail" />
+              <Link className={cn(outlineButtonClassName, "mt-auto w-full py-2 text-sm")} href={`/student/${slug}/assessment/${test.id}`}>
+                Lihat Detail
+              </Link>
             </li>
           ))}
         </ul>
@@ -321,7 +323,7 @@ export function StudentDashboardPage({
         <MasteryCard chapters={dashboard.chapters.slice(0, 3)} detailHref={`/student/${slug}/dashboard?detail=penguasaan`} />
         <RecommendationCard dashboard={dashboard} />
       </div>
-      <UpcomingTests dashboard={dashboard} />
+      <UpcomingTests dashboard={dashboard} slug={slug} />
       <RecentActivity dashboard={dashboard} />
     </div>
   );

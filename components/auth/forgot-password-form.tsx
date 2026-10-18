@@ -36,14 +36,14 @@ export function ForgotPasswordForm() {
         ) : (
           <AuthNoticeMessage notice={{ message: state.message }} />
         ))}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <AuthFootnote>
           Ingat kata sandi?{" "}
           <Link className={textLinkClassName} href="/login">
             Masuk
           </Link>
         </AuthFootnote>
-        <button className={primaryButtonClassName} disabled={pending} type="submit">
+        <button className={`${primaryButtonClassName} w-full sm:w-auto`} disabled={pending} type="submit">
           {pending ? "Mengirim..." : state?.sent ? "Kirim Ulang" : "Kirim Tautan"}
         </button>
       </div>

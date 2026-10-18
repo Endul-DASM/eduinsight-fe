@@ -19,6 +19,8 @@ function useCrumbs(slug: string, subjectLabel: string): Crumb[] {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [, , , section = "dashboard", assessmentId, step] = pathname.split("/");
+  // Figma New Design 175:33279.
+  if (section === "diagnosis") return [{ label: "Diagnosis Belajar" }, { label: subjectLabel }];
   if (section === "assessment") {
     const list = `/student/${slug}/assessment`;
     // Figma New Design 175:32308 (Daftar Asesmen), 181:8150, 175:32740, 175:33141.

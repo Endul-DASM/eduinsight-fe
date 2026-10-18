@@ -21,7 +21,8 @@ import { type AssessmentTab, ListControls } from "./list-controls";
 const card = "rounded-3xl bg-[#fafbfd] shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
 const chip = "rounded-3xl px-2 py-0.5 text-xs font-semibold";
 
-function Hero({ subject, studentName }: { subject: Subject; studentName: string }) {
+// The hero of Daftar Asesmen and Daftar Remedial (Figma New Design 175:32308, 175:33620).
+export function ListHero({ subject, title, description }: { subject: Subject; title: string; description: string }) {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-[linear-gradient(125deg,#ffffff_8%,#99bce5_132%)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
       <Image
@@ -34,10 +35,8 @@ function Hero({ subject, studentName }: { subject: Subject; studentName: string 
       />
       <div className="relative flex flex-col gap-6 px-6 py-8 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="max-w-[720px]">
-          <h2 className="text-2xl font-bold leading-normal text-[#1b1b1d] sm:text-[32px]">Daftar Asesmen Semester {semesterOf()}</h2>
-          <p className="text-base leading-normal text-[#45474c]">
-            Tetap semangat, {studentName}! Lihat hasil asesmenmu dan lanjutkan evaluasi untuk memperkuat pemahamanmu.
-          </p>
+          <h2 className="text-2xl font-bold leading-normal text-[#1b1b1d] sm:text-[32px]">{title}</h2>
+          <p className="text-base leading-normal text-[#45474c]">{description}</p>
         </div>
         <div className="flex min-w-[230px] flex-col gap-1.5 rounded-3xl bg-[rgba(245,243,244,0.6)] p-6 text-[#003264]">
           <p className="text-2xl font-bold leading-normal">{subject.name}</p>
@@ -52,7 +51,7 @@ function Hero({ subject, studentName }: { subject: Subject; studentName: string 
   );
 }
 
-function ClipboardIcon() {
+export function ClipboardIcon() {
   return (
     <span className="grid size-24 shrink-0 place-items-center rounded-2xl bg-[#e6eff9] max-sm:hidden">
       <Image alt="" height={44} src="/student/clipboard-check.svg" width={44} />
@@ -153,7 +152,11 @@ export function StudentAssessmentListPage({
 
   return (
     <div className="flex flex-col gap-6 px-4 py-6 sm:px-8">
-      <Hero studentName={studentName} subject={subject} />
+      <ListHero
+        description={`Tetap semangat, ${studentName}! Lihat hasil asesmenmu dan lanjutkan evaluasi untuk memperkuat pemahamanmu.`}
+        subject={subject}
+        title={`Daftar Asesmen Semester ${semesterOf()}`}
+      />
       <div className="flex flex-wrap gap-2">
         <span className={cn(chip, "bg-[rgba(153,188,229,0.6)] text-[#004695]")}>
           Semester {semesterOf()} {subject.class.academicYear}

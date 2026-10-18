@@ -8,7 +8,7 @@ import { cn } from "@/components/ui/cn";
 import { MaskIcon } from "@/components/ui/mask-icon";
 import { saveResponsesAction, submitAttemptAction } from "@/lib/actions/student-assessments";
 import type { Attempt } from "@/lib/api/student";
-import { formatRemaining, isAnswered } from "@/lib/student-assessment";
+import { type AttemptSection, formatRemaining, isAnswered, sectionNames } from "@/lib/student-assessment";
 
 type Answers = Record<string, string | null>;
 type SaveState = { kind: "idle" } | { kind: "saving" } | { kind: "saved"; at: string } | { kind: "error"; message: string };
@@ -48,14 +48,17 @@ function useFlags(attemptId: string) {
   return { flags, toggle };
 }
 
-// Pengerjaan Asesmen and Konfirmasi Pengumpulan (PRD 6.2, SRS FR-S-010 – 013; Figma New Design 175:32740, 175:32988).
+// Pengerjaan Asesmen/Remedial and Konfirmasi Pengumpulan (PRD 6.2, SRS FR-S-010 – 013; Figma New Design 175:32740,
+// 175:32988).
 export function AttemptPlayer({
   slug,
+  section = "assessment",
   subjectName,
   attempt,
   listHref,
 }: {
   slug: string;
+  section?: AttemptSection;
   subjectName: string;
   attempt: Attempt;
   listHref: string;
@@ -107,7 +110,7 @@ export function AttemptPlayer({
         return true;
       }
       if (result.submitted) {
-        router.replace(`/student/${slug}/assessment/${attempt.assessmentId}/selesai?attempt=${attempt.id}`);
+        router.replace(`/student/${slug}/${section}/${attempt.assessmentId}/selesai?attempt=${attempt.id}`);
         return false;
       }
       setSave({ kind: "error", message: result.message });
@@ -119,7 +122,7 @@ export function AttemptPlayer({
     } finally {
       flushing.current = null;
     }
-  }, [attempt.assessmentId, attempt.id, router, slug]);
+  }, [attempt.assessmentId, attempt.id, router, section, slug]);
 
   // Debounced save after a change, plus the 10 s ceiling.
   useEffect(() => {
@@ -152,10 +155,10 @@ export function AttemptPlayer({
     setSubmitError(undefined);
     startSubmit(async () => {
       await flush();
-      const result = await submitAttemptAction(slug, attempt.assessmentId, attempt.id);
+      const result = await submitAttemptAction(slug, attempt.assessmentId, attempt.id, section);
       if (result) setSubmitError(result.message);
     });
-  }, [attempt.assessmentId, attempt.id, flush, slug]);
+  }, [attempt.assessmentId, attempt.id, flush, section, slug]);
 
   // FR-S-012: hand in automatically when the time is up.
   const autoSubmitted = useRef(false);
@@ -239,7 +242,7 @@ export function AttemptPlayer({
           </section>
           <section className={cn(card, "flex flex-col gap-5 p-6")}>
             <div className="leading-normal">
-              <h3 className="text-2xl font-semibold text-[#1b1b1d]">Yakin ingin mengakhiri asesmen?</h3>
+              <h3 className="text-2xl font-semibold text-[#1b1b1d]">Yakin ingin mengakhiri {sectionNames[section].noun}?</h3>
               <p className="text-base text-[#45474c]">Periksa kembali ringkasan pengerjaanmu di bawah ini.</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import { ApiError, apiFetch, isMockMode } from "@/lib/api/client";
 import type { Attempt } from "@/lib/api/student";
+import type { AttemptSection } from "@/lib/student-assessment";
 
 const MOCK_MODE_MESSAGE = "Mode demo: sambungkan backend (API_BASE_URL) untuk mengerjakan asesmen.";
 const SERVER_UNREACHABLE_MESSAGE = "Tidak dapat terhubung ke server. Coba lagi beberapa saat lagi.";
@@ -24,8 +25,12 @@ function messageOf(error: unknown): string {
 
 export type StartAttemptState = { message: string } | undefined;
 
-// FR-S-010: starts an attempt, or resumes the one in progress, then opens it.
-export async function startAttemptAction(slug: string, assessmentId: string): Promise<StartAttemptState> {
+// FR-S-010: starts an attempt, or resumes the one in progress, then opens it under Asesmen or Remedial.
+export async function startAttemptAction(
+  slug: string,
+  assessmentId: string,
+  section: AttemptSection = "assessment",
+): Promise<StartAttemptState> {
   if (isMockMode) return { message: MOCK_MODE_MESSAGE };
   try {
     await apiFetch<Attempt>(`/assessments/${encodeURIComponent(assessmentId)}/attempts`, { method: "POST" });
@@ -34,7 +39,7 @@ export async function startAttemptAction(slug: string, assessmentId: string): Pr
     unstable_rethrow(error);
     return { message: messageOf(error) };
   }
-  redirect(`/student/${slug}/assessment/${assessmentId}/kerjakan`);
+  redirect(`/student/${slug}/${section}/${assessmentId}/kerjakan`);
 }
 
 export type SaveResult = { ok: true; savedAt: string; deadlineAt: string } | { ok: false; message: string; submitted?: boolean };
@@ -63,9 +68,14 @@ export async function saveResponsesAction(
 
 export type SubmitResult = { message: string } | undefined;
 
-// Hands the attempt in (FR-S-013), then shows Asesmen Selesai. An attempt the backend already submitted (time up)
-// goes to the same page.
-export async function submitAttemptAction(slug: string, assessmentId: string, attemptId: string): Promise<SubmitResult> {
+// Hands the attempt in (FR-S-013), then shows Asesmen or Remedial Selesai. An attempt the backend already submitted
+// (time up) goes to the same page.
+export async function submitAttemptAction(
+  slug: string,
+  assessmentId: string,
+  attemptId: string,
+  section: AttemptSection = "assessment",
+): Promise<SubmitResult> {
   if (isMockMode) return { message: MOCK_MODE_MESSAGE };
   try {
     await apiFetch<Attempt>(`/attempts/${encodeURIComponent(attemptId)}/submit`, { method: "POST" });
@@ -74,5 +84,5 @@ export async function submitAttemptAction(slug: string, assessmentId: string, at
     if (!(error instanceof ApiError && error.code === "attempt_submitted")) return { message: messageOf(error) };
   }
   revalidatePath(`/student/${slug}`, "layout");
-  redirect(`/student/${slug}/assessment/${assessmentId}/selesai?attempt=${attemptId}`);
+  redirect(`/student/${slug}/${section}/${assessmentId}/selesai?attempt=${attemptId}`);
 }

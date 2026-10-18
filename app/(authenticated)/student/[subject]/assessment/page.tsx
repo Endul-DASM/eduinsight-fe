@@ -20,7 +20,8 @@ export default async function StudentAssessmentListRoute({ params, searchParams 
 
   return (
     <StudentAssessmentListPage
-      assessments={assessments}
+      // Remedial assessments live under Remedial (FR-S-050).
+      assessments={assessments.filter((assessment) => assessment.type !== "remedial")}
       query={typeof query.q === "string" ? query.q : ""}
       slug={slug}
       statuses={statusesOf(dashboard?.recentActivity ?? [])}

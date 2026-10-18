@@ -2,6 +2,14 @@
 // endpoints. Pure functions, shared by the server pages and the attempt player.
 import type { ActivityStatus, MyActivity, StudentAssessment } from "./api/student";
 
+// The student pages that take an attempt: Asesmen and Remedial share the flow (FR-S-010 – 013, FR-S-050).
+export type AttemptSection = "assessment" | "remedial";
+
+export const sectionNames: Record<AttemptSection, { noun: string; title: string }> = {
+  assessment: { noun: "asesmen", title: "Asesmen" },
+  remedial: { noun: "remedial", title: "Remedial" },
+};
+
 export type CardState = "available" | "resume" | "not_opened" | "closed" | "no_attempts" | "offline";
 
 // Belum Dikerjakan: what the student can do with the assessment now.

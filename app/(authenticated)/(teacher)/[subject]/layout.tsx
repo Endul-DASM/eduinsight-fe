@@ -1,10 +1,10 @@
 import { Poppins } from "next/font/google";
 import { cookies } from "next/headers";
-import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AppSidebar } from "@/components/layout/app-sidebar";
 import { TopHeader } from "@/components/layout/top-header";
+import { WorkspaceBackground } from "@/components/layout/workspace-background";
 import { WorkspaceFooter } from "@/components/layout/workspace-footer";
 import { cn } from "@/components/ui/cn";
 import { getSubject } from "@/lib/api/subjects";
@@ -14,28 +14,6 @@ import { APP_ZOOM, WORKSPACE_ZOOM, zoomStyle } from "@/lib/zoom";
 
 // The new workspace design uses Poppins; it is scoped to the subject pages.
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
-
-// The two wide ellipses behind the workspace (Figma New Design 22:4162), at their design size.
-function Background() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden print:hidden">
-      <Image
-        alt=""
-        className="absolute left-1/2 top-[-850px] h-[1704px] w-[1067px] max-w-none -translate-x-1/2 -rotate-[107deg]"
-        height={1704}
-        src="/dashboard/bg-curve-top.svg"
-        width={1067}
-      />
-      <Image
-        alt=""
-        className="absolute left-[calc(50%+380px)] top-[560px] h-[1704px] w-[1067px] max-w-none -translate-x-1/2 -scale-y-100 rotate-[107deg]"
-        height={1704}
-        src="/dashboard/bg-curve-bottom.svg"
-        width={1067}
-      />
-    </div>
-  );
-}
 
 export default async function TeacherLayout({ children, params }: LayoutProps<"/[subject]">) {
   const { subject: slug } = await params;
@@ -56,7 +34,7 @@ export default async function TeacherLayout({ children, params }: LayoutProps<"/
       className={cn(poppins.className, "relative min-h-screen bg-white text-[#1b1b1d] md:flex")}
       style={zoomStyle(WORKSPACE_ZOOM, APP_ZOOM)}
     >
-      <Background />
+      <WorkspaceBackground />
       {/* Printing a page (e.g. Unduh Soal) leaves out the workspace around it. */}
       <div className="contents print:hidden">
         <AppSidebar initialCollapsed={(await cookies()).get(SIDEBAR_COOKIE)?.value === SIDEBAR_COLLAPSED} />

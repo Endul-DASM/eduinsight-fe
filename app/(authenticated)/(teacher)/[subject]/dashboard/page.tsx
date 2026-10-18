@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import { DashboardPage } from "@/components/dashboard/dashboard-page";
 import { ApiError } from "@/lib/api/client";
 import { getDashboard } from "@/lib/api/dashboard";
@@ -19,6 +19,8 @@ export default async function DashboardRoute({ params, searchParams }: PageProps
   try {
     data = await getDashboard(subject);
   } catch (caught) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
+    unstable_rethrow(caught);
     error =
       caught instanceof ApiError && caught.code
         ? caught.message

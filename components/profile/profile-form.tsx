@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { ChangePasswordForm } from "@/components/account/change-password-form";
 import { Field, InfoMessage, SelectInput, TextInput } from "@/components/assessment/builder-fields";
-import { PasswordField } from "@/components/auth/password-field";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName, sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
@@ -10,11 +10,8 @@ import { Modal } from "@/components/ui/modal";
 import type { CurrentUser } from "@/lib/api/types";
 import {
   PHOTO_MAX_MB,
-  type PasswordErrors,
-  type PasswordValues,
   type ProfileErrors,
   type ProfileValues,
-  validatePasswordChange,
   validatePhotoFile,
   validatePhotoSize,
   validateProfile,
@@ -98,71 +95,25 @@ function PhotoCard({ initials }: { initials: string }) {
   );
 }
 
-const emptyPassword: PasswordValues = { current: "", next: "", confirmation: "" };
-
+// Ubah Password: the change-password form of POST /auth/password/change (other sessions are signed out).
 function PasswordModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [values, setValues] = useState(emptyPassword);
-  const [errors, setErrors] = useState<PasswordErrors>({});
-  const [submitted, setSubmitted] = useState(false);
-
-  function close() {
-    setValues(emptyPassword);
-    setErrors({});
-    setSubmitted(false);
-    onClose();
-  }
-
-  const set = (key: keyof PasswordValues) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const next = { ...values, [key]: event.target.value };
-    setValues(next);
-    if (Object.keys(errors).length) setErrors(validatePasswordChange(next));
-  };
-
   return (
     <Modal
       align="start"
       className="max-w-[520px] rounded-3xl bg-[#fafbfd] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop:bg-[rgba(9,20,38,0.2)] backdrop:backdrop-blur-sm"
-      onClose={close}
+      onClose={onClose}
       open={open}
       showClose
       title="Ubah Password"
     >
-      <form
-        className="flex flex-col gap-4"
-        noValidate
-        onSubmit={(event) => {
-          event.preventDefault();
-          const found = validatePasswordChange(values);
-          setErrors(found);
-          setSubmitted(Object.keys(found).length === 0);
-        }}
-      >
-        <PasswordField autoComplete="current-password" error={errors.current} label="Password saat ini" name="current" onChange={set("current")} value={values.current} />
-        <PasswordField autoComplete="new-password" error={errors.next} label="Password baru" name="next" onChange={set("next")} value={values.next} />
-        <PasswordField
-          autoComplete="new-password"
-          error={errors.confirmation}
-          label="Konfirmasi password baru"
-          name="confirmation"
-          onChange={set("confirmation")}
-          value={values.confirmation}
-        />
-        {submitted && <InfoMessage>Password {NOT_READY}</InfoMessage>}
-        <div className="flex justify-end gap-3">
-          <button className={cn(outlineButtonClassName, "px-5 py-2 text-sm")} onClick={close} type="button">
-            Batal
-          </button>
-          <button className={cn(primaryButtonClassName, "px-5 py-2 text-sm")} type="submit">
-            Simpan Password
-          </button>
-        </div>
-      </form>
+      {/* Mounted only while open, so the fields and the last message reset each time. */}
+      {open && <ChangePasswordForm />}
     </Modal>
   );
 }
 
-// Edit Profile (Figma New Design 187:10583): photo, Personal Info and password. Name and email come from GET /me; the
-// backend cannot save any change yet, so saving validates and explains that.
+// Edit Profile (Figma New Design 187:10583): photo, Personal Info and password. Name and email come from GET /me. The
+// password can be changed; the backend cannot save the other fields yet, so saving validates and explains that.
 export function ProfileForm({ user }: { user: CurrentUser }) {
   const id = useId();
   const initial: ProfileValues = { name: user.name, email: user.email, province: "" };

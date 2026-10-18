@@ -31,8 +31,16 @@ function LogoutIcon() {
   );
 }
 
-// Account menu of the top bar (Figma New Design 22:4162, popup 187:10090): Profile and Logout.
-export function ProfileMenu({ slug, subjectLabel, user }: { slug: string; subjectLabel: string; user: CurrentUser }) {
+// Account menu of the teacher and student top bars (Figma New Design 22:4162, popup 187:10090): Profile and Logout.
+export function ProfileMenu({
+  profileHref,
+  subjectLabel,
+  user,
+}: {
+  profileHref: string;
+  subjectLabel: string;
+  user: CurrentUser;
+}) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -95,7 +103,7 @@ export function ProfileMenu({ slug, subjectLabel, user }: { slug: string; subjec
           id={menuId}
           role="menu"
         >
-          <Link className={itemClassName} href={`/${slug}/profile`} role="menuitem">
+          <Link className={itemClassName} href={profileHref} role="menuitem">
             <UserIcon />
             Profile
           </Link>

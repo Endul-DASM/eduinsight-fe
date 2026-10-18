@@ -1,5 +1,5 @@
-// Edit Profile (Figma New Design 187:10583). Pure checks shared by the form; the backend has no profile update yet.
-import { validateEmail, validateName, validatePassword, validatePasswordConfirmation } from "./auth/validation";
+// Edit Profile (Figma New Design 187:10583). Pure checks shared by the form; the backend has no profile update yet (the password's own form validates on the server).
+import { validateEmail, validateName } from "./auth/validation";
 import { isProvince } from "./provinces";
 
 export type ProfileValues = { name: string; email: string; province: string };
@@ -13,20 +13,6 @@ export function validateProfile(values: ProfileValues): ProfileErrors {
     province: values.province && !isProvince(values.province) ? "Pilih provinsi dari daftar." : undefined,
   };
   return Object.fromEntries(Object.entries(errors).filter(([, message]) => message)) as ProfileErrors;
-}
-
-export type PasswordValues = { current: string; next: string; confirmation: string };
-export type PasswordErrors = Partial<Record<keyof PasswordValues, string>>;
-
-export function validatePasswordChange(values: PasswordValues): PasswordErrors {
-  const errors: PasswordErrors = {
-    current: values.current ? undefined : "Password saat ini wajib diisi.",
-    next:
-      validatePassword(values.next) ??
-      (values.next === values.current ? "Password baru harus berbeda dari password saat ini." : undefined),
-    confirmation: validatePasswordConfirmation(values.next, values.confirmation),
-  };
-  return Object.fromEntries(Object.entries(errors).filter(([, message]) => message)) as PasswordErrors;
 }
 
 // "Minimal 800 x 800. JPG atau PNG"; the size cap keeps the upload reasonable once the backend accepts it.

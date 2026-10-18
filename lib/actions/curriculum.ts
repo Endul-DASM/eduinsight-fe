@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { ApiError, isMockMode } from "@/lib/api/client";
 import {
   type ChapterInput,
@@ -45,6 +46,8 @@ async function run(slug: string, request: () => Promise<unknown>): Promise<Curri
   try {
     await request();
   } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
+    unstable_rethrow(error);
     return failure(error);
   }
   refresh(slug);
@@ -59,6 +62,7 @@ export async function listOfficialCpsAction(
   try {
     return { status: "ok", cps: await getOfficialCps(fase, subjectId) };
   } catch (error) {
+    unstable_rethrow(error);
     return { status: "error", message: error instanceof ApiError && error.code ? error.message : SERVER_UNREACHABLE_MESSAGE };
   }
 }

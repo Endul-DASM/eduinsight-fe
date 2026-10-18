@@ -19,6 +19,8 @@ import {
 
 const card = "rounded-3xl bg-[#fafbfd] p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
 const chip = "rounded-3xl px-2 py-0.5 text-xs font-semibold";
+export const softButtonClassName =
+  "rounded-xl bg-[rgba(153,188,229,0.6)] px-4 py-2.5 text-sm font-semibold text-[#004695] hover:bg-[rgba(153,188,229,0.85)]";
 
 // A button to a page that is not built yet (Asesmen, Diagnosis, Remedial, riwayat lengkap).
 function SoonButton({ label, className }: { label: string; className?: string }) {
@@ -37,8 +39,8 @@ function SoonButton({ label, className }: { label: string; className?: string })
   );
 }
 
-function Hero({ subject, studentName, chapters }: { subject: Subject; studentName: string; chapters: StudentChapter[] }) {
-  const weakest = weakestChapter(chapters);
+// The greeting card on top of the student pages, with the subject on the right (Figma New Design 175:32037, 175:33279).
+export function SubjectHero({ subject, title, description }: { subject: Subject; title: string; description: string }) {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-[linear-gradient(125deg,#ffffff_8%,#99bce5_132%)] shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
       <Image
@@ -59,14 +61,8 @@ function Hero({ subject, studentName, chapters }: { subject: Subject; studentNam
       />
       <div className="relative flex flex-col gap-6 px-6 py-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="max-w-[640px]">
-          <p className="text-2xl font-bold leading-normal text-[#1b1b1d] sm:text-[32px]">Halo, {studentName}! Siap untuk belajar?</p>
-          <p className="text-base leading-normal text-[#45474c]">
-            {!weakest
-              ? `Kerjakan asesmen ${subject.name} untuk melihat perkembangan belajarmu di sini.`
-              : weakest.label === "sb" || weakest.label === "b"
-                ? "Hebat! Semua Bab yang sudah dinilai kamu kuasai dengan baik. Pertahankan semangatmu!"
-                : `Lanjutkan semangatmu untuk menguasai Bab ${weakest.number}: ${weakest.name}!`}
-          </p>
+          <p className="text-2xl font-bold leading-normal text-[#1b1b1d] sm:text-[32px]">{title}</p>
+          <p className="text-base leading-normal text-[#45474c]">{description}</p>
         </div>
         <div className="flex min-w-[230px] flex-col gap-1.5 rounded-3xl bg-[rgba(245,243,244,0.6)] p-6 text-[#003264]">
           <p className="text-2xl font-bold leading-normal">{subject.name}</p>
@@ -78,6 +74,23 @@ function Hero({ subject, studentName, chapters }: { subject: Subject; studentNam
         </div>
       </div>
     </section>
+  );
+}
+
+function Hero({ subject, studentName, chapters }: { subject: Subject; studentName: string; chapters: StudentChapter[] }) {
+  const weakest = weakestChapter(chapters);
+  return (
+    <SubjectHero
+      description={
+        !weakest
+          ? `Kerjakan asesmen ${subject.name} untuk melihat perkembangan belajarmu di sini.`
+          : weakest.label === "sb" || weakest.label === "b"
+            ? "Hebat! Semua Bab yang sudah dinilai kamu kuasai dengan baik. Pertahankan semangatmu!"
+            : `Lanjutkan semangatmu untuk menguasai Bab ${weakest.number}: ${weakest.name}!`
+      }
+      subject={subject}
+      title={`Halo, ${studentName}! Siap untuk belajar?`}
+    />
   );
 }
 
@@ -221,7 +234,7 @@ function UpcomingTests({ slug, dashboard }: { slug: string; dashboard: MyDashboa
 }
 
 // Aktivitas Terbaru (FR-S-004): submitted assessments and opened materials, newest first.
-function RecentActivity({ dashboard }: { dashboard: MyDashboard }) {
+function RecentActivity({ slug, dashboard }: { slug: string; dashboard: MyDashboard }) {
   const activities = dashboard.recentActivity;
   return (
     <section className={cn(card, "flex flex-col")}>
@@ -256,15 +269,19 @@ function RecentActivity({ dashboard }: { dashboard: MyDashboard }) {
                   )}
                   {activity.kind === "material" && activity.material ? (
                     <a
-                      className="rounded-xl bg-[rgba(153,188,229,0.6)] px-4 py-2.5 text-sm font-semibold text-[#004695] hover:bg-[rgba(153,188,229,0.85)]"
+                      className={softButtonClassName}
                       href={`/api/my-materials/${encodeURIComponent(activity.material.id)}/file`}
                       rel="noopener noreferrer"
                       target="_blank"
                     >
                       Buka Lagi
                     </a>
+                  ) : activity.status === "belum_tuntas" ? (
+                    <SoonButton label="Lihat Remedial" />
                   ) : (
-                    <SoonButton label={activity.status === "belum_tuntas" ? "Lihat Remedial" : "Lihat Diagnosis"} />
+                    <Link className={softButtonClassName} href={`/student/${slug}/diagnosis`}>
+                      Lihat Diagnosis
+                    </Link>
                   )}
                 </div>
               </li>
@@ -324,7 +341,7 @@ export function StudentDashboardPage({
         <RecommendationCard dashboard={dashboard} />
       </div>
       <UpcomingTests dashboard={dashboard} slug={slug} />
-      <RecentActivity dashboard={dashboard} />
+      <RecentActivity dashboard={dashboard} slug={slug} />
     </div>
   );
 }

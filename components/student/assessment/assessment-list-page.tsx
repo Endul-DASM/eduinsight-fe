@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
+import { softButtonClassName } from "@/components/student/dashboard/student-dashboard-page";
 import type { ActivityStatus, StudentAssessment } from "@/lib/api/student";
 import type { Subject } from "@/lib/api/types";
 import { formatPoints } from "@/lib/student-dashboard";
@@ -93,7 +94,15 @@ function PendingCard({ slug, assessment }: { slug: string; assessment: StudentAs
 }
 
 // Sudah Selesai: the result of the best attempt.
-function DoneCard({ assessment, statuses }: { assessment: StudentAssessment; statuses: Map<string, ActivityStatus> }) {
+function DoneCard({
+  slug,
+  assessment,
+  statuses,
+}: {
+  slug: string;
+  assessment: StudentAssessment;
+  statuses: Map<string, ActivityStatus>;
+}) {
   const state = resultStateLabels[resultState(assessment, statuses)];
   return (
     <li className={cn(card, "flex flex-wrap items-center gap-6 p-6")}>
@@ -107,14 +116,9 @@ function DoneCard({ assessment, statuses }: { assessment: StudentAssessment; sta
           {`, ${assessment.attemptsUsed} dari ${assessment.maxAttempts} percobaan`}
         </p>
       </div>
-      <span
-        aria-disabled
-        className="inline-flex cursor-not-allowed items-center gap-2 rounded-xl bg-[#e3e2e6] px-4 py-2.5 text-sm font-semibold text-[#75777d]"
-        title="Segera tersedia"
-      >
+      <Link className={softButtonClassName} href={`/student/${slug}/diagnosis`}>
         Lihat Diagnosis
-        <span className="rounded-3xl bg-white/70 px-1.5 py-0.5 text-[10px] text-[#45474c]">Segera</span>
-      </span>
+      </Link>
     </li>
   );
 }
@@ -171,7 +175,7 @@ export function StudentAssessmentListPage({
         <ul className="flex flex-col gap-6">
           {shown.map((assessment) =>
             tab === "selesai" ? (
-              <DoneCard assessment={assessment} key={assessment.id} statuses={statuses} />
+              <DoneCard assessment={assessment} key={assessment.id} slug={slug} statuses={statuses} />
             ) : (
               <PendingCard assessment={assessment} key={assessment.id} slug={slug} />
             ),

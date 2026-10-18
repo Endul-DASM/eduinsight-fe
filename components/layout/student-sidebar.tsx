@@ -6,7 +6,7 @@ import { AppSidebar, type NavItem } from "./app-sidebar";
 // Student menu (Figma New Design 175:32037). Pages that are not built yet have no href and show as "Segera".
 const studentNavItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: "/dashboard/nav-dashboard-active.svg" },
-  { label: "Diagnosis", href: null, icon: "/dashboard/nav-remedial.svg" },
+  { label: "Diagnosis", href: "/diagnosis", icon: "/dashboard/nav-remedial.svg" },
   { label: "Asesmen", href: "/assessment", icon: "/dashboard/nav-asesmen.svg" },
   { label: "Remedial", href: null, icon: "/dashboard/nav-remedial.svg" },
 ];

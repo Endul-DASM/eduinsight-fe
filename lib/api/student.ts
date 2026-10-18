@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { ApiError, apiFetch, isMockMode } from "./client";
+import type { DiagnosisAssessment } from "./diagnosis";
 import type { AssessmentMode, AssessmentStatus, AssessmentType, LearningObjectiveRef } from "./types";
 
 // Sisi Siswa (PRD 6.1, SRS FR-S-001 – 004, 032): only the student's own data plus class averages. Scores are 0–100
@@ -135,6 +136,44 @@ export const getAttempt = cache(async (attemptId: string): Promise<Attempt | nul
     return await apiFetch<Attempt>(`/attempts/${encodeURIComponent(attemptId)}`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+});
+
+// Diagnosis Belajar (FR-S-040, 042): the student's TP scores against the class average. Items carry no answer,
+// correctness or misconception tag.
+export type MyDiagnosisItem = { assessmentId: string; assessmentTitle: string; number: number; score: number };
+
+export type MyObjectiveDiagnosis = {
+  learningObjective: LearningObjectiveRef;
+  chapterNumber: number;
+  chapterName: string;
+  // BR-05: fewer than 3 items.
+  limitedData: boolean;
+  score: number | null;
+  label: StudentLabel | null;
+  classAverage: number | null;
+  items: MyDiagnosisItem[];
+};
+
+export type MyDiagnosis = {
+  assessments: DiagnosisAssessment[];
+  // BR-04 lower bounds; below c is Kurang.
+  thresholds: { sb: number; b: number; c: number };
+  learningObjectives: MyObjectiveDiagnosis[];
+  chapters: { chapterId: string; number: number; name: string; score: number | null; label: StudentLabel | null }[];
+  // TP ids with the highest and lowest score; null without scores.
+  strongest: string | null;
+  weakest: string | null;
+};
+
+// GET /subjects/:id/my-diagnosis — every assessment in scope (no semester filter in the design).
+export const getMyDiagnosis = cache(async (subjectId: string): Promise<MyDiagnosis | null> => {
+  if (isMockMode) return null;
+  try {
+    return await apiFetch<MyDiagnosis>(`/subjects/${encodeURIComponent(subjectId)}/my-diagnosis`);
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) return null;
     throw error;
   }
 });

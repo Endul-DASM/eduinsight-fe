@@ -3,14 +3,26 @@ import Link from "next/link";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import type { Attempt } from "@/lib/api/student";
-import { durationText } from "@/lib/student-assessment";
+import { type AttemptSection, durationText, sectionNames } from "@/lib/student-assessment";
 import { formatPoints } from "@/lib/student-dashboard";
 
 const card = "flex flex-col gap-2 rounded-3xl bg-[#fafbfd] p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
 
-// Asesmen Selesai (PRD 6.2, SRS FR-S-013; Figma New Design 175:33141). The AI analysis card of the design is
-// replaced by the real result: the PG score, or that essays wait for the teacher.
-export function AssessmentDonePage({ slug, studentName, attempt }: { slug: string; studentName: string; attempt: Attempt }) {
+// Asesmen Selesai (PRD 6.2, SRS FR-S-013; Figma New Design 175:33141), also Remedial Selesai (FR-S-051). The AI
+// analysis card of the design is replaced by the real result: the PG score, or that essays wait for the teacher.
+export function AssessmentDonePage({
+  slug,
+  section = "assessment",
+  studentName,
+  attempt,
+}: {
+  slug: string;
+  section?: AttemptSection;
+  studentName: string;
+  attempt: Attempt;
+}) {
+  const { noun, title } = sectionNames[section];
+  const remedial = section === "remedial";
   const waiting = (attempt.essaysPending ?? 0) > 0 || attempt.score === null;
 
   return (
@@ -26,7 +38,7 @@ export function AssessmentDonePage({ slug, studentName, attempt }: { slug: strin
       <div className="flex flex-col gap-4">
         <h2 className="text-[32px] font-bold text-[#003264]">Selesai, Hebat!</h2>
         <p className="max-w-[560px] text-base leading-normal text-[#45474c]">
-          Hebat, {studentName}, kamu sudah menyelesaikan asesmen ini!
+          Hebat, {studentName}, kamu sudah menyelesaikan {noun} ini!
           {waiting ? " Gurumu akan memberikan nilai untuk jawaban uraianmu segera." : " Lihat hasilmu di bawah ini."}
           {attempt.autoSubmitted && " Jawabanmu dikumpulkan otomatis karena waktu habis."}
         </p>
@@ -53,11 +65,15 @@ export function AssessmentDonePage({ slug, studentName, attempt }: { slug: strin
               ) : null}
             </>
           )}
-          <p className="text-xs text-[#45474c]">Diagnosis belajarmu diperbarui setelah semua jawaban dinilai.</p>
+          <p className="text-xs text-[#45474c]">
+            {remedial
+              ? "Status remedialmu (Perlu Remedial atau Tuntas) diperbarui setelah semua jawaban dinilai."
+              : "Diagnosis belajarmu diperbarui setelah semua jawaban dinilai."}
+          </p>
         </section>
         <div className="flex flex-col gap-6">
           <section className={card}>
-            <p className="text-xs text-[#45474c]">ASESMEN</p>
+            <p className="text-xs uppercase text-[#45474c]">{title}</p>
             <p className="text-base font-semibold text-[#1b1b1d]">{attempt.assessmentTitle}</p>
           </section>
           <section className={card}>
@@ -67,8 +83,8 @@ export function AssessmentDonePage({ slug, studentName, attempt }: { slug: strin
         </div>
       </div>
 
-      <Link className={cn(primaryButtonClassName, "px-4 py-2.5")} href={`/student/${slug}/dashboard`}>
-        Kembali ke Dashboard
+      <Link className={cn(primaryButtonClassName, "px-4 py-2.5")} href={remedial ? `/student/${slug}/remedial` : `/student/${slug}/dashboard`}>
+        {remedial ? "Kembali ke Daftar Remedial" : "Kembali ke Dashboard"}
       </Link>
       <p className="text-xs text-[#45474c]">Jawaban kamu telah tersimpan dengan aman di sistem EduInsight.</p>
     </div>

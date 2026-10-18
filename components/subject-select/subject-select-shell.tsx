@@ -1,7 +1,6 @@
 import { Poppins } from "next/font/google";
 import Image from "next/image";
 import type { ReactNode } from "react";
-import { outlineButtonClassName } from "@/components/auth/styles";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { cn } from "@/components/ui/cn";
@@ -14,7 +13,10 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 function LogoutButton() {
   return (
     <form action={logout}>
-      <button className={outlineButtonClassName} type="submit">
+      <button
+        className="rounded-xl border-2 border-[#0058be] bg-[#f5f3f4] px-4 py-1 text-sm font-semibold leading-normal text-[#0058be] drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors hover:bg-[#e6eff9]"
+        type="submit"
+      >
         Logout
       </button>
     </form>
@@ -53,7 +55,7 @@ export function SubjectSelectShell({
   return (
     <div className={cn(poppins.className, "relative flex min-h-screen flex-col overflow-hidden bg-white")}>
       <Decorations />
-      <SiteHeader action={<LogoutButton />} className="bg-[#f5f3f4] sm:py-6" />
+      <SiteHeader action={<LogoutButton />} className="bg-[#f5f3f4]" />
       <main className="relative flex flex-1 items-center px-4 py-16 sm:px-6 md:py-24 lg:px-10">
         <div className="mx-auto flex w-full max-w-[1291px] flex-col items-center gap-12 md:gap-[76px]">
           <div className="flex flex-col items-center gap-3 text-center">

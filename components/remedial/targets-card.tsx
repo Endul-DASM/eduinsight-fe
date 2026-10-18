@@ -62,7 +62,7 @@ export function TargetsCard({
             onClick={() => setOnlyPending(false)}
             type="button"
           >
-            Semua target · {targets.length}
+            Semua target ({targets.length})
           </button>
           <button
             aria-pressed={onlyPending}
@@ -70,7 +70,7 @@ export function TargetsCard({
             onClick={() => setOnlyPending(true)}
             type="button"
           >
-            Perlu Remedial · {pending.length}
+            Perlu Remedial ({pending.length})
           </button>
         </div>
         <Link className={cn(primaryButtonClassName, "ml-auto")} href={scheduleHref}>

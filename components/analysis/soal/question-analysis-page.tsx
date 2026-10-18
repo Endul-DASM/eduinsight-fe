@@ -116,7 +116,7 @@ function QualityCards({ analysis }: { analysis: AssessmentAnalysis }) {
               {reliability.reliable ? "Reliabel" : "Belum reliabel"}
             </span>
             <p className="text-xs leading-normal text-[#45474c]">
-              Tingkat asesmen · {items.length} butir {reliability.method === "kr20" ? "dikotomis" : "campuran"}. Bukan ukuran
+              Tingkat asesmen, {items.length} butir {reliability.method === "kr20" ? "dikotomis" : "campuran"}. Bukan ukuran
               reliabilitas tiap butir.
             </p>
           </>
@@ -146,7 +146,7 @@ function AttentionBanner({ analysis }: { analysis: AssessmentAnalysis }) {
     <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#fafbfd] px-5 py-4 shadow-[0_4px_10px_rgba(0,0,0,0.1)]">
       <div className="leading-normal">
         <p className="text-base font-semibold text-[#1b1b1d]">
-          Item Analysis · {problemCount ? `${problemCount} butir perlu perhatian` : "semua butir dalam ambang"}
+          Item Analysis: {problemCount ? `${problemCount} butir perlu perhatian` : "semua butir dalam ambang"}
         </p>
         <p className="text-xs text-[#45474c]">
           {advice.length
@@ -175,7 +175,7 @@ function ItemTable({ analysis }: { analysis: AssessmentAnalysis }) {
       <div className="flex flex-wrap items-start justify-between gap-4 p-6 pb-4">
         <div className="leading-normal">
           <h3 className="text-xl font-semibold text-[#1b1b1d]">Analisis butir soal</h3>
-          <p className="text-xs text-[#45474c]">{items.length} butir · metrik difficulty, validity, dan label kualitas</p>
+          <p className="text-xs text-[#45474c]">{items.length} butir, metrik difficulty, validity, dan label kualitas</p>
         </div>
         <a
           className={cn(outlineButtonClassName, "px-5 py-2 text-sm")}
@@ -244,12 +244,12 @@ function ItemTable({ analysis }: { analysis: AssessmentAnalysis }) {
       </div>
       <div className="flex flex-col gap-1 px-6 py-4 text-xs leading-normal">
         <p className="font-semibold text-[#1b1b1d]">
-          Menampilkan seluruh {items.length} butir · N = {summary.analyzedStudents} siswa dengan nilai akhir
-          {summary.gradingPending > 0 && ` · ${summary.gradingPending} siswa menunggu penilaian uraian, belum dihitung`}
+          Menampilkan seluruh {items.length} butir, N = {summary.analyzedStudents} siswa dengan nilai akhir
+          {summary.gradingPending > 0 && `, ${summary.gradingPending} siswa menunggu penilaian uraian, belum dihitung`}
         </p>
         {objectives.length > 0 && (
           <p className="text-[#75777d]">
-            {objectives.map((objective) => `TP ${objective.number}: ${objective.description}`).join(" · ")}
+            {objectives.map((objective) => `TP ${objective.number}: ${objective.description}`).join("; ")}
           </p>
         )}
       </div>
@@ -259,9 +259,9 @@ function ItemTable({ analysis }: { analysis: AssessmentAnalysis }) {
 
 function MethodSection() {
   const rules = [
-    { issues: "0 · semua dalam ambang", label: itemLabels.baik },
-    { issues: "1 · satu metrik keluar", label: itemLabels.revisi },
-    { issues: "≥2 · dua atau lebih", label: itemLabels.perlu_ditinjau },
+    { issues: "0 (semua dalam ambang)", label: itemLabels.baik },
+    { issues: "1 (satu metrik keluar)", label: itemLabels.revisi },
+    { issues: "≥2 (dua atau lebih)", label: itemLabels.perlu_ditinjau },
   ];
   return (
     <section className="flex flex-col gap-4">
@@ -271,15 +271,15 @@ function MethodSection() {
           <h4 className="text-base font-semibold text-[#1b1b1d]">Cara membaca metrik</h4>
           {[
             {
-              title: "Difficulty · P-index",
+              title: "Difficulty (P-index)",
               body: "P = rata-rata skor butir (untuk PG: jumlah jawaban benar / jumlah siswa). Mudah: P > 0,70; Sedang: 0,30–0,70 (inklusif); Sulit: P < 0,30.",
             },
             {
-              title: "Validity · point-biserial",
+              title: "Validity (point-biserial)",
               body: "Korelasi skor butir dengan skor total TP-nya, bukan skor total seluruh asesmen. Sesuai: r ≥ 0,30; Perlu Ditinjau: r < 0,30.",
             },
             {
-              title: "Reliability · tingkat asesmen",
+              title: "Reliability (tingkat asesmen)",
               body: "KR-20 untuk butir dikotomis (0/1); Cronbach's Alpha untuk non-dikotomis. Reliabel bila ≥ 0,70. Butir yang menaikkan reliabilitas bila dibuang dihitung sebagai satu metrik di luar ambang.",
             },
           ].map((entry) => (
@@ -356,7 +356,7 @@ export function QuestionAnalysisPage({
           <div className="flex flex-wrap items-end justify-between gap-2">
             <h3 className="text-xl font-semibold leading-normal text-[#1b1b1d]">Kualitas instrumen</h3>
             <span className="text-xs text-[#75777d]">
-              Ringkasan {analysis.summary.itemCount} butir · {analysis.summary.analyzedStudents} siswa
+              Ringkasan {analysis.summary.itemCount} butir, {analysis.summary.analyzedStudents} siswa
             </span>
           </div>
           <QualityCards analysis={analysis} />

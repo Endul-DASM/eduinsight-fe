@@ -37,7 +37,7 @@ export function PairSelect({
           {!sourceId && <option value="">Pilih asesmen asal...</option>}
           {sources.map((assessment) => (
             <option key={assessment.id} value={assessment.id}>
-              {assessment.title} · {assessmentTypeLabels[assessment.type]}
+              {assessment.title} ({assessmentTypeLabels[assessment.type]})
             </option>
           ))}
         </SelectInput>
@@ -47,7 +47,7 @@ export function PairSelect({
           {remedials.length === 0 && <option value="">Belum ada asesmen remedial</option>}
           {remedials.map((assessment) => (
             <option key={assessment.id} value={assessment.id}>
-              {assessment.title} · {cardStatus[assessment.status].label}
+              {assessment.title} ({cardStatus[assessment.status].label})
             </option>
           ))}
         </SelectInput>

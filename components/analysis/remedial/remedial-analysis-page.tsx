@@ -125,7 +125,7 @@ export function RemedialAnalysisPage({
                 <Image alt="" height={22} src="/assessment/brain.svg" width={22} />
                 Kelompok belajar
               </h3>
-              <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>Analisis AI · segera tersedia</span>
+              <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>Analisis AI segera tersedia</span>
             </div>
             <p className="text-xs text-[#45474c]">
               AI akan mengelompokkan siswa target menjadi Belum Paham, Butuh Latihan, dan Pengayaan berdasarkan pola kesalahan per TP,
@@ -142,7 +142,7 @@ export function RemedialAnalysisPage({
                   {weak.map(({ objective, average }) => (
                     <li className="flex flex-wrap items-baseline justify-between gap-2 text-xs" key={objective.learningObjective.id}>
                       <span className="text-[#1b1b1d]">
-                        <span className="font-semibold">TP {objective.learningObjective.number}</span> ·{" "}
+                        <span className="font-semibold">TP {objective.learningObjective.number}:</span>{" "}
                         {objective.learningObjective.description}
                       </span>
                       <span className="font-semibold text-[#dc2626]">{formatPercent(average)}</span>
@@ -154,7 +154,7 @@ export function RemedialAnalysisPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-base font-semibold text-[#1b1b1d]">Rekomendasi AI · tindak lanjut berikutnya</h3>
+            <h3 className="text-base font-semibold text-[#1b1b1d]">Rekomendasi AI: tindak lanjut berikutnya</h3>
             <div className="grid gap-4 lg:grid-cols-2">
               <section className={card}>
                 <div className="flex items-center justify-between gap-2">
@@ -193,7 +193,7 @@ export function RemedialAnalysisPage({
                 {draft ? (
                   <>
                     <p className="text-xs text-[#1b1b1d]">
-                      {draft.questionCount} soal · {draft.title} · jenis: remedial
+                      {draft.title} ({draft.questionCount} soal, jenis remedial)
                     </p>
                     <p className="text-xs leading-normal text-[#45474c]">
                       Khusus {pending} siswa berstatus Perlu Remedial pada {source?.title}. Siswa yang tuntas tidak akan melihat soal ini

@@ -3,7 +3,8 @@ import type { ReactNode } from "react";
 // The glass card of the auth pages (Figma New Design 22:2919). Content is 443px wide on desktop.
 export function AuthCard({ children }: { children: ReactNode }) {
   return (
-    <div className="flex w-full max-w-[571px] flex-col gap-[35px] rounded-3xl bg-[rgba(245,243,244,0.6)] px-6 py-8 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-xs sm:px-16">
+    // On phones the content sits on the page background without the card (Figma New Design 22:3266).
+    <div className="flex w-full max-w-[571px] flex-col gap-[35px] sm:rounded-3xl sm:bg-[rgba(245,243,244,0.6)] sm:px-16 sm:py-8 sm:shadow-[0_4px_20px_rgba(0,0,0,0.1)] sm:backdrop-blur-xs">
       {children}
     </div>
   );

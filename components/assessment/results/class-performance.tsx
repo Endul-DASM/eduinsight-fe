@@ -29,7 +29,7 @@ export function ClassPerformanceView({ slug, results }: { slug: string; results:
   return (
     <div className="flex flex-col gap-6">
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Rata-rata kelas" note={`Skala 0–100 · KKM ${assessment.kkm}`} value={formatScore(stats.average)} />
+        <StatCard label="Rata-rata kelas" note={`Skala 0–100, KKM ${assessment.kkm}`} value={formatScore(stats.average)} />
         <StatCard
           label="Tingkat ketuntasan"
           note={`${stats.masteredCount} dari ${finals} siswa mencapai KKM`}
@@ -43,7 +43,7 @@ export function ClassPerformanceView({ slug, results }: { slug: string; results:
         />
         <StatCard
           label="Rentang nilai"
-          note={`Terendah ${formatScore(stats.min)} · Tertinggi ${formatScore(stats.max)}`}
+          note={`Terendah ${formatScore(stats.min)}, Tertinggi ${formatScore(stats.max)}`}
           value={stats.min === null ? "–" : `${formatScore(stats.min)} – ${formatScore(stats.max)}`}
         />
       </div>

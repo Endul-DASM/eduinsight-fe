@@ -3,8 +3,9 @@ import { SESSION_COOKIE } from "@/lib/api/session";
 import { RETURN_TO_COOKIE, RETURN_TO_COOKIE_OPTIONS, safeReturnPath } from "@/lib/auth/return-to";
 import { isTokenExpired, SESSION_EXPIRED_PATH } from "@/lib/auth/session-expiry";
 
-// Sign-in, sign-up, the emailed account links and the Google OAuth routes, including everything below them.
+// About, sign-in, sign-up, the emailed account links and the Google OAuth routes, including everything below them.
 const publicPrefixes = [
+  "/about",
   "/login",
   "/register",
   "/forgot-password",

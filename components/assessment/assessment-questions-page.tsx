@@ -63,12 +63,12 @@ export function AssessmentQuestionsPage({
         <header className="mb-6 border-b border-black pb-3">
           <h1 className="text-[16pt] font-bold">{assessment.title}</h1>
           <p>
-            {subject.name} · {subject.class.name} · {assessmentTypeLabels[assessment.type]} ·{" "}
+            {subject.name}, {subject.class.name}, {assessmentTypeLabels[assessment.type]},{" "}
             {assessmentModeLabels[assessment.mode]}
           </p>
           <p>
             Jadwal: {formatLongSchedule(assessment.opensAt)}
-            {assessment.durationMinutes ? ` · Durasi ${assessment.durationMinutes} menit` : ""} · KKM {assessment.kkm}
+            {assessment.durationMinutes ? `, Durasi ${assessment.durationMinutes} menit` : ""}, KKM {assessment.kkm}
           </p>
         </header>
         <ol className="flex flex-col gap-5">

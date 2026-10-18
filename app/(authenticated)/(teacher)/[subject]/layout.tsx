@@ -26,7 +26,7 @@ export default async function TeacherLayout({ children, params }: LayoutProps<"/
     notFound();
   }
 
-  const subjectLabel = `${subject.name} · ${subject.class.name}`;
+  const subjectLabel = `${subject.name}, ${subject.class.name}`;
 
   return (
     // Workspaces are shown at 80% (the rest of the app at 90%).

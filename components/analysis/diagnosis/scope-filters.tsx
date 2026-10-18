@@ -44,7 +44,7 @@ export function ScopeFilters({
           <option value="">Semua post-test, UH, UTS, UAS</option>
           {assessments.map((assessment) => (
             <option key={assessment.id} value={assessment.id}>
-              {assessment.title} · {assessmentTypeLabels[assessment.type]}
+              {assessment.title} ({assessmentTypeLabels[assessment.type]})
             </option>
           ))}
         </SelectInput>

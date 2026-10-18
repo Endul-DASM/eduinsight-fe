@@ -261,7 +261,7 @@ function QuestionEditor({
               <option value="">Belum ditentukan</option>
               {bloomLevels.map((level) => (
                 <option key={level.value} value={level.value}>
-                  {level.value} · {level.label}
+                  {level.value}: {level.label}
                 </option>
               ))}
             </SelectInput>

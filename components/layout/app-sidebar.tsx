@@ -25,6 +25,9 @@ const teacherNavItems: NavItem[] = [
   { label: "Analisis Soal", href: "/analysis", icon: "/dashboard/nav-analisis.svg" },
 ];
 
+// Bantuan: FAQ and Pusat Bantuan (SRS FR-X-030), at the bottom of the sidebar.
+const helpItem: NavItem = { label: "Bantuan", href: "/help", icon: "/auth/help-circle.svg" };
+
 const itemClassName = "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-base font-semibold leading-normal";
 
 function NavLink({ item, basePath, pathname, collapsed }: { item: NavItem; basePath: string; pathname: string; collapsed: boolean }) {
@@ -74,13 +77,13 @@ export function AppSidebar({
   items = teacherNavItems,
   basePath,
   homeHref = "/choose-subject",
-  help,
+  help = helpItem,
 }: {
   initialCollapsed?: boolean;
   items?: NavItem[];
   basePath?: string;
   homeHref?: string;
-  // Replaces the Help link at the bottom, e.g. a disabled "Bantuan".
+  // The Bantuan item at the bottom, relative to the base path like the menu items.
   help?: NavItem;
 }) {
   const pathname = usePathname();
@@ -138,18 +141,7 @@ export function AppSidebar({
           <MaskIcon className="size-5.5" src="/assessment/arrow-left.svg" />
           {collapsed ? <span className="sr-only">Halaman Mapel</span> : "Halaman Mapel"}
         </Link>
-        {help ? (
-          <NavLink basePath={base} collapsed={collapsed} item={help} pathname={pathname} />
-        ) : (
-          <Link
-            className={cn(itemClassName, "text-[#1b1b1d] hover:bg-[#e6eff9]", collapsed && "justify-center px-0")}
-            href="#"
-            title={collapsed ? "Help" : undefined}
-          >
-            <MaskIcon className="size-6" src="/auth/help-circle.svg" />
-            {collapsed ? <span className="sr-only">Help</span> : "Help"}
-          </Link>
-        )}
+        <NavLink basePath={base} collapsed={collapsed} item={help} pathname={pathname} />
       </div>
     </aside>
   );

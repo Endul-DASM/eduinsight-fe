@@ -42,14 +42,14 @@ export function ObjectivePerformanceView({ results }: { results: AssessmentResul
             </p>
           </div>
           <span className="rounded-lg bg-[#e6eff9] px-2 py-1 text-xs font-semibold text-[#004695]">
-            {objectives.length} TP · {chapters.length} Bab
+            {objectives.length} TP, {chapters.length} Bab
           </span>
         </div>
 
         {chapters.map((chapter) => (
           <div className="flex flex-col gap-2" key={chapter.number}>
             <p className="text-sm font-semibold text-[#003264]">
-              Bab {chapter.number} · {chapter.name}
+              Bab {chapter.number}: {chapter.name}
             </p>
             <ul className="flex flex-col divide-y divide-[#eae7e9] rounded-xl border border-[#eae7e9]">
               {chapter.objectives.map((objective) => {
@@ -79,7 +79,7 @@ export function ObjectivePerformanceView({ results }: { results: AssessmentResul
                     </div>
                     <div className="flex flex-col gap-1 text-[#45474c]">
                       <span>
-                        {objective.itemCount} butir · Soal {objective.questionNumbers.join(", ")}
+                        {objective.itemCount} butir, Soal {objective.questionNumbers.join(", ")}
                       </span>
                       {objective.limitedData && (
                         <span className="self-start rounded-md bg-[#ffedd5] px-1.5 py-0.5 text-[10px] font-semibold text-[#c2410c]">
@@ -104,7 +104,7 @@ export function ObjectivePerformanceView({ results }: { results: AssessmentResul
           <div className="flex flex-wrap gap-2 text-[10px] font-semibold">
             {diagnosisLabels.map((label) => (
               <span className={cn("rounded-md px-2 py-0.5", labelTones[label])} key={label}>
-                {label} · {diagnosisLabelNames[label]}
+                {label} ({diagnosisLabelNames[label]})
               </span>
             ))}
           </div>

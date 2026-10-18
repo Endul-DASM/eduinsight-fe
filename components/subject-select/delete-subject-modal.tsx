@@ -19,7 +19,7 @@ function DeleteForm({ subject, onClose }: { subject: Subject; onClose: () => voi
       <input name="subjectId" type="hidden" value={subject.id} />
       <p className="text-center text-base leading-normal text-[#45474c]">
         <span className="font-semibold text-[#1b1b1d]">
-          {subject.name} · {subject.class.name} ({subject.class.academicYear})
+          {subject.name}, {subject.class.name} ({subject.class.academicYear})
         </span>{" "}
         akan dihapus dari daftar Anda.
       </p>

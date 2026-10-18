@@ -21,13 +21,14 @@ function useCrumbs(slug: string, subjectLabel: string): Crumb[] {
   const [, , , section = "dashboard", assessmentId, step] = pathname.split("/");
   // Figma New Design 175:33279.
   if (section === "diagnosis") return [{ label: "Diagnosis Belajar" }, { label: subjectLabel }];
-  if (section === "assessment") {
-    const list = `/student/${slug}/assessment`;
-    // Figma New Design 175:32308 (Daftar Asesmen), 181:8150, 175:32740, 175:33141.
-    if (!assessmentId) return [{ label: "Daftar Asesmen" }, { label: subjectLabel }];
-    if (step === "kerjakan") return [{ label: "Pengerjaan Asesmen" }, { label: subjectLabel }];
-    if (step === "selesai") return [{ label: "Asesmen Selesai" }, { label: subjectLabel }];
-    return [{ label: "Asesmen", href: list }, { label: "Persiapan Asesmen" }];
+  if (section === "assessment" || section === "remedial") {
+    const title = section === "assessment" ? "Asesmen" : "Remedial";
+    const list = `/student/${slug}/${section}`;
+    // Figma New Design 175:32308 (Daftar Asesmen), 175:33620 (Daftar Remedial), 181:8150, 175:32740, 175:33141.
+    if (!assessmentId) return [{ label: `Daftar ${title}` }, { label: subjectLabel }];
+    if (step === "kerjakan") return [{ label: `Pengerjaan ${title}` }, { label: subjectLabel }];
+    if (step === "selesai") return [{ label: `${title} Selesai` }, { label: subjectLabel }];
+    return [{ label: title, href: list }, { label: `Persiapan ${title}` }];
   }
   const crumbs: Crumb[] = [{ label: sectionTitles[section] ?? "Dashboard", href: `/student/${slug}/${section}` }];
   if (section === "dashboard" && searchParams.get("detail") === "penguasaan") {

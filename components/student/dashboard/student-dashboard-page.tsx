@@ -277,7 +277,9 @@ function RecentActivity({ slug, dashboard }: { slug: string; dashboard: MyDashbo
                       Buka Lagi
                     </a>
                   ) : activity.status === "belum_tuntas" ? (
-                    <SoonButton label="Lihat Remedial" />
+                    <Link className={softButtonClassName} href={`/student/${slug}/remedial`}>
+                      Lihat Remedial
+                    </Link>
                   ) : (
                     <Link className={softButtonClassName} href={`/student/${slug}/diagnosis`}>
                       Lihat Diagnosis

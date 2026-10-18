@@ -9,15 +9,15 @@ import { cn } from "@/components/ui/cn";
 import { MaskIcon } from "@/components/ui/mask-icon";
 import { SIDEBAR_COLLAPSED, SIDEBAR_COOKIE } from "@/lib/sidebar";
 
-type NavItem = {
+export type NavItem = {
   label: string;
-  // Relative to the current subject, e.g. /matematika-x-ipa-1/dashboard. Null for a page that is not built yet.
+  // Relative to the workspace, e.g. /dashboard under /matematika-x-ipa-1. Null for a page that is not built yet.
   href: string | null;
   icon: string;
 };
 
 // Figma New Design 22:4162. Diagnosis is not in the menu; it opens from the dashboard's "Tinjau" link.
-const navItems: NavItem[] = [
+const teacherNavItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: "/dashboard/nav-dashboard-active.svg" },
   { label: "Kurikulum", href: "/curriculum", icon: "/dashboard/nav-kurikulum.svg" },
   { label: "Asesmen", href: "/assessment", icon: "/dashboard/nav-asesmen.svg" },
@@ -30,7 +30,7 @@ const helpItem: NavItem = { label: "Bantuan", href: "/help", icon: "/auth/help-c
 
 const itemClassName = "flex w-full items-center gap-2 rounded-xl px-3 py-2 text-base font-semibold leading-normal";
 
-function NavLink({ item, subject, pathname, collapsed }: { item: NavItem; subject: string; pathname: string; collapsed: boolean }) {
+function NavLink({ item, basePath, pathname, collapsed }: { item: NavItem; basePath: string; pathname: string; collapsed: boolean }) {
   const icon = <MaskIcon className="size-6" src={item.icon} />;
   // Collapsed, only the icon shows; the label stays for screen readers and as a tooltip.
   const label = collapsed ? <span className="sr-only">{item.label}</span> : item.label;
@@ -48,7 +48,7 @@ function NavLink({ item, subject, pathname, collapsed }: { item: NavItem; subjec
     );
   }
 
-  const href = `/${subject}${item.href}`;
+  const href = `${basePath}${item.href}`;
   // Nested pages, e.g. /{slug}/assessment/{id}, keep their menu item highlighted.
   const active = pathname === href || pathname.startsWith(`${href}/`);
 
@@ -70,9 +70,25 @@ function NavLink({ item, subject, pathname, collapsed }: { item: NavItem; subjec
   );
 }
 
-export function AppSidebar({ initialCollapsed = false }: { initialCollapsed?: boolean }) {
+// The workspace sidebar. Teachers get their menu under /{slug}; the student workspace passes its own items, base
+// path (/student/{slug}), subject list and help item.
+export function AppSidebar({
+  initialCollapsed = false,
+  items = teacherNavItems,
+  basePath,
+  homeHref = "/choose-subject",
+  help = helpItem,
+}: {
+  initialCollapsed?: boolean;
+  items?: NavItem[];
+  basePath?: string;
+  homeHref?: string;
+  // The Bantuan item at the bottom, relative to the base path like the menu items.
+  help?: NavItem;
+}) {
   const pathname = usePathname();
   const { subject } = useParams<{ subject: string }>();
+  const base = basePath ?? `/${subject}`;
   const [collapsed, setCollapsed] = useState(initialCollapsed);
 
   function toggle() {
@@ -103,15 +119,15 @@ export function AppSidebar({ initialCollapsed = false }: { initialCollapsed?: bo
     >
       <div className="flex flex-col gap-4 md:gap-9">
         <div className={cn("flex items-center justify-between gap-2", collapsed && "md:flex-col md:justify-start")}>
-          <Link className="flex items-center gap-2 px-2 py-2 md:py-4" href="/choose-subject" title="EduInsight">
+          <Link className="flex items-center gap-2 px-2 py-2 md:py-4" href={homeHref} title="EduInsight">
             <Image alt="" className="size-10 shrink-0" height={40} src="/auth/logo.svg" width={40} />
             <span className={cn("text-xl font-bold leading-normal text-[#1b1b1d]", collapsed && "md:sr-only")}>EduInsight</span>
           </Link>
           {toggleButton}
         </div>
         <nav className={cn("flex flex-col gap-2", collapsed && "max-md:hidden")}>
-          {navItems.map((item) => (
-            <NavLink collapsed={collapsed} item={item} key={item.label} pathname={pathname} subject={subject} />
+          {items.map((item) => (
+            <NavLink basePath={base} collapsed={collapsed} item={item} key={item.label} pathname={pathname} />
           ))}
         </nav>
       </div>
@@ -119,13 +135,13 @@ export function AppSidebar({ initialCollapsed = false }: { initialCollapsed?: bo
         {/* Back to the subject select (Figma New Design 22:4162); Logout moved to the top bar's account menu. */}
         <Link
           className={cn(outlineButtonClassName, "w-full gap-3", collapsed && "px-0")}
-          href="/choose-subject"
+          href={homeHref}
           title={collapsed ? "Halaman Mapel" : undefined}
         >
           <MaskIcon className="size-5.5" src="/assessment/arrow-left.svg" />
           {collapsed ? <span className="sr-only">Halaman Mapel</span> : "Halaman Mapel"}
         </Link>
-        <NavLink collapsed={collapsed} item={helpItem} pathname={pathname} subject={subject} />
+        <NavLink basePath={base} collapsed={collapsed} item={help} pathname={pathname} />
       </div>
     </aside>
   );

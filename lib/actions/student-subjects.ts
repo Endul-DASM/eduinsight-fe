@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { ApiError, isMockMode } from "@/lib/api/client";
 import { joinSubject } from "@/lib/api/subjects";
 import { validateJoinCode } from "@/lib/join-code";
@@ -29,6 +30,8 @@ export async function joinSubjectAction(_previous: JoinSubjectState, formData: F
     revalidatePath("/student");
     return { status: "joined", subjectName: subject.name, joinedAt: Date.now() };
   } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
+    unstable_rethrow(error);
     if (!(error instanceof ApiError)) return { status: "error", message: SERVER_UNREACHABLE_MESSAGE, joinCode };
     // A wrong code or an already joined subject comes back with the backend's own message.
     return { status: "error", message: error.code ? error.message : REQUEST_FAILED_MESSAGE, joinCode };

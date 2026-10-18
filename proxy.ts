@@ -3,8 +3,16 @@ import { SESSION_COOKIE } from "@/lib/api/session";
 import { RETURN_TO_COOKIE, RETURN_TO_COOKIE_OPTIONS, safeReturnPath } from "@/lib/auth/return-to";
 import { isTokenExpired, SESSION_EXPIRED_PATH } from "@/lib/auth/session-expiry";
 
-// Sign-in, sign-up and the Google OAuth routes, including everything below them.
-const publicPrefixes = ["/login", "/register", "/forgot-password", "/auth/google", SESSION_EXPIRED_PATH];
+// Sign-in, sign-up, the emailed account links and the Google OAuth routes, including everything below them.
+const publicPrefixes = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/verify-email",
+  "/reset-password",
+  "/auth/google",
+  SESSION_EXPIRED_PATH,
+];
 
 function isPublic(pathname: string) {
   return pathname === "/" || publicPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));

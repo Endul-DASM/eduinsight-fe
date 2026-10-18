@@ -92,7 +92,7 @@ export function TopHeader({ subjectLabel, user }: { subjectLabel: string; user: 
           <Image alt="" height={24} src="/dashboard/bell-dot.svg" width={24} />
         </span>
         <div className="border-l-2 border-[#75777d] pl-3">
-          <ProfileMenu slug={subject} subjectLabel={subjectLabel} user={user} />
+          <ProfileMenu profileHref={`/${subject}/profile`} subjectLabel={subjectLabel} user={user} />
         </div>
       </div>
     </header>

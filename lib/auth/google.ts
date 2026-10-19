@@ -42,8 +42,10 @@ export async function codeChallenge(codeVerifier: string): Promise<string> {
   return base64url(new Uint8Array(digest));
 }
 
-export function callbackUrl(origin: string): string {
-  return new URL("/auth/google/callback", origin).toString();
+// Must be byte-for-byte the redirect URI registered on the OAuth client, and the same in both steps. APP_URL gives the
+// public origin in production; the request origin is only right when nothing sits in front of Next.js (local dev).
+export function callbackUrl(requestOrigin: string): string {
+  return new URL("/auth/google/callback", process.env.APP_URL || requestOrigin).toString();
 }
 
 export function authorizeUrl(params: { redirectUri: string; state: string; nonce: string; codeChallenge: string }) {

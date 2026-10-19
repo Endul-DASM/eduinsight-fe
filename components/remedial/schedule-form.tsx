@@ -21,11 +21,12 @@ function initialValues(remedial: Assessment): RemedialScheduleValues {
     start: opens.slice(11, 16),
     end: closes.slice(11, 16),
     duration: remedial.durationMinutes ? String(remedial.durationMinutes) : "",
+    instructions: remedial.description ?? "",
   };
 }
 
-// "Remedial berikutnya" (Figma New Design 86:10467): schedule the chosen remedial assessment and publish it.
-// Instruksi untuk siswa has no backend field yet, and access is not limited to Perlu Remedial students (FR-G-105).
+// "Remedial berikutnya" (Figma New Design 86:10467): schedule the chosen remedial assessment, link it to the source
+// assessment, and publish it. The link is what limits it to the source's Perlu Remedial students (FR-G-105).
 export function ScheduleForm({
   slug,
   sourceId,
@@ -63,7 +64,7 @@ export function ScheduleForm({
     setState(undefined);
     setSaved(false);
     startTransition(async () => {
-      const result = await scheduleRemedialAction(slug, remedial.id, values, publish);
+      const result = await scheduleRemedialAction(slug, remedial.id, sourceId, values, publish);
       if (result?.status === "error") {
         setErrors((result.fields ?? {}) as RemedialScheduleErrors);
         setState(result);
@@ -155,14 +156,21 @@ export function ScheduleForm({
             />
           </Field>
         </div>
-        <Field hint="Segera tersedia: backend belum menyimpan instruksi asesmen." htmlFor={field("instruksi")} label="Instruksi untuk siswa">
-          <TextInput disabled id={field("instruksi")} placeholder="Pelajari materi rujukan dan kerjakan seluruh soal secara mandiri." />
+        <Field error={errors.instructions} hint="Opsional" htmlFor={field("instruksi")} label="Instruksi untuk siswa">
+          <TextInput
+            disabled={locked}
+            id={field("instruksi")}
+            invalid={Boolean(errors.instructions)}
+            maxLength={2000}
+            onChange={(event) => set("instructions", event.target.value)}
+            placeholder="Pelajari materi rujukan dan kerjakan seluruh soal secara mandiri."
+            value={values.instructions}
+          />
         </Field>
       </fieldset>
 
       <InfoMessage>
-        Soal tampil saat jadwal dimulai. Untuk sementara asesmen remedial terlihat oleh semua siswa terdaftar; pembatasan
-        hanya untuk siswa Perlu Remedial (FR-G-105) menunggu dukungan backend.
+        Soal tampil saat jadwal dimulai, hanya untuk siswa yang Perlu Remedial pada asesmen asal.
       </InfoMessage>
 
       {state?.status === "error" && (

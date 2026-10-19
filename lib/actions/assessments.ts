@@ -365,17 +365,21 @@ export async function deleteAssessmentAction(slug: string, assessmentId: string)
   redirect(`/${slug}/assessment?tab=daftar`);
 }
 
-// Jadwalkan Remedial (FR-G-107): the remedial assessment's title and schedule, then publishing it when asked.
-// Who may take it is not limited to the Perlu Remedial students yet (FR-G-105 waits for the backend).
+// Jadwalkan Remedial (FR-G-107): the remedial assessment's title, schedule, instructions and source assessment, then
+// publishing it when asked. The source limits who may take it to its Perlu Remedial students (BR-08, FR-G-105).
 export async function scheduleRemedialAction(
   slug: string,
   assessmentId: string,
+  sourceId: string | null,
   values: RemedialScheduleValues,
   publish: boolean,
 ): Promise<PublishState & { fields?: Record<string, string> }> {
   const fields = validateRemedialSchedule(values, publish);
   if (Object.keys(fields).length > 0) {
     return { status: "error", message: "Periksa lagi isian jadwal.", fields: fields as Record<string, string> };
+  }
+  if (publish && !sourceId) {
+    return { status: "error", message: "Pilih asesmen asal remedial di atas sebelum menjadwalkan." };
   }
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
 
@@ -386,6 +390,8 @@ export async function scheduleRemedialAction(
       opensAt: at(values.start),
       closesAt: at(values.end),
       durationMinutes: values.duration ? Number(values.duration) : null,
+      description: values.instructions.trim() || null,
+      ...(sourceId ? { sourceAssessmentId: sourceId } : {}),
     });
   } catch (error) {
     unstable_rethrow(error);

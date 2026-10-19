@@ -26,6 +26,10 @@ const errorMessages: Record<string, string> = {
   google_failed: "Gagal masuk dengan Google. Silakan coba lagi atau gunakan email dan kata sandi.",
   google_cancelled: "Masuk dengan Google dibatalkan.",
   signup_expired: "Sesi pendaftaran dengan Google sudah berakhir. Silakan ulangi.",
+  google_not_allowed: "Akun ini tidak dapat masuk dengan Google.",
+  google_email_unverified: "Email akun Google ini belum terverifikasi. Gunakan akun Google lain.",
+  google_already_linked: "Akun ini sudah tertaut ke akun Google lain.",
+  account_inactive: "Akun dinonaktifkan. Hubungi tim EduInsight.",
 };
 
 export function noticeForError(code: string | string[] | undefined, role: AuthRole): AuthNotice | undefined {

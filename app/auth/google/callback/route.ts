@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import type { NextRequest } from "next/server";
 import { exchangeGoogleCode } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
 import { setSessionToken } from "@/lib/api/session";
 import type { GoogleExchangeResponse } from "@/lib/api/types";
 import { callbackUrl, saveGoogleSignup, takeOAuthState } from "@/lib/auth/google";
@@ -34,8 +35,8 @@ export async function GET(request: NextRequest) {
       nonce: saved.nonce,
       role,
     });
-  } catch {
-    redirect(`${page}?error=google_failed`);
+  } catch (error) {
+    redirect(`${page}?error=${errorCode(error)}`);
   }
 
   // The email has no account yet: pick a username first.
@@ -56,4 +57,15 @@ export async function GET(request: NextRequest) {
 
   await setSessionToken(result.accessToken);
   redirect(authRoles[role].homePath);
+}
+
+// Backend refusals the sign-in page explains (lib/auth/messages.ts); anything else is a plain failure.
+const explained = new Set(["google_not_allowed", "google_email_unverified", "google_already_linked", "account_inactive"]);
+
+function errorCode(error: unknown): string {
+  if (!(error instanceof ApiError) || !error.code) return "google_failed";
+  // The account keeps its role (FR-X-005), so it belongs on the other role's page (FR-X-001).
+  if (error.code === "wrong_portal") return "wrong_role";
+  if (error.code === "google_unavailable") return "google_unavailable";
+  return explained.has(error.code) ? error.code : "google_failed";
 }

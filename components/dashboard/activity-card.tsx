@@ -12,6 +12,8 @@ const kindStyles: Record<ActivityKind, { icon: string; chip: string }> = {
   grading: { icon: "/dashboard/activity-remedial.svg", chip: "bg-[rgba(254,202,202,0.6)]" },
   closed: { icon: "/dashboard/activity-done.svg", chip: "bg-[rgba(153,188,229,0.6)]" },
   published: { icon: "/dashboard/activity-report.svg", chip: "bg-[rgba(187,247,208,0.6)]" },
+  remedial: { icon: "/dashboard/activity-remedial.svg", chip: "bg-[rgba(254,215,170,0.6)]" },
+  material: { icon: "/dashboard/activity-history.svg", chip: "bg-[rgba(153,188,229,0.6)]" },
   joined: { icon: "/dashboard/activity-report.svg", chip: "bg-[rgba(187,247,208,0.6)]" },
 };
 

@@ -75,7 +75,7 @@ export const mockDashboard: DashboardData = {
   studentCount: 32,
   assessedCount: 32,
   average: { value: 72, trend: "up" },
-  remedial: { count: 6, assessmentTitle: "Post-test Eksponen" },
+  remedial: { count: 6 },
   topMisconception: { tag: "Konsep Pecahan", studentCount: 21, percent: 65 },
   chapters,
   activities: [

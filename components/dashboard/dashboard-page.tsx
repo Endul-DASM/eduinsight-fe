@@ -81,9 +81,9 @@ function StatCard({
 }
 
 const trendNotes = {
-  up: "Meningkat dari pekan lalu",
-  down: "Menurun dari pekan lalu",
-  same: "Sama seperti pekan lalu",
+  up: "Meningkat dari 30 hari sebelumnya",
+  down: "Menurun dari 30 hari sebelumnya",
+  same: "Sama seperti 30 hari sebelumnya",
 };
 
 // Performance Overview (FR-G-010) and Top Miskonsepsi (FR-G-012).
@@ -97,7 +97,7 @@ function StatCards({ data, diagnosisHref }: { data: DashboardData; diagnosisHref
         icon="/dashboard/stat-chart.svg"
         iconSize={48}
         label="Rata-rata nilai"
-        note={average ? (average.trend ? trendNotes[average.trend] : "Belum ada data pekan lalu") : "Belum ada nilai siswa"}
+        note={average ? (average.trend ? trendNotes[average.trend] : "Belum ada data 30 hari sebelumnya") : "Belum ada nilai siswa"}
         value={<span className="text-[32px]">{average ? Math.round(average.value) : "—"}</span>}
       />
       <StatCard
@@ -107,7 +107,7 @@ function StatCards({ data, diagnosisHref }: { data: DashboardData; diagnosisHref
         label="Butuh remedial"
         note={
           remedial ? (
-            <span title={`Berdasarkan ${remedial.assessmentTitle}`}>
+            <span title="Dari semua post-test, ulangan harian, UTS, dan UAS">
               {remedial.count > 0 ? "Perlu intervensi segera" : "Semua siswa tuntas"}
             </span>
           ) : (

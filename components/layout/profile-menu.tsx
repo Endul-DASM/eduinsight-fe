@@ -8,6 +8,7 @@ import { cn } from "@/components/ui/cn";
 import { logout } from "@/lib/actions/auth";
 import type { CurrentUser } from "@/lib/api/types";
 import { firstName } from "@/lib/display-name";
+import { profilePhotoUrl } from "@/lib/profile-form";
 
 const itemClassName =
   "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#1b1b1d] transition-colors hover:bg-[#e6eff9]";
@@ -45,6 +46,7 @@ export function ProfileMenu({
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const pathname = usePathname();
+  const photo = profilePhotoUrl(user.photoUpdatedAt);
   const [openedAt, setOpenedAt] = useState(pathname);
 
   // Close when the page changes.
@@ -81,8 +83,14 @@ export function ProfileMenu({
         }}
         type="button"
       >
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-[#e6eff9] text-base font-bold text-[#004695]">
-          {user.initials}
+        <span className="grid size-11 shrink-0 place-items-center overflow-hidden rounded-full bg-[#e6eff9] text-base font-bold text-[#004695]">
+          {photo ? (
+            // Served by app/api/me/photo with the session token; next/image would fetch it without the cookie.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img alt="" className="size-full object-cover" src={photo} />
+          ) : (
+            user.initials
+          )}
         </span>
         <span className="hidden max-w-[200px] leading-tight text-[#1b1b1d] sm:block">
           <span className="block truncate text-lg font-semibold">{firstName(user.name)}</span>

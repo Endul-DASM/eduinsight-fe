@@ -108,8 +108,16 @@ export function improvementOf(source: AssessmentResults, remedial: AssessmentRes
   };
 }
 
-// Jadwalkan Remedial (FR-G-107; Figma New Design 86:10467): one day, a start and end time in WIB, and a duration.
-export type RemedialScheduleValues = { title: string; date: string; start: string; end: string; duration: string };
+// Jadwalkan Remedial (FR-G-107; Figma New Design 86:10467): one day, a start and end time in WIB, a duration, and
+// optional instructions for students (the assessment's description).
+export type RemedialScheduleValues = {
+  title: string;
+  date: string;
+  start: string;
+  end: string;
+  duration: string;
+  instructions: string;
+};
 export type RemedialScheduleErrors = Partial<Record<keyof RemedialScheduleValues, string>>;
 
 export function validateRemedialSchedule(values: RemedialScheduleValues, publish: boolean): RemedialScheduleErrors {
@@ -125,6 +133,7 @@ export function validateRemedialSchedule(values: RemedialScheduleValues, publish
   if (values.duration && !(/^\d+$/.test(values.duration) && Number(values.duration) >= 1 && Number(values.duration) <= 600)) {
     errors.duration = "Durasi 1–600 menit.";
   }
+  if (values.instructions.trim().length > 2000) errors.instructions = "Instruksi maksimal 2.000 karakter.";
   if (publish) {
     if (!values.date) errors.date = "Tanggal pelaksanaan wajib diisi.";
     if (!values.start) errors.start = "Waktu mulai wajib diisi.";

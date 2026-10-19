@@ -10,6 +10,10 @@ export type CurrentUser = {
   email: string;
   role: UserRole;
   initials: string;
+  // Edit Profile; null until filled in.
+  province: string | null;
+  // Null without a photo. Changes whenever the photo does, so it also busts the cached image.
+  photoUpdatedAt: string | null;
 };
 
 export type TeacherSummary = {
@@ -18,7 +22,6 @@ export type TeacherSummary = {
   email: string;
 };
 
-// The backend accepts only SMP and SMA for now; SD is sent so grades 1–6 work once it does.
 export type SchoolLevel = "SD" | "SMP" | "SMA";
 
 export type SchoolClass = {
@@ -36,7 +39,7 @@ export type Subject = {
   kkmDefault: number;
   class: SchoolClass;
   teachers: TeacherSummary[];
-  // Code students use to join the subject. Not provided by the backend yet.
+  // Code students use to join the subject; null for students.
   joinCode?: string | null;
 };
 
@@ -155,6 +158,8 @@ export type QuestionPage = {
 // Assessment (PRD 5.4.1–5.4.2).
 
 export type AssessmentType = "pre_test" | "post_test" | "ulangan_harian" | "uts" | "uas" | "remedial";
+// What a remedial assessment does for its source (SRS 7.4); the backend uses "official" when none is sent.
+export type RemedialKind = "official" | "reassessment";
 export type AssessmentMode = "daring" | "luring";
 // Derived by the backend from the schedule (SRS 7.2).
 export type AssessmentStatus = "draft" | "scheduled" | "ongoing" | "closed";
@@ -163,6 +168,8 @@ export type Assessment = {
   id: string;
   subjectId: string;
   title: string;
+  // Instructions for students, shown in their list.
+  description: string | null;
   type: AssessmentType;
   status: AssessmentStatus;
   kkm: number;
@@ -174,6 +181,9 @@ export type Assessment = {
   maxAttempts: number;
   mode: AssessmentMode;
   publishedAt: string | null;
+  // Remedial only: the assessment it follows up (BR-08).
+  sourceAssessmentId: string | null;
+  remedialKind: RemedialKind | null;
   questionCount: number;
   createdAt: string;
   updatedAt: string;

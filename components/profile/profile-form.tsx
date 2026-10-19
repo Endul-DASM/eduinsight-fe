@@ -1,15 +1,18 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useId, useRef, useState, useTransition } from "react";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
-import { Field, InfoMessage, SelectInput, TextInput } from "@/components/assessment/builder-fields";
+import { Field, FormMessage, InfoMessage, SelectInput, TextInput } from "@/components/assessment/builder-fields";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName, sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { deletePhotoAction, type ProfileActionResult, saveProfileAction, uploadPhotoAction } from "@/lib/actions/profile";
 import type { CurrentUser } from "@/lib/api/types";
 import {
   PHOTO_MAX_MB,
+  profilePhotoUrl,
   type ProfileErrors,
   type ProfileValues,
   validatePhotoFile,
@@ -18,18 +21,24 @@ import {
 } from "@/lib/profile-form";
 import { provinces } from "@/lib/provinces";
 
-const NOT_READY = "belum bisa disimpan karena backend belum tersedia.";
-
-// Foto profil: a local preview only, the backend has no upload yet.
-function PhotoCard({ initials }: { initials: string }) {
+// Foto profil: PUT /me/photo once the browser has checked the type, size and dimensions; DELETE /me/photo removes it.
+function PhotoCard({ user }: { user: CurrentUser }) {
+  const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const photo = profilePhotoUrl(user.photoUpdatedAt);
 
-  // Free the object URL when it is replaced or the page closes.
-  useEffect(() => () => {
-    if (preview) URL.revokeObjectURL(preview);
-  }, [preview]);
+  function send(request: () => Promise<ProfileActionResult>) {
+    startTransition(async () => {
+      const result = await request();
+      if (result.status === "error") setError(result.message);
+      else {
+        setError(null);
+        router.refresh();
+      }
+    });
+  }
 
   function pick(file: File | undefined) {
     if (!file) return;
@@ -41,14 +50,15 @@ function PhotoCard({ initials }: { initials: string }) {
     const url = URL.createObjectURL(file);
     const image = new window.Image();
     image.onload = () => {
+      URL.revokeObjectURL(url);
       const sizeError = validatePhotoSize(image.naturalWidth, image.naturalHeight);
       if (sizeError) {
-        URL.revokeObjectURL(url);
         setError(sizeError);
         return;
       }
-      setError(null);
-      setPreview(url);
+      const form = new FormData();
+      form.set("file", file);
+      send(() => uploadPhotoAction(form));
     };
     image.onerror = () => {
       URL.revokeObjectURL(url);
@@ -60,18 +70,35 @@ function PhotoCard({ initials }: { initials: string }) {
   return (
     <section className={cn(sectionClassName, "flex-row flex-wrap items-center gap-8")}>
       <div className="size-[180px] shrink-0 overflow-hidden rounded-full bg-[#e6eff9]">
-        {preview ? (
-          // A local object URL; next/image cannot optimize it.
+        {photo ? (
+          // Served by app/api/me/photo with the session token; next/image would fetch it without the cookie.
           // eslint-disable-next-line @next/next/no-img-element
-          <img alt="Pratinjau foto profil" className="size-full object-cover" src={preview} />
+          <img alt="Foto profil" className="size-full object-cover" src={photo} />
         ) : (
-          <span className="grid size-full place-items-center text-5xl font-bold text-[#004695]">{initials}</span>
+          <span className="grid size-full place-items-center text-5xl font-bold text-[#004695]">{user.initials}</span>
         )}
       </div>
       <div className="flex flex-col gap-3">
-        <button className={cn(primaryButtonClassName, "self-start px-4 py-2.5 text-base")} onClick={() => inputRef.current?.click()} type="button">
-          Upload Foto Baru
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            className={cn(primaryButtonClassName, "px-4 py-2.5 text-base")}
+            disabled={pending}
+            onClick={() => inputRef.current?.click()}
+            type="button"
+          >
+            {pending ? "Menyimpan..." : "Upload Foto Baru"}
+          </button>
+          {photo && (
+            <button
+              className={cn(outlineButtonClassName, "px-4 py-2.5 text-base")}
+              disabled={pending}
+              onClick={() => send(deletePhotoAction)}
+              type="button"
+            >
+              Hapus Foto
+            </button>
+          )}
+        </div>
         <input
           accept="image/jpeg,image/png"
           aria-label="Pilih foto profil"
@@ -89,7 +116,6 @@ function PhotoCard({ initials }: { initials: string }) {
             {error}
           </p>
         )}
-        {preview && <InfoMessage>Pratinjau foto. Foto profil {NOT_READY}</InfoMessage>}
       </div>
     </section>
   );
@@ -112,15 +138,18 @@ function PasswordModal({ open, onClose }: { open: boolean; onClose: () => void }
   );
 }
 
-// Edit Profile (Figma New Design 187:10583): photo, Personal Info and password. Name and email come from GET /me. The
-// password can be changed; the backend cannot save the other fields yet, so saving validates and explains that.
+// Edit Profile (Figma New Design 187:10583): photo, Personal Info and password, from GET /me. Name and province are
+// saved with PATCH /me; the email is read-only.
 export function ProfileForm({ user }: { user: CurrentUser }) {
   const id = useId();
-  const initial: ProfileValues = { name: user.name, email: user.email, province: "" };
+  const router = useRouter();
+  const initial: ProfileValues = { name: user.name, province: user.province ?? "" };
   const [values, setValues] = useState(initial);
   const [editing, setEditing] = useState(false);
   const [errors, setErrors] = useState<ProfileErrors>({});
   const [notice, setNotice] = useState<string | null>(null);
+  const [failure, setFailure] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
   const [passwordOpen, setPasswordOpen] = useState(false);
 
   const set = (key: keyof ProfileValues) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -133,32 +162,50 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
     setValues(initial);
     setErrors({});
     setNotice(null);
+    setFailure(null);
     setEditing(false);
+  }
+
+  function save() {
+    const found = validateProfile(values);
+    setErrors(found);
+    setNotice(null);
+    setFailure(null);
+    if (Object.keys(found).length) return;
+    startTransition(async () => {
+      const result = await saveProfileAction(values);
+      if (result.status === "error") {
+        setErrors(result.fields ?? {});
+        setFailure(result.message);
+        return;
+      }
+      setEditing(false);
+      setNotice("Profil tersimpan.");
+      router.refresh();
+    });
   }
 
   return (
     <div className="mx-auto flex w-full max-w-[1048px] flex-col gap-6">
-      <PhotoCard initials={user.initials} />
+      <PhotoCard user={user} />
 
       <form
         className={sectionClassName}
         noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          const found = validateProfile(values);
-          setErrors(found);
-          setNotice(Object.keys(found).length ? null : `Perubahan profil ${NOT_READY}`);
+          save();
         }}
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-xl font-semibold leading-normal text-black">Personal Info</h3>
           {editing ? (
             <div className="flex gap-3">
-              <button className={cn(outlineButtonClassName, "px-4 py-2 text-base")} onClick={cancel} type="button">
+              <button className={cn(outlineButtonClassName, "px-4 py-2 text-base")} disabled={pending} onClick={cancel} type="button">
                 Batal
               </button>
-              <button className={cn(primaryButtonClassName, "px-4 py-2 text-base")} type="submit">
-                Simpan
+              <button className={cn(primaryButtonClassName, "px-4 py-2 text-base")} disabled={pending} type="submit">
+                {pending ? "Menyimpan..." : "Simpan"}
               </button>
             </div>
           ) : (
@@ -185,16 +232,8 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
             value={values.name}
           />
         </Field>
-        <Field error={errors.email} htmlFor={`${id}-email`} label="Email">
-          <TextInput
-            autoComplete="email"
-            disabled={!editing}
-            id={`${id}-email`}
-            invalid={Boolean(errors.email)}
-            onChange={set("email")}
-            type="email"
-            value={values.email}
-          />
+        <Field hint={editing ? "Email tidak dapat diubah." : undefined} htmlFor={`${id}-email`} label="Email">
+          <TextInput autoComplete="email" disabled id={`${id}-email`} readOnly type="email" value={user.email} />
         </Field>
         <Field error={errors.province} hint="Opsional" htmlFor={`${id}-province`} label="Provinsi">
           <SelectInput
@@ -221,6 +260,7 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
           </div>
         </Field>
 
+        {failure && <FormMessage>{failure}</FormMessage>}
         {notice && <InfoMessage>{notice}</InfoMessage>}
       </form>
 

@@ -1,6 +1,13 @@
 import { cache } from "react";
 import { ApiError, apiFetch, isMockMode } from "./client";
-import type { Assessment, AssessmentDetail, AssessmentMode, AssessmentStatus, AssessmentType } from "./types";
+import type {
+  Assessment,
+  AssessmentDetail,
+  AssessmentMode,
+  AssessmentStatus,
+  AssessmentType,
+  RemedialKind,
+} from "./types";
 
 export type AssessmentFilters = {
   type?: AssessmentType;
@@ -34,6 +41,8 @@ export const getAssessment = cache(async (id: string): Promise<AssessmentDetail 
 // Informasi (FR-G-041) and Pengaturan (FR-G-044). Times are ISO 8601 with an offset.
 export type AssessmentInput = {
   title?: string;
+  // Instructions for students; null clears them.
+  description?: string | null;
   type?: AssessmentType;
   kkm?: number;
   remedialThreshold?: number | null;
@@ -42,6 +51,9 @@ export type AssessmentInput = {
   durationMinutes?: number | null;
   maxAttempts?: number;
   mode?: AssessmentMode;
+  // Remedial only (BR-08): the source is required to publish; the kind defaults to "official".
+  sourceAssessmentId?: string | null;
+  remedialKind?: RemedialKind | null;
 };
 
 // POST /subjects/:id/assessments — creates a draft.

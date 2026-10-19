@@ -7,6 +7,8 @@ export const mockTeacher: CurrentUser = {
   email: "mayla@eduinsight.id",
   role: "guru",
   initials: "MP",
+  province: null,
+  photoUpdatedAt: null,
 };
 
 // Mock mode has no sessions, so the student pages show this user instead of mockTeacher.
@@ -17,6 +19,8 @@ export const mockStudent: CurrentUser = {
   email: "alya@eduinsight.id",
   role: "siswa",
   initials: "A",
+  province: null,
+  photoUpdatedAt: null,
 };
 
 const mockTeacherSummary: TeacherSummary = {

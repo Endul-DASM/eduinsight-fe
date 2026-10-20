@@ -251,6 +251,10 @@ export const OPTION_KEYS = ["A", "B", "C", "D", "E"] as const;
 // Template imports (POST /subjects/:id/question-imports): .xlsx or .csv, at most 5 MB and 500 rows.
 
 export const MAX_IMPORT_MB = 5;
+// Question documents read by AI Parsing (POST /subjects/:id/question-parses): .docx, .pdf or .txt, at most 10 MB and
+// 20 pages; scans (OCR) at most 25 MB.
+export const MAX_PARSE_MB = 10;
+export const MAX_SCAN_MB = 25;
 
 // One question in "Ketik di EduInsight" (Figma 61:8772), before it is saved to the Bank Soal.
 export type TypedQuestion = {

@@ -1,6 +1,5 @@
 import type { AiJobAccepted } from "./ai-jobs";
 import { apiFetch } from "./client";
-import type { QuestionImport } from "./questions";
 import type { BloomLevel, Question } from "./types";
 
 // Question sources beyond typing and templates. OCR still waits for the backend: its Server Function only calls the
@@ -8,8 +7,8 @@ import type { BloomLevel, Question } from "./types";
 
 // Bikin Soal dengan AI (FR-G-045, FR-G-047): eduinsight-be AI-04/05, built on the material index (AI-03).
 export const AI_GENERATION_READY = true;
-// Scan soal kertas (FR-G-062) + AI Parsing (FR-G-063).
-export const OCR_READY = false;
+// Scan soal kertas (FR-G-062) + AI Parsing (FR-G-063): eduinsight-be AI-07/08.
+export const OCR_READY = true;
 
 export type GenerateQuestionsInput = {
   learningObjectiveIds: string[];
@@ -37,10 +36,19 @@ export async function requestVariation(questionId: string, assessmentId: string)
   });
 }
 
-// Proposed: POST /subjects/:id/question-scans (multipart "file": PDF, JPG or PNG) → the same shape as a template
-// import (drafts + unreadable parts in errors), so the review and save steps are shared.
-export async function scanQuestions(subjectId: string, form: FormData): Promise<QuestionImport> {
-  return apiFetch<QuestionImport>(`/subjects/${encodeURIComponent(subjectId)}/question-scans`, {
+// POST /subjects/:id/question-scans (multipart "file": PDF, JPG or PNG) → 202 { jobId }. Once done, the job's
+// resultRef.importId is a QuestionImport (drafts + unreadable parts in errors), reviewed like a template import.
+export async function scanQuestions(subjectId: string, form: FormData): Promise<AiJobAccepted> {
+  return apiFetch<AiJobAccepted>(`/subjects/${encodeURIComponent(subjectId)}/question-scans`, {
+    method: "POST",
+    body: form,
+  });
+}
+
+// POST /subjects/:id/question-parses (multipart "file": DOCX, PDF or TXT) → 202 { jobId }: AI Parsing of a question
+// document (FR-G-063), with the same result as a scan.
+export async function parseQuestions(subjectId: string, form: FormData): Promise<AiJobAccepted> {
+  return apiFetch<AiJobAccepted>(`/subjects/${encodeURIComponent(subjectId)}/question-parses`, {
     method: "POST",
     body: form,
   });

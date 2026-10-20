@@ -18,7 +18,7 @@ import {
   approveQuestion,
   generateQuestions,
   type GenerateQuestionsInput,
-  OCR_READY,
+  parseQuestions,
   rejectQuestion,
   requestVariation,
   scanQuestions,
@@ -39,6 +39,8 @@ import {
   durationOf,
   MAX_AI_QUESTIONS,
   MAX_IMPORT_MB,
+  MAX_PARSE_MB,
+  MAX_SCAN_MB,
   OPTION_KEYS,
   type SpecificationValues,
   type TypedQuestion,
@@ -51,8 +53,6 @@ const MOCK_MODE_MESSAGE = "Mode demo: sambungkan backend (API_BASE_URL) untuk me
 const SERVER_UNREACHABLE_MESSAGE = "Tidak dapat terhubung ke server. Coba lagi beberapa saat lagi.";
 const AI_NOT_READY_MESSAGE =
   "Pembuatan soal dengan AI belum tersedia di server. Spesifikasi sudah tersimpan sebagai draf; Anda bisa melanjutkannya nanti.";
-const OCR_NOT_READY_MESSAGE =
-  "Scan OCR belum tersedia di server. Spesifikasi sudah tersimpan sebagai draf; sementara itu Anda bisa memakai Template atau Ketik di EduInsight.";
 
 // fields are keyed by form field, or by question key for the question editor. questionIds maps the keys of new
 // questions to the ids the backend gave them, also after a failure partway through.
@@ -355,26 +355,32 @@ export async function refreshAssessmentAction(slug: string, assessmentId: string
   refresh(slug, assessmentId);
 }
 
-// Langkah 2 OCR (FR-G-062, FR-G-063). Waits for the backend: see OCR_READY. The result is reviewed like an import.
-export async function scanQuestionsAction(
-  slug: string,
-  subjectId: string,
-  assessmentId: string,
-  method: BuilderMethod,
-  form: FormData,
-): Promise<BuilderResult> {
+// Langkah 2 OCR (FR-G-062) and AI Parsing of a question document (FR-G-063): the backend reads the file in a job;
+// the step follows it with useAiJob and opens the result (?import=id), reviewed like a template import.
+export async function scanQuestionsAction(slug: string, subjectId: string, form: FormData): Promise<AiRequestResult> {
   const file = form.get("file");
   if (!(file instanceof File) || file.size === 0) return { status: "error", message: "Unggah dokumen hasil scan." };
-  if (!OCR_READY) return { status: "error", message: OCR_NOT_READY_MESSAGE };
+  if (!/\.(pdf|jpe?g|png)$/i.test(file.name)) return { status: "error", message: "Unggah berkas PDF, JPG, atau PNG." };
+  if (file.size > MAX_SCAN_MB * 1024 * 1024) return { status: "error", message: `Ukuran berkas maksimal ${MAX_SCAN_MB} MB.` };
+  return queueRead(() => scanQuestions(subjectId, form));
+}
+
+export async function parseQuestionsAction(slug: string, subjectId: string, form: FormData): Promise<AiRequestResult> {
+  const file = form.get("file");
+  if (!(file instanceof File) || file.size === 0) return { status: "error", message: "Pilih berkas soal." };
+  if (!/\.(docx|pdf|txt)$/i.test(file.name)) return { status: "error", message: "Unggah berkas .docx, .pdf, atau .txt." };
+  if (file.size > MAX_PARSE_MB * 1024 * 1024) return { status: "error", message: `Ukuran berkas maksimal ${MAX_PARSE_MB} MB.` };
+  return queueRead(() => parseQuestions(subjectId, form));
+}
+
+async function queueRead(request: () => Promise<{ jobId: string }>): Promise<AiRequestResult> {
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
-  let importId: string;
   try {
-    importId = (await scanQuestions(subjectId, form)).id;
+    return { status: "queued", jobId: (await request()).jobId };
   } catch (error) {
     unstable_rethrow(error);
-    return errorResult(error);
+    return { status: "error", message: errorResult(error).message ?? SERVER_UNREACHABLE_MESSAGE };
   }
-  redirect(`${builderPath(slug, assessmentId, method, "soal")}&import=${importId}`);
 }
 
 export async function publishAction(slug: string, assessmentId: string): Promise<PublishState> {

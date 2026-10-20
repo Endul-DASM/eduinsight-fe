@@ -151,6 +151,13 @@ export type Question = {
   origin: "manual" | "upload" | "ocr" | "ai";
   status: QuestionStatus;
   learningObjectives: LearningObjectiveRef[];
+  // The material an AI draft was written from.
+  sourceMaterialId: string | null;
+  // AI drafts only: why the key is right, the job that wrote them, and "mismatch" when an independent check picked
+  // another option ("Perlu cek kunci"); null once the teacher edits the key.
+  explanation: string | null;
+  aiJobId: string | null;
+  keyCheck: "ok" | "mismatch" | null;
 };
 
 export type QuestionPage = {

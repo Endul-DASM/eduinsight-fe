@@ -2,20 +2,27 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useId, useState, useTransition } from "react";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
-import { generateQuestionsAction } from "@/lib/actions/assessments";
+import { useAiJob } from "@/lib/ai-job";
+import { generateQuestionsAction, refreshAssessmentAction } from "@/lib/actions/assessments";
 import type { AssessmentDetail, BloomLevel, QuestionType } from "@/lib/api/types";
-import { bloomLevels, type BuilderMethod, questionTypeOptions } from "@/lib/assessment-form";
+import {
+  bloomLevels,
+  type BuilderMethod,
+  builderPath,
+  MAX_AI_QUESTIONS,
+  questionTypeOptions,
+} from "@/lib/assessment-form";
 import { Field, FormMessage, TextInput } from "./builder-fields";
-
-const MAX_COUNT = 50;
+import { BuilderWait } from "./builder-shell";
 
 // Langkah 2 AI Generated (Figma New Design 60:4677; FR-G-045, FR-G-047): which question types, how many of each,
-// and the Bloom level. The questions come from the assessment's TPs and the materials of their Babs. Generating
-// waits for the backend (AI_GENERATION_READY); the form is complete so connecting it is a flag away.
+// and the Bloom level. The backend writes the drafts from the assessment's TPs and the teacher's indexed material in
+// a job; this page follows the job and opens Review, where the drafts wait for ACC, once it is done.
 export function AiStep({
   slug,
   method,
@@ -30,7 +37,19 @@ export function AiStep({
   const [counts, setCounts] = useState<Record<QuestionType, string>>({ pg: "", uraian: "" });
   const [bloom, setBloom] = useState<BloomLevel>("C1");
   const [message, setMessage] = useState<string>();
+  const [jobId, setJobId] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
+  const job = useAiJob(jobId, {
+    onDone: async () => {
+      await refreshAssessmentAction(slug, assessment.id);
+      router.push(builderPath(slug, assessment.id, method, "review"));
+    },
+    onFailed: (failure) => {
+      setJobId(null);
+      setMessage(`${failure} Anda tetap bisa mengetik soal sendiri atau memakai Template.`);
+    },
+  });
 
   function toggle(type: QuestionType) {
     setTypes((current) => {
@@ -48,18 +67,29 @@ export function AiStep({
     if (types.size === 0) return setMessage("Pilih minimal satu jenis soal.");
     for (const type of types) {
       const value = Number(counts[type] || 0);
-      if (!Number.isInteger(value) || value < 1 || value > MAX_COUNT) {
-        return setMessage(`Jumlah soal tiap jenis 1–${MAX_COUNT}.`);
-      }
+      if (!Number.isInteger(value) || value < 1) return setMessage("Isi jumlah soal tiap jenis yang dipilih.");
+    }
+    if (count("pg") + count("uraian") > MAX_AI_QUESTIONS) {
+      return setMessage(`Paling banyak ${MAX_AI_QUESTIONS} soal sekali buat. Tambah lagi setelahnya bila perlu.`);
     }
     startTransition(async () => {
-      const result = await generateQuestionsAction(slug, assessment.id, method, {
+      const result = await generateQuestionsAction(slug, assessment.id, {
         learningObjectiveIds: assessment.learningObjectives.map((objective) => objective.id),
         counts: { pg: count("pg"), uraian: count("uraian") },
         bloomLevel: bloom,
       });
       if (result.status === "error") setMessage(result.message);
+      else setJobId(result.jobId);
     });
+  }
+
+  if (jobId && job.status !== "failed") {
+    return (
+      <BuilderWait
+        description="Sekitar setengah menit untuk tiap 5 soal. Halaman ini boleh ditutup; notifikasi dikirim saat soal siap ditinjau."
+        title="AI sedang menyusun soal dari materi Anda..."
+      />
+    );
   }
 
   const bloomIndex = bloomLevels.findIndex((level) => level.value === bloom);

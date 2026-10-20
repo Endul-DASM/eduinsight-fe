@@ -16,6 +16,7 @@ import {
   sortedObjectives,
 } from "@/lib/student-diagnosis";
 import { PrintButton } from "./print-button";
+import { NarrativePanel } from "./narrative-panel";
 
 const card = "rounded-3xl bg-[#fafbfd] p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)] break-inside-avoid print:shadow-none print:border print:border-[#c5c6cd]";
 const chip = "rounded-3xl px-2 py-0.5 text-xs font-semibold";
@@ -178,8 +179,8 @@ function CompetencyCard({ subject, diagnosis }: { subject: Subject; diagnosis: M
   );
 }
 
-// Wawasan untuk {nama}: the strongest and weakest TP from the scores. The AI narrative (FR-S-041) is not in the
-// backend yet.
+// Wawasan untuk {nama}: the strongest and weakest TP from the scores. The AI explanation per Cukup/Kurang TP
+// (FR-S-041) is the NarrativePanel below it.
 function InsightCard({ diagnosis, studentName }: { diagnosis: MyDiagnosis; studentName: string }) {
   const strongest = objectiveById(diagnosis, diagnosis.strongest);
   const weakest = objectiveById(diagnosis, diagnosis.weakest);
@@ -340,6 +341,11 @@ export function StudentDiagnosisPage({
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-6">
           <InsightCard diagnosis={diagnosis} studentName={studentName} />
+          <NarrativePanel
+            objectives={diagnosis.learningObjectives.filter((objective) => objective.label === "c" || objective.label === "k")}
+            slug={slug}
+            subjectId={subject.id}
+          />
           <PathCard dashboard={dashboard} />
         </div>
         <div className="print:hidden">

@@ -107,6 +107,8 @@ export type StudentDiagnosis = {
   // TP ids with the highest and lowest score.
   strongest: string | null;
   weakest: string | null;
+  // The AI explanation the student last saw of their Cukup/Kurang TPs (AI-11).
+  aiNarrative: { items: { learningObjectiveId: string; explanation: string; tip: string }[]; createdAt: string } | null;
 };
 
 // Without filters the backend takes every published post-test, UH, UTS and UAS (BR-07 scope).

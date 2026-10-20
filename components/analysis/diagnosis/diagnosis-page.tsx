@@ -27,6 +27,7 @@ function Empty({ title, children }: { title: string; children?: React.ReactNode 
 // Tab Diagnosis of Analisis (PRD 5.5.1; FR-G-080 – 085): the scope, then Diagnosis Kelas, TP or Siswa.
 export function DiagnosisPage({
   slug,
+  subjectId,
   params,
   className,
   assessments,
@@ -37,6 +38,7 @@ export function DiagnosisPage({
   itemAssessment,
 }: {
   slug: string;
+  subjectId: string;
   params: DiagnosisParams;
   className: string;
   assessments: Assessment[];
@@ -90,7 +92,14 @@ export function DiagnosisPage({
           student={student}
         />
       ) : (
-        <ClassView className={className} diagnosis={diagnosis} params={params} questionObjectives={questionObjectives} slug={slug} />
+        <ClassView
+          className={className}
+          diagnosis={diagnosis}
+          params={params}
+          questionObjectives={questionObjectives}
+          slug={slug}
+          subjectId={subjectId}
+        />
       )}
     </div>
   );

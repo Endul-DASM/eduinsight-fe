@@ -51,6 +51,7 @@ async function diagnosisTab(slug: string, subject: Subject, query: Query) {
       questionObjectives={questionObjectives}
       slug={slug}
       student={student}
+      subjectId={subject.id}
     />
   );
 }

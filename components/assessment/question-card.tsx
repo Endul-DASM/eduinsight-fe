@@ -12,6 +12,7 @@ export function QuestionCard({
   answer,
   actions,
   badge,
+  footer,
   bare = false,
   className,
 }: {
@@ -24,6 +25,8 @@ export function QuestionCard({
   actions?: ReactNode;
   // E.g. "Menunggu ACC" on an AI draft.
   badge?: ReactNode;
+  // Below the answer, e.g. an AI draft's explanation.
+  footer?: ReactNode;
   // Without its own border, e.g. inside the example card.
   bare?: boolean;
   className?: string;
@@ -81,6 +84,7 @@ export function QuestionCard({
           <p className="whitespace-pre-line">{answer}</p>
         </div>
       )}
+      {footer}
     </article>
   );
 }

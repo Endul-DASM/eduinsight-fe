@@ -84,6 +84,9 @@ export function builderPath(slug: string, assessmentId: string, method: BuilderM
 
 export const MIN_LEARNING_OBJECTIVE_MESSAGE = "Pilih minimal satu TP.";
 
+// The most questions per "Bikin Soal dengan AI" request, as the backend allows (AI Plan §6.2).
+export const MAX_AI_QUESTIONS = 20;
+
 // Schedules are entered and shown in WIB. A datetime-local input has no time zone, and the page is rendered on the
 // server, so a fixed zone keeps the server and the browser in agreement. Schools in WITA/WIT are a follow-up.
 export const SCHEDULE_TIME_ZONE = "Asia/Jakarta";

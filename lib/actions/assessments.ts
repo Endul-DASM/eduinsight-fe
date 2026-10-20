@@ -15,9 +15,12 @@ import {
 import { ApiError, isMockMode } from "@/lib/api/client";
 import {
   AI_GENERATION_READY,
+  approveQuestion,
   generateQuestions,
   type GenerateQuestionsInput,
   OCR_READY,
+  rejectQuestion,
+  requestVariation,
   scanQuestions,
 } from "@/lib/api/question-sources";
 import {
@@ -34,6 +37,7 @@ import {
   type BuilderMethod,
   builderPath,
   durationOf,
+  MAX_AI_QUESTIONS,
   MAX_IMPORT_MB,
   OPTION_KEYS,
   type SpecificationValues,
@@ -55,6 +59,9 @@ const OCR_NOT_READY_MESSAGE =
 export type BuilderResult =
   | { status: "error"; message?: string; fields?: Record<string, string>; questionIds?: Record<string, string> }
   | { status: "saved"; questionIds?: Record<string, string> };
+
+// An AI request was accepted; follow it with useAiJob (lib/ai-job.ts).
+export type AiRequestResult = { status: "queued"; jobId: string } | { status: "error"; message: string };
 
 // publish_blocked lists every problem, so the review step can show them all.
 export type PublishState = { status: "error"; message: string; problems?: string[] } | { status: "saved" } | undefined;
@@ -272,27 +279,80 @@ export async function saveImportAction(
   redirect(builderPath(slug, assessmentId, method, next ? "review" : "soal"));
 }
 
-// Langkah 2 AI (FR-G-045, FR-G-047). Waits for the backend: see AI_GENERATION_READY.
+// Langkah 2 AI (FR-G-045, FR-G-047) and Regenerate Semua (FR-G-046, with replaceJobId). The backend writes the
+// drafts in a job; the page follows it and opens Review when it is done.
 export async function generateQuestionsAction(
   slug: string,
   assessmentId: string,
-  method: BuilderMethod,
   input: GenerateQuestionsInput,
-): Promise<BuilderResult> {
-  if (input.counts.pg + input.counts.uraian === 0) return { status: "error", message: "Isi jumlah soal minimal satu." };
+): Promise<AiRequestResult> {
+  const total = input.counts.pg + input.counts.uraian;
+  if (total === 0) return { status: "error", message: "Isi jumlah soal minimal satu." };
+  if (total > MAX_AI_QUESTIONS) {
+    return { status: "error", message: `Paling banyak ${MAX_AI_QUESTIONS} soal per permintaan.` };
+  }
   if (input.learningObjectiveIds.length === 0) {
     return { status: "error", message: "Asesmen belum punya TP. Pilih TP di Spesifikasi Soal." };
   }
   if (!AI_GENERATION_READY) return { status: "error", message: AI_NOT_READY_MESSAGE };
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
   try {
-    await generateQuestions(assessmentId, input);
+    const { jobId } = await generateQuestions(assessmentId, input);
+    return { status: "queued", jobId };
+  } catch (error) {
+    unstable_rethrow(error);
+    return { status: "error", message: errorResult(error).message ?? SERVER_UNREACHABLE_MESSAGE };
+  }
+}
+
+// Buat Variasi (FR-G-046): one equivalent AI question, placed right after this one.
+export async function variationAction(slug: string, assessmentId: string, questionId: string): Promise<AiRequestResult> {
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+  try {
+    const { jobId } = await requestVariation(questionId, assessmentId);
+    return { status: "queued", jobId };
+  } catch (error) {
+    unstable_rethrow(error);
+    return { status: "error", message: errorResult(error).message ?? SERVER_UNREACHABLE_MESSAGE };
+  }
+}
+
+// ACC of an AI draft (FR-X-011). Publishing needs every draft approved (FR-G-050).
+export async function approveQuestionAction(slug: string, assessmentId: string, questionId: string): Promise<BuilderResult> {
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+  try {
+    await approveQuestion(questionId);
   } catch (error) {
     unstable_rethrow(error);
     return errorResult(error);
   }
   refresh(slug, assessmentId);
-  redirect(builderPath(slug, assessmentId, method, "review"));
+  return { status: "saved" };
+}
+
+// Tolak (FR-X-012): the draft is kept as rejected, for the record, and taken out of this assessment.
+export async function rejectQuestionAction(
+  slug: string,
+  assessmentId: string,
+  questionId: string,
+  remainingIds: string[],
+  note?: string,
+): Promise<BuilderResult> {
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+  try {
+    await rejectQuestion(questionId, note?.trim() || undefined);
+    await replaceAssessmentQuestions(assessmentId, remainingIds);
+  } catch (error) {
+    unstable_rethrow(error);
+    return errorResult(error);
+  }
+  refresh(slug, assessmentId);
+  return { status: "saved" };
+}
+
+// Called when an AI job finished, so the next render shows its drafts.
+export async function refreshAssessmentAction(slug: string, assessmentId: string): Promise<void> {
+  refresh(slug, assessmentId);
 }
 
 // Langkah 2 OCR (FR-G-062, FR-G-063). Waits for the backend: see OCR_READY. The result is reviewed like an import.

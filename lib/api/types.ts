@@ -95,7 +95,8 @@ export type LearningObjectiveRef = {
   chapterId: string;
 };
 
-export type Fase = "D" | "E" | "F";
+// Kurikulum Merdeka: A – C for SD, D for SMP, E – F for SMA.
+export type Fase = "A" | "B" | "C" | "D" | "E" | "F";
 
 export type CurriculumCp = {
   id: string;
@@ -125,6 +126,8 @@ export type CurriculumTree = {
   subjectId: string;
   // Suggested from the class name for the CP import prompt; null when the grade cannot be read.
   suggestedFase: Fase | null;
+  // Whether the official CP catalog has this subject; without it the teacher only types CPs (FR-G-025).
+  officialCatalog: boolean;
   cps: CurriculumCp[];
   chapters: CurriculumChapter[];
 };

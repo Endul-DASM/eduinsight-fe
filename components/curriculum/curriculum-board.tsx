@@ -9,7 +9,7 @@ import { ChapterFormModal, type ChapterFormMode } from "./chapter-form-modal";
 import { ConfirmModal } from "./confirm-modal";
 import { CpFormModal } from "./cp-form-modal";
 import { CpImportModal } from "./cp-import-modal";
-import { CpSection, faseChoices } from "./cp-section";
+import { CpSection } from "./cp-section";
 
 type ChapterForm = { mode: ChapterFormMode; chapter?: CurriculumChapter } | null;
 type Deleting = { kind: "cp"; cp: CurriculumCp } | { kind: "chapter"; chapter: CurriculumChapter } | null;
@@ -36,7 +36,8 @@ export function CurriculumBoard({
   const cpById = new Map(tree.cps.map((cp) => [cp.id, cp]));
   const chapters = [...tree.chapters].sort((a, b) => a.number - b.number);
   const selected = chapters.find((chapter) => chapter.id === selectedChapterId) ?? null;
-  const defaultFase: Fase = tree.suggestedFase ?? faseChoices(null)[1];
+  // Without a grade in the class name, the CP form starts at Fase E, as before Fase A – C existed.
+  const defaultFase: Fase = tree.suggestedFase ?? "E";
 
   const [importFase, setImportFase] = useState<Fase | null>(null);
   const [cpForm, setCpForm] = useState<{ cp?: CurriculumCp } | null>(null);
@@ -77,6 +78,7 @@ export function CurriculumBoard({
         onDelete={(cp) => setDeleting({ kind: "cp", cp })}
         onEdit={(cp) => setCpForm({ cp })}
         onImport={setImportFase}
+        officialCatalog={tree.officialCatalog}
         subjectName={subjectName}
         suggestedFase={tree.suggestedFase}
       />

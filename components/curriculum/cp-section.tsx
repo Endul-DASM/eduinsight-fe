@@ -8,12 +8,18 @@ import type { CurriculumCp, Fase } from "@/lib/api/types";
 import { fases } from "@/lib/curriculum-form";
 import { addButtonClassName, ghostButtonClassName, iconButtonClassName, sectionClassName } from "./styles";
 
+// The Fase of each school level: SD, SMP, SMA.
+const FASES_BY_LEVEL: Fase[][] = [
+  ["A", "B", "C"],
+  ["D"],
+  ["E", "F"],
+];
+
 // Fase buttons offered for the import: the suggested one first, then the other Fase of the same school level.
 export function faseChoices(suggested: Fase | null): Fase[] {
-  if (suggested === "D") return ["D"];
-  if (suggested === "E") return ["E", "F"];
-  if (suggested === "F") return ["F", "E"];
-  return ["D", "E", "F"];
+  const level = suggested && FASES_BY_LEVEL.find((group) => group.includes(suggested));
+  if (!suggested || !level) return fases.map((fase) => fase.value);
+  return [suggested, ...level.filter((fase) => fase !== suggested)];
 }
 
 // An option of the + menu: icon chip, label and a short explanation.
@@ -73,6 +79,7 @@ export function CpSection({
   subjectName,
   cps,
   suggestedFase,
+  officialCatalog,
   onImport,
   onCreate,
   onEdit,
@@ -81,6 +88,8 @@ export function CpSection({
   subjectName: string;
   cps: CurriculumCp[];
   suggestedFase: Fase | null;
+  // False when the catalog has no CPs for this subject: only "Tambah CP Sendiri" is offered.
+  officialCatalog: boolean;
   onImport: (fase: Fase) => void;
   onCreate: () => void;
   onEdit: (cp: CurriculumCp) => void;
@@ -118,10 +127,12 @@ export function CpSection({
       {cps.length === 0 ? (
         <div className="flex flex-col items-center gap-6 py-10 text-center">
           <p className="max-w-[903px] text-base leading-normal text-[#1b1b1d]">
-            Sebelum mengimpor CP berdasarkan kurikulum yang sedang berjalan, fase apa yang sedang Bapak/Ibu ampu?
+            {officialCatalog
+              ? "Sebelum mengimpor CP berdasarkan kurikulum yang sedang berjalan, fase apa yang sedang Bapak/Ibu ampu?"
+              : `Katalog CP resmi belum tersedia untuk ${subjectName}. Tambahkan CP sesuai kurikulum yang sedang berjalan.`}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
-            {faseChoices(suggestedFase).map((value) => {
+            {officialCatalog && faseChoices(suggestedFase).map((value) => {
               const fase = fases.find((option) => option.value === value);
               return (
                 <button className={outlineButtonClassName} key={value} onClick={() => onImport(value)} type="button">
@@ -158,11 +169,11 @@ export function CpSection({
               role="menu"
             >
               <p className="px-3 pb-1 pt-1 text-xs font-semibold leading-normal text-[#45474c]">Tambah CP</p>
-              {faseChoices(suggestedFase).map((value) => {
+              {officialCatalog && faseChoices(suggestedFase).map((value) => {
                 const fase = fases.find((option) => option.value === value);
                 return (
                   <MenuItem
-                    description={`CP Matematika ${fase?.grades} dari katalog resmi`}
+                    description={`CP ${subjectName} ${fase?.grades} dari katalog resmi`}
                     icon="/curriculum/cp-chart.svg"
                     key={value}
                     label={`Impor CP resmi ${fase?.label}`}
@@ -173,7 +184,7 @@ export function CpSection({
                   />
                 );
               })}
-              <hr className="mx-3 my-1 border-[#e6eff9]" />
+              {officialCatalog && <hr className="mx-3 my-1 border-[#e6eff9]" />}
               <MenuItem
                 description="Tulis Elemen dan deskripsi CP sendiri"
                 icon="/curriculum/add-small.svg"

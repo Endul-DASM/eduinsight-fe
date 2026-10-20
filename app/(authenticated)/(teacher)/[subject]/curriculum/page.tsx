@@ -20,7 +20,7 @@ export default async function CurriculumRoute({ params, searchParams }: PageProp
   let error: string | undefined;
   try {
     // Mock mode has no curriculum; show it empty so the page can still be explored.
-    tree = (await getCurriculum(subject.id)) ?? { subjectId: subject.id, suggestedFase: null, cps: [], chapters: [] };
+    tree = (await getCurriculum(subject.id)) ?? { subjectId: subject.id, suggestedFase: null, officialCatalog: false, cps: [], chapters: [] };
   } catch (caught) {
     // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
     unstable_rethrow(caught);

@@ -11,6 +11,8 @@ export const getCurriculum = cache(async (subjectId: string): Promise<Curriculum
 
 export type OfficialCp = {
   id: string;
+  // The catalog's subject; the list for a workspace only holds its own subject.
+  subjectName: string;
   fase: Fase;
   element: string;
   description: string;

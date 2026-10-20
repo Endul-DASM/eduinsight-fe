@@ -63,7 +63,7 @@ function CpForm({
           maxLength={60}
           name="element"
           onChange={(event) => setElement(event.target.value)}
-          placeholder="mis. Bilangan, Aljabar dan Fungsi"
+          placeholder="mis. Bilangan; Membaca dan Memirsa"
           value={element}
         />
         <div className="flex flex-col gap-2">

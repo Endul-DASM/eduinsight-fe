@@ -5,6 +5,9 @@ import type { ChapterInput, CpInput } from "@/lib/api/curriculum";
 import type { Fase } from "@/lib/api/types";
 
 export const fases: { value: Fase; label: string; grades: string }[] = [
+  { value: "A", label: "Fase A", grades: "kelas I, II" },
+  { value: "B", label: "Fase B", grades: "kelas III, IV" },
+  { value: "C", label: "Fase C", grades: "kelas V, VI" },
   { value: "D", label: "Fase D", grades: "kelas VII–IX" },
   { value: "E", label: "Fase E", grades: "kelas X" },
   { value: "F", label: "Fase F", grades: "kelas XI, XII" },

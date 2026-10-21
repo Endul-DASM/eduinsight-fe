@@ -58,26 +58,38 @@ export function ImportReview({
 
   const untagged = result.drafts.filter((draft) => kept.has(draft.id) && draft.learningObjectives.length === 0).length;
 
+  // A template counts rows; a document read by AI (AI-07/08) counts questions.
+  const unit = /\.(xlsx|csv)$/i.test(result.filename) ? "baris" : "soal";
+  const Unit = unit === "baris" ? "Baris" : "Soal";
+  const proposed = result.drafts.filter((draft) => draft.keyCheck === "proposed").length;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1 leading-normal">
         <p className="text-base font-semibold text-[#1b1b1d]">Hasil impor: {result.filename}</p>
         <p className="text-sm text-[#45474c]">
-          {result.drafts.length} soal terbaca dari {result.rowCount} baris
-          {result.errors.length > 0 && `, ${result.errors.length} baris gagal dibaca`}. Hapus centang pada soal yang
+          {result.drafts.length} soal terbaca dari {result.rowCount} {unit}
+          {result.errors.length > 0 && `, ${result.errors.length} ${unit} gagal dibaca`}. Hapus centang pada soal yang
           tidak ingin dipakai.
           {assessment.questions.length > 0 &&
             ` Soal terpilih ditambahkan setelah ${assessment.questions.length} soal yang sudah ada.`}
         </p>
       </div>
 
+      {proposed > 0 && (
+        <div className="rounded-xl border border-[#fed7aa] bg-[#fff7ed] px-4 py-3 text-sm leading-normal text-[#9a3412]">
+          {proposed} soal tidak punya kunci di berkas, jadi kuncinya diusulkan AI. Periksa kunci soal bertanda &quot;Kunci
+          diusulkan AI&quot; sebelum dipakai; ubah lewat Ketik di EduInsight bila perlu.
+        </div>
+      )}
+
       {result.errors.length > 0 && (
         <div className="rounded-xl border border-[#fecaca] bg-[#ffeded] px-4 py-3 text-sm leading-normal text-[#93000a]">
-          <p className="font-semibold">Baris yang gagal dibaca (tidak ikut disimpan):</p>
+          <p className="font-semibold">{Unit} yang gagal dibaca (tidak ikut disimpan):</p>
           <ul className="mt-1 list-disc pl-5">
             {result.errors.map((error) => (
               <li key={`${error.row}-${error.message}`}>
-                Baris {error.row}: {error.message}
+                {Unit} {error.row}: {error.message}
               </li>
             ))}
           </ul>
@@ -101,11 +113,21 @@ export function ImportReview({
             }
             answer={draft.answerKey}
             badge={
-              draft.learningObjectives.length === 0 && (
-                <span className="rounded-3xl bg-[rgba(254,215,170,0.6)] px-2 py-0.5 text-[10px] font-semibold text-[#c2410c]">
-                  Belum ada TP
-                </span>
-              )
+              <>
+                {draft.learningObjectives.length === 0 && (
+                  <span className="rounded-3xl bg-[rgba(254,215,170,0.6)] px-2 py-0.5 text-[10px] font-semibold text-[#c2410c]">
+                    Belum ada TP
+                  </span>
+                )}
+                {draft.keyCheck === "proposed" && (
+                  <span
+                    className="rounded-3xl bg-[#ffeded] px-2 py-0.5 text-[10px] font-semibold text-[#dc2626]"
+                    title="Kunci tidak ada di berkas; AI mengusulkannya. Periksa sebelum dipakai."
+                  >
+                    Kunci diusulkan AI
+                  </span>
+                )}
+              </>
             }
             chips={draft.learningObjectives.map((objective) => `TP ${objective.number}`)}
             className={cn(!chosen && "opacity-50")}

@@ -270,6 +270,14 @@ export function ReviewStep({
                   {question.status === "pending_review" && (
                     <span className={cn(badgeClassName, "bg-[rgba(254,215,170,0.6)] text-[#c2410c]")}>Menunggu ACC</span>
                   )}
+                  {question.keyCheck === "proposed" && (
+                    <span
+                      className={cn(badgeClassName, "bg-[#ffeded] text-[#dc2626]")}
+                      title="Kunci tidak ada di berkas impor; AI mengusulkannya. Periksa kuncinya."
+                    >
+                      Kunci diusulkan AI
+                    </span>
+                  )}
                   {question.keyCheck === "mismatch" && (
                     <span
                       className={cn(badgeClassName, "bg-[#ffeded] text-[#dc2626]")}

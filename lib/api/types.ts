@@ -153,11 +153,12 @@ export type Question = {
   learningObjectives: LearningObjectiveRef[];
   // The material an AI draft was written from.
   sourceMaterialId: string | null;
-  // AI drafts only: why the key is right, the job that wrote them, and "mismatch" when an independent check picked
-  // another option ("Perlu cek kunci"); null once the teacher edits the key.
+  // AI drafts only: why the key is right, the job that wrote them, and the key check: "mismatch" when an independent
+  // check picked another option ("Perlu cek kunci"), "proposed" when an imported file had no key and the AI suggested
+  // it ("Kunci diusulkan AI"); null once the teacher edits the key.
   explanation: string | null;
   aiJobId: string | null;
-  keyCheck: "ok" | "mismatch" | null;
+  keyCheck: "ok" | "mismatch" | "proposed" | null;
 };
 
 export type QuestionPage = {

@@ -7,17 +7,18 @@ import { greyButtonClassName } from "@/components/curriculum/styles";
 import { scanQuestionsAction } from "@/lib/actions/assessments";
 import type { QuestionImport } from "@/lib/api/questions";
 import type { AssessmentDetail } from "@/lib/api/types";
-import type { BuilderMethod } from "@/lib/assessment-form";
+import { type BuilderMethod, MAX_SCAN_MB } from "@/lib/assessment-form";
 import { Field, FormMessage } from "./builder-fields";
+import { BuilderWait } from "./builder-shell";
 import { ImportReview } from "./import-review";
 import { UploadBar } from "./upload-bar";
+import { useImportJob } from "./use-import-job";
 
 const ACCEPTED = ".pdf,.jpg,.jpeg,.png";
-const MAX_SCAN_MB = 25;
 
 // Langkah 2 OCR (Figma New Design 61:9950; FR-G-062, FR-G-063): upload the scan, check it in the preview, then the
-// backend reads the questions out of it. The reading is not in the backend yet (OCR_READY); its result will come
-// back like a template import and is reviewed the same way.
+// backend reads the questions out of it with a vision model (AI-08) in a job. Its result comes back like a template
+// import (?import=id) and is reviewed the same way; keys the paper does not show are proposed and flagged.
 export function OcrStep({
   slug,
   subjectId,
@@ -36,6 +37,7 @@ export function OcrStep({
   const [preview, setPreview] = useState<string>();
   const [message, setMessage] = useState<string>();
   const [pending, startTransition] = useTransition();
+  const reading = useImportJob(slug, assessment.id, method);
 
   // The preview URL lives as long as the file is chosen.
   useEffect(() => () => {
@@ -56,9 +58,19 @@ export function OcrStep({
     const form = new FormData();
     form.set("file", file);
     startTransition(async () => {
-      const outcome = await scanQuestionsAction(slug, subjectId, assessment.id, method, form);
+      const outcome = await scanQuestionsAction(slug, subjectId, form);
       if (outcome.status === "error") setMessage(outcome.message);
+      else reading.start(outcome.jobId);
     });
+  }
+
+  if (reading.waiting) {
+    return (
+      <BuilderWait
+        description="AI menyalin teks dari dokumen, lalu menyusunnya menjadi soal. Biasanya kurang dari satu menit per halaman."
+        title="Membaca dokumen hasil scan..."
+      />
+    );
   }
 
   if (result) return <ImportReview assessment={assessment} key={result.id} method={method} result={result} slug={slug} />;
@@ -102,7 +114,7 @@ export function OcrStep({
         </div>
       </div>
 
-      {message && <FormMessage>{message}</FormMessage>}
+      {(message || reading.error) && <FormMessage>{message ?? reading.error}</FormMessage>}
 
       <div className="flex flex-wrap justify-end gap-3">
         <Link className={greyButtonClassName} href={`/${slug}/assessment?tab=daftar`}>

@@ -5,16 +5,19 @@ import Link from "next/link";
 import { useId, useState, useTransition } from "react";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
-import { importQuestionsAction } from "@/lib/actions/assessments";
+import { importQuestionsAction, parseQuestionsAction } from "@/lib/actions/assessments";
 import type { QuestionImport } from "@/lib/api/questions";
 import type { AssessmentDetail } from "@/lib/api/types";
-import { type BuilderMethod, builderPath, MAX_IMPORT_MB } from "@/lib/assessment-form";
+import { type BuilderMethod, builderPath, MAX_IMPORT_MB, MAX_PARSE_MB } from "@/lib/assessment-form";
 import { Field, FormMessage, InfoMessage } from "./builder-fields";
+import { BuilderWait } from "./builder-shell";
 import { ImportReview } from "./import-review";
 import { UploadBar } from "./upload-bar";
+import { useImportJob } from "./use-import-job";
 
 // Langkah 2 Template (FR-G-061, FR-G-063, FR-G-064): download the fixed template, fill it in, upload it, then keep
-// the questions that were read right. The import is kept in the URL (?import=id) so a reload shows it again.
+// the questions that were read right. A question document (.docx, .pdf, .txt) instead goes to AI Parsing (AI-07) in a
+// job, with the same review. The import is kept in the URL (?import=id) so a reload shows it again.
 export function TemplateStep({
   slug,
   subjectId,
@@ -32,16 +35,33 @@ export function TemplateStep({
   const [fileName, setFileName] = useState<string>();
   const [message, setMessage] = useState<string>();
   const [pending, startTransition] = useTransition();
+  const reading = useImportJob(slug, assessment.id, method);
 
   function upload(file: File) {
     setFileName(file.name);
     setMessage(undefined);
     const form = new FormData();
     form.set("file", file);
+    reading.clearError();
     startTransition(async () => {
+      if (/\.(docx|pdf|txt)$/i.test(file.name)) {
+        const outcome = await parseQuestionsAction(slug, subjectId, form);
+        if (outcome.status === "error") setMessage(outcome.message);
+        else reading.start(outcome.jobId);
+        return;
+      }
       const outcome = await importQuestionsAction(slug, subjectId, assessment.id, method, form);
       if (outcome.status === "error") setMessage(outcome.message);
     });
+  }
+
+  if (reading.waiting) {
+    return (
+      <BuilderWait
+        description="AI menyusun soal, opsi, dan kunci dari dokumen Anda. Biasanya kurang dari satu menit."
+        title={`Membaca ${fileName ?? "dokumen"}...`}
+      />
+    );
   }
 
   const templateHref = (format: "xlsx" | "csv") => `/api/subjects/${subjectId}/question-template?format=${format}`;
@@ -74,12 +94,12 @@ export function TemplateStep({
       </div>
 
       <Field
-        hint={`Berkas .xlsx atau .csv dari template, maksimal ${MAX_IMPORT_MB} MB dan 500 soal.`}
+        hint={`Template .xlsx atau .csv (maksimal ${MAX_IMPORT_MB} MB, 500 soal), atau dokumen soal .docx, .pdf, .txt yang dibaca AI (maksimal ${MAX_PARSE_MB} MB, 20 halaman).`}
         htmlFor={id}
         label="Upload Template yang Sudah Diisi"
       >
         <UploadBar
-          accept=".xlsx,.csv"
+          accept=".xlsx,.csv,.docx,.pdf,.txt"
           disabled={pending}
           fileName={pending ? `Membaca ${fileName}...` : fileName}
           id={id}
@@ -87,7 +107,7 @@ export function TemplateStep({
           placeholder="Pilih berkas template..."
         />
       </Field>
-      {message && <FormMessage>{message}</FormMessage>}
+      {(message || reading.error) && <FormMessage>{message ?? reading.error}</FormMessage>}
 
       {result ? (
         <ImportReview assessment={assessment} key={result.id} method={method} result={result} slug={slug} />

@@ -41,6 +41,13 @@ export type StudentDiagnosisRow = {
   chapters: { chapterId: string; score: number | null; label: ApiDiagnosisLabel | null }[];
 };
 
+// The LLM's reading of the top pattern (AI-10, FR-G-083): an indication for the teacher to validate.
+export type RootCauseNarrative = { summary: string; cause: string; suggestion: string; createdAt: string };
+
+export type RootCauseRequest =
+  | { status: "ready"; narrative: RootCauseNarrative; jobId: null }
+  | { status: "queued"; narrative: null; jobId: string };
+
 export type MisconceptionPattern = {
   // BR-06; rank 1 is the Akar Masalah card.
   rank: number;
@@ -50,6 +57,8 @@ export type MisconceptionPattern = {
   affectedPct: number;
   studentIds: string[];
   sources: { assessmentId: string; assessmentTitle: string; questionId: string; number: number; option: string | null }[];
+  // Rank 1 only, once written for this scope and data.
+  narrative: RootCauseNarrative | null;
 };
 
 export type ClassDiagnosis = {
@@ -125,6 +134,13 @@ export const getClassDiagnosis = cache(async (subjectId: string, filters: Diagno
   if (isMockMode) return null;
   return orNull(apiFetch<ClassDiagnosis>(`/subjects/${encodeURIComponent(subjectId)}/diagnosis${filterQuery(filters)}`));
 });
+
+// POST /subjects/:id/diagnosis/root-cause — the top pattern's narrative: cached (ready) or a job to poll (queued).
+export async function requestRootCause(subjectId: string, filters: DiagnosisFilters): Promise<RootCauseRequest> {
+  return apiFetch<RootCauseRequest>(`/subjects/${encodeURIComponent(subjectId)}/diagnosis/root-cause${filterQuery(filters)}`, {
+    method: "POST",
+  });
+}
 
 // GET /subjects/:id/diagnosis/students/:studentId — Student Diagnosis with the drill-down to questions.
 export const getStudentDiagnosis = cache(

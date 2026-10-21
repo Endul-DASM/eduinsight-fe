@@ -3,6 +3,7 @@ import Link from "next/link";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import type { ClassDiagnosis, MisconceptionPattern } from "@/lib/api/diagnosis";
+import { RootCauseNarrative } from "./root-cause-narrative";
 import { formatPercent } from "@/lib/assessment-results";
 import {
   classSummary,
@@ -39,12 +40,14 @@ function patternObjectives(pattern: MisconceptionPattern, questionObjectives: Ma
 // Diagnosis Kelas (FR-G-080, FR-G-081, FR-G-011, FR-G-083/084 rule part; Figma New Design 65:15809).
 export function ClassView({
   slug,
+  subjectId,
   params,
   className,
   diagnosis,
   questionObjectives,
 }: {
   slug: string;
+  subjectId: string;
   params: DiagnosisParams;
   className: string;
   diagnosis: ClassDiagnosis;
@@ -236,10 +239,12 @@ export function ClassView({
                 </p>
               </div>
             </div>
-            <p className="rounded-xl bg-[#e6eff9] px-4 py-3 text-sm leading-normal text-[#004695]">
-              Narasi AI tentang akar masalah segera tersedia (FR-G-083). Pola ini disusun dari jawaban salah yang punya tag
-              miskonsepsi sama; perlu validasi guru.
-            </p>
+            <RootCauseNarrative
+              filters={{ assessmentId: params.assessment, semester: params.semester, chapterId: params.chapter }}
+              narrative={top.narrative ?? null}
+              slug={slug}
+              subjectId={subjectId}
+            />
             <p className="text-xs font-semibold text-[#1b1b1d]">
               Bukti: {top.affectedCount} siswa, {sourceLabel(top)}, {[...new Set(top.sources.map((source) => source.assessmentTitle))].join(", ")}
             </p>

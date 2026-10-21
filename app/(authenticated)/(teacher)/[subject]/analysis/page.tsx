@@ -8,6 +8,7 @@ import { getAssessmentAnalysis } from "@/lib/api/analysis";
 import { getAssessment, getAssessments } from "@/lib/api/assessments";
 import { getCurriculum } from "@/lib/api/curriculum";
 import { getClassDiagnosis, getStudentDiagnosis, type DiagnosisFilters } from "@/lib/api/diagnosis";
+import { getRemedialGroups } from "@/lib/api/remedial";
 import { getSubject } from "@/lib/api/subjects";
 import type { AssessmentType, Subject } from "@/lib/api/types";
 import { getMaterialReferences, getRemedialPair } from "@/lib/remedial";
@@ -70,8 +71,11 @@ async function soalTab(slug: string, subject: Subject, assessmentParam: unknown)
 // Analisis Remedial: the source assessment (?source=) and the remedial one it is compared with (?remedial=).
 async function remedialTab(slug: string, subject: Subject, query: Query) {
   const pair = await getRemedialPair(subject, query.source, query.remedial);
-  const references = pair.sourceResults ? await getMaterialReferences(subject, pair.sourceResults, pair.targets) : [];
-  return <RemedialAnalysisPage pair={pair} references={references} slug={slug} />;
+  const [references, groups] = await Promise.all([
+    pair.sourceResults ? getMaterialReferences(subject, pair.sourceResults, pair.targets) : [],
+    pair.source ? getRemedialGroups(pair.source.id) : null,
+  ]);
+  return <RemedialAnalysisPage groups={groups} pair={pair} references={references} slug={slug} />;
 }
 
 // /{slug}/analysis: ?tab=diagnosis (with view, scope filters, tp, student and item), ?tab=soal (with assessment) and

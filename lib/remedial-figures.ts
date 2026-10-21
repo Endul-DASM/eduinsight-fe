@@ -1,8 +1,9 @@
 // Remedial figures (PRD 5.5.3, SRS FR-G-100 – 107) derived from the results of a source assessment and of the
-// remedial assessment that follows it up. The backend has no remedial module yet, so the pairing is chosen by the
-// teacher and everything is computed here. Pure functions, shared by the server pages and their client tables.
+// remedial assessment that follows it up; the pairing is chosen by the teacher. Groups and their packages come from
+// the backend (lib/api/remedial.ts). Pure functions, shared by the server pages and their client tables.
 
 import type { AssessmentResults, ObjectivePerformance } from "@/lib/api/results";
+import type { RemedialLevel } from "@/lib/api/remedial";
 import type { AssessmentType } from "@/lib/api/types";
 import type { AttemptSummary } from "@/lib/dashboard/compute";
 
@@ -15,6 +16,13 @@ export const progressLabels: Record<RemedialProgress, { label: string; className
   belum_mulai: { label: "Belum Mulai", className: "bg-[rgba(153,188,229,0.6)] text-[#004695]" },
   mengerjakan: { label: "Sedang Mengerjakan", className: "bg-[#ffedd5] text-[#c2410c]" },
   selesai: { label: "Selesai", className: "bg-[#dcfce7] text-[#16a34a]" },
+};
+
+// The groups of FR-G-101 (AI-12).
+export const levelLabels: Record<RemedialLevel, string> = {
+  belum_paham: "Belum Paham",
+  paham_sebagian: "Paham Sebagian",
+  butuh_latihan: "Butuh Latihan",
 };
 
 export const masteryLabels = {

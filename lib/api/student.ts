@@ -189,7 +189,7 @@ export const getMyDiagnosis = cache(async (subjectId: string): Promise<MyDiagnos
   }
 });
 
-// Remedial siswa (FR-S-050, 051, FR-G-105). The package (materials and weak TPs) only appears once the teacher
+// Remedial siswa (FR-S-050, 051, FR-G-105). The package (materials, weak TPs and practice) only appears once the teacher
 // approved it; `assessments` holds only the remedial assessments the student may take.
 export type RemedialStatus = "perlu_remedial" | "menunggu_materi" | "mengerjakan" | "reassessment" | "tuntas";
 
@@ -203,6 +203,17 @@ export type MyRemedialPackage = {
     subchapterId: string | null;
     sections: { id: string; heading: string | null; sourcePage: number | null }[];
   }[];
+  // AI practice questions approved with the package (AI-13), for self-check.
+  practice: PracticeQuestion[];
+};
+
+export type PracticeQuestion = {
+  id: string;
+  type: "pg" | "uraian";
+  stem: string;
+  options: { key: string; text: string }[] | null;
+  answerKey: string;
+  explanation: string | null;
 };
 
 export type MyRemedial = {

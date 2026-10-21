@@ -5,8 +5,11 @@ import { fieldLabelClassName, sectionClassName } from "@/components/curriculum/s
 import { cn } from "@/components/ui/cn";
 import { assessmentTypeLabels, formatSchedule } from "@/lib/assessment-form";
 import { formatPercent } from "@/lib/assessment-results";
+import type { RemedialGroups } from "@/lib/api/remedial";
 import type { MaterialReference, RemedialPair } from "@/lib/remedial";
 import { REMEDIAL_SOURCE_TYPES, weakObjectives } from "@/lib/remedial-figures";
+import { GroupsBoard } from "./groups-board";
+import { OfficialDraft } from "./official-draft";
 import { SourceSelect } from "./source-select";
 
 const card = "flex flex-col gap-3 rounded-3xl bg-[#fafbfd] p-6 shadow-[0_4px_10px_rgba(0,0,0,0.1)]";
@@ -32,17 +35,20 @@ function Stat({ title, value, caption }: { title: string; value: string; caption
   );
 }
 
-// Analisis Remedial (PRD 5.5.3, SRS FR-G-100 – 107; Figma New Design 85:8869). The backend has no remedial module
-// (no grouping, no AI recommendation, no ACC, no source ↔ remedial link), so the targets come from the source
-// assessment's results and the chosen remedial's results; the AI parts are marked as coming soon.
+// Analisis Remedial (PRD 5.5.3, SRS FR-G-100 – 107; Figma New Design 85:8869). Targets, scores and progress come
+// from the source and remedial results; the groups, their packages and ACC, and the AI remedial questions come from
+// the backend remedial module (BE-12, AI-12 – 14).
 export function RemedialAnalysisPage({
   slug,
   pair,
   references,
+  groups,
 }: {
   slug: string;
   pair: RemedialPair;
   references: MaterialReference[];
+  // Null when the backend has no groups for this source (mock mode, or not a remedial source).
+  groups: RemedialGroups | null;
 }) {
   if (pair.sources.length === 0) {
     return (
@@ -60,6 +66,8 @@ export function RemedialAnalysisPage({
   const draft = drafts[0] ?? null;
   const weak = sourceResults ? weakObjectives(sourceResults, targets) : [];
   const materialCount = new Set(references.flatMap((reference) => reference.materials.map((material) => material.id))).size;
+  const practiceCount = (groups?.groups ?? []).flatMap((group) => group.items.filter((item) => item.kind === "latihan")).length;
+  const approvedGroups = (groups?.groups ?? []).filter((group) => group.approvalStatus === "approved").length;
   const query = new URLSearchParams();
   if (source) query.set("source", source.id);
   if (pair.remedial) query.set("remedial", pair.remedial.id);
@@ -125,11 +133,10 @@ export function RemedialAnalysisPage({
                 <Image alt="" height={22} src="/assessment/brain.svg" width={22} />
                 Kelompok belajar
               </h3>
-              <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>Analisis AI segera tersedia</span>
             </div>
             <p className="text-xs text-[#45474c]">
-              AI akan mengelompokkan siswa target menjadi Belum Paham, Butuh Latihan, dan Pengayaan berdasarkan pola kesalahan per TP,
-              bukan skor akhir saja (FR-G-101). Guru dapat memindahkan siswa sebelum ACC.
+              Siswa target dikelompokkan menjadi Belum Paham, Paham Sebagian, dan Butuh Latihan berdasarkan pola kesalahan per TP, bukan
+              skor akhir saja (FR-G-101). Guru dapat memindahkan siswa, mengubah materi, dan menambah soal latihan AI sebelum ACC.
             </p>
             <section className={card}>
               <p className="text-sm font-semibold text-[#1b1b1d]">TP yang belum tercapai siswa target</p>
@@ -151,6 +158,12 @@ export function RemedialAnalysisPage({
                 </ul>
               )}
             </section>
+            {source && targets.length > 0 && groups && (
+              <GroupsBoard groups={groups} references={references} slug={slug} sourceId={source.id} />
+            )}
+            {source && targets.length > 0 && !groups && (
+              <p className="text-xs text-[#45474c]">Kelompok belajar butuh server EduInsight (mode demo tidak menyimpannya).</p>
+            )}
           </section>
 
           <section className="flex flex-col gap-3">
@@ -162,10 +175,11 @@ export function RemedialAnalysisPage({
                     <Image alt="" height={22} src="/assessment/clipboard-pen.svg" width={22} />
                     Latihan per kelompok
                   </h4>
-                  <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>Segera tersedia</span>
+                  {practiceCount > 0 && <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>{practiceCount} soal AI</span>}
                 </div>
                 <p className="text-xs text-[#1b1b1d]">
-                  Draf soal latihan per kelompok dari AI belum tersedia (FR-G-102). Rujukan materi sudah bisa dipakai.
+                  Tiap kelompok mendapat materi dan soal latihan AI dari TP yang belum tercapai (FR-G-102). Siswa melihatnya setelah
+                  paket kelompok di-ACC.
                 </p>
                 <p className="text-xs leading-normal text-[#45474c]">
                   {references.length === 0
@@ -175,7 +189,9 @@ export function RemedialAnalysisPage({
                         .join(", ")}).`}
                 </p>
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                  <span className="text-xs text-[#45474c]">Belum terlihat siswa</span>
+                  <span className="text-xs text-[#45474c]">
+                    {approvedGroups > 0 ? `${approvedGroups} kelompok sudah di-ACC` : "Belum terlihat siswa"}
+                  </span>
                   <Link className={cn(outlineButtonClassName, "px-4 py-2 text-sm")} href={`/${slug}/remedial?${query}`}>
                     Lihat rujukan
                   </Link>
@@ -202,10 +218,10 @@ export function RemedialAnalysisPage({
                   </>
                 ) : (
                   <p className="text-xs leading-normal text-[#45474c]">
-                    Belum ada draf remedial. Draf soal remedial resmi dari AI (FR-G-103) belum tersedia; buat remedial secara manual
-                    terlebih dahulu.
+                    Belum ada draf remedial. Buat draf soal dari TP yang belum tercapai dengan AI (FR-G-103), atau buat secara manual.
                   </p>
                 )}
+                {source && weak.length > 0 && groups && <OfficialDraft slug={slug} sourceId={source.id} />}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">
                   <span className="text-xs text-[#45474c]">Belum terlihat siswa</span>
                   <Link

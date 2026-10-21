@@ -4,6 +4,7 @@ import { primaryButtonClassName } from "@/components/auth/styles";
 import { AssessmentCard } from "@/components/assessment/assessment-card";
 import { sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
+import type { RemedialLevel } from "@/lib/api/remedial";
 import type { AssessmentCard as Card } from "@/lib/assessment-list";
 import { formatScore } from "@/lib/assessment-results";
 import type { MaterialReference, RemedialPair } from "@/lib/remedial";
@@ -87,20 +88,23 @@ function ReferencesCard({ slug, references }: { slug: string; references: Materi
   );
 }
 
-// Pantau Remedial (PRD 5.5.3, SRS FR-G-100 – 107; Figma New Design 65:16207). The backend has no remedial module
-// yet, so the page is assembled from the source assessment's results, the remedial assessment's attempts and
-// results, and the materials mapped to the weak TPs.
+// Pantau Remedial (PRD 5.5.3, SRS FR-G-100 – 107; Figma New Design 65:16207). Assembled from the source assessment's
+// results, the remedial assessment's attempts and results, the materials mapped to the weak TPs, and each target's
+// group from the backend remedial module.
 export function RemedialPage({
   slug,
   pair,
   references,
   cards,
+  groupLevels,
 }: {
   slug: string;
   pair: RemedialPair;
   references: MaterialReference[];
   // Assessments of type remedial, as Daftar Asesmen cards.
   cards: Card[];
+  // Student id → group level, from the backend's Siswa Target (FR-G-101).
+  groupLevels: Record<string, RemedialLevel | null>;
 }) {
   const query = new URLSearchParams();
   if (pair.source) query.set("source", pair.source.id);
@@ -138,6 +142,8 @@ export function RemedialPage({
             <>
               <TargetsCard
                 kkm={pair.sourceResults.assessment.kkm}
+                groupLevels={groupLevels}
+                groupsHref={`/${slug}/analysis?tab=remedial&${query}`}
                 remedialChosen={Boolean(pair.remedial)}
                 scheduleHref={scheduleHref}
                 sourceTitle={pair.source?.title ?? ""}
@@ -162,7 +168,7 @@ export function RemedialPage({
       </div>
       {cards.length === 0 ? (
         <Empty title="Belum ada soal remedial.">
-          Buat asesmen berjenis Remedial lewat Buat Asesmen; pembuatan soal remedial dengan AI (FR-G-103) segera tersedia.
+          Buat asesmen berjenis Remedial lewat Buat Asesmen, atau buat draf soal remedial resmi dengan AI di Analisis › Remedial.
         </Empty>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">

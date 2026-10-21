@@ -6,26 +6,33 @@ import { useState } from "react";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import { formatScore } from "@/lib/assessment-results";
-import { masteryLabels, progressLabels, type TargetRow } from "@/lib/remedial-figures";
+import type { RemedialLevel } from "@/lib/api/remedial";
+import { levelLabels, masteryLabels, progressLabels, type TargetRow } from "@/lib/remedial-figures";
 
 const headCell = "border-b border-[#eae7e9] px-2 py-3 text-left text-xs font-semibold leading-normal text-[#45474c]";
 const bodyCell = "border-b border-[#eae7e9] px-2 py-3 text-xs leading-normal text-[#1b1b1d]";
 const chip = "whitespace-nowrap rounded-md px-2 py-0.5 text-[10px] font-semibold";
 
-// Siswa Butuh Remedial (FR-G-100, FR-G-106, FR-G-107; Figma New Design 65:16207). Kelompok AI and ACC peserta wait
-// for the backend (FR-G-101, FR-G-104), so they are shown but disabled.
+// Siswa Butuh Remedial (FR-G-100, FR-G-106, FR-G-107; Figma New Design 65:16207). Kelompok AI is the student's group
+// from the backend (FR-G-101); the groups are moved and approved in Analisis › Remedial (FR-G-104).
 export function TargetsCard({
   targets,
   kkm,
   sourceTitle,
   remedialChosen,
   scheduleHref,
+  groupLevels,
+  groupsHref,
 }: {
   targets: TargetRow[];
   kkm: number;
   sourceTitle: string;
   remedialChosen: boolean;
   scheduleHref: string;
+  // Student id → their group's level; empty before grouping (or in mock mode).
+  groupLevels: Record<string, RemedialLevel | null>;
+  // Analisis › Remedial for this source, where the groups are approved.
+  groupsHref: string;
 }) {
   const [query, setQuery] = useState("");
   const [onlyPending, setOnlyPending] = useState(false);
@@ -107,8 +114,12 @@ export function TargetsCard({
                 </td>
                 <td className={bodyCell}>{target.name}</td>
                 <td className={cn(bodyCell, "font-semibold text-[#dc2626]")}>{formatScore(target.initialScore)}</td>
-                <td className={cn(bodyCell, "text-[#9aa1ae]")} title="Pengelompokan siswa dengan AI (FR-G-101) segera tersedia">
-                  —
+                <td className={bodyCell}>
+                  {groupLevels[target.studentId] ? (
+                    <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>{levelLabels[groupLevels[target.studentId]!]}</span>
+                  ) : (
+                    <span className="text-[#9aa1ae]">—</span>
+                  )}
                 </td>
                 <td className={bodyCell}>
                   {target.progress ? (
@@ -141,14 +152,9 @@ export function TargetsCard({
           Menampilkan {shown.length} dari {targets.length} target. Ketuntasan mengikuti hasil reassessment (skor ≥ KKM),
           bukan progres latihan.
         </p>
-        <button
-          className={cn(outlineButtonClassName, "px-4 py-2 text-sm")}
-          disabled
-          title="ACC peserta remedial (FR-G-104) butuh dukungan backend"
-          type="button"
-        >
+        <Link className={cn(outlineButtonClassName, "px-4 py-2 text-sm")} href={groupsHref}>
           Acc Peserta Remedial
-        </button>
+        </Link>
       </div>
     </section>
   );

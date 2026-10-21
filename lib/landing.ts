@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { isMockMode } from "./api/client";
 import { getSessionToken } from "./api/session";
 import type { CurrentUser } from "./api/types";
@@ -9,6 +10,10 @@ import { isTokenExpired } from "./auth/session-expiry";
 // Sign Up. Public pages never fail or redirect because of it: no session, an expired one, mock mode or an
 // unreachable backend all count as signed out.
 export async function getLandingUser(): Promise<CurrentUser | null> {
+  // Always render per request. CI builds without API_BASE_URL, where the mock check below returns before
+  // cookies() is read, so Next prerendered Home and About as static; on the VM the same code then read cookies
+  // in a static page and every visit failed with DYNAMIC_SERVER_USAGE (500).
+  await connection();
   if (isMockMode) return null;
   const token = await getSessionToken();
   if (!token || isTokenExpired(token)) return null;

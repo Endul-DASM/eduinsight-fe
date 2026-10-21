@@ -144,6 +144,9 @@ export const getAttempt = cache(async (attemptId: string): Promise<Attempt | nul
 // correctness or misconception tag.
 export type MyDiagnosisItem = { assessmentId: string; assessmentTitle: string; number: number; score: number };
 
+// AI-11 (FR-S-041): where the mistakes on a Cukup/Kurang TP likely are, and one study tip.
+export type MyObjectiveNarrative = { explanation: string; tip: string };
+
 export type MyObjectiveDiagnosis = {
   learningObjective: LearningObjectiveRef;
   chapterNumber: number;
@@ -154,6 +157,8 @@ export type MyObjectiveDiagnosis = {
   label: StudentLabel | null;
   classAverage: number | null;
   items: MyDiagnosisItem[];
+  // Once the student asked for it, and while their answers are unchanged.
+  narrative: MyObjectiveNarrative | null;
 };
 
 export type MyDiagnosis = {
@@ -166,6 +171,12 @@ export type MyDiagnosis = {
   strongest: string | null;
   weakest: string | null;
 };
+
+// POST /subjects/:id/my-diagnosis/narrative — the AI explanation of the student's Cukup/Kurang TPs: already written
+// for these answers (ready), or a job to poll (queued).
+export async function requestMyNarrative(subjectId: string): Promise<{ status: "ready" | "queued"; jobId: string | null }> {
+  return apiFetch(`/subjects/${encodeURIComponent(subjectId)}/my-diagnosis/narrative`, { method: "POST" });
+}
 
 // GET /subjects/:id/my-diagnosis — every assessment in scope (no semester filter in the design).
 export const getMyDiagnosis = cache(async (subjectId: string): Promise<MyDiagnosis | null> => {

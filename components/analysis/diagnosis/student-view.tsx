@@ -224,6 +224,32 @@ export function StudentView({
         </div>
       </section>
 
+      {student.aiNarrative && student.aiNarrative.items.length > 0 && (
+        <section className={card}>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h4 className="text-base font-semibold text-[#1b1b1d]">Penjelasan AI yang dilihat siswa</h4>
+            <span className="text-xs text-[#75777d]">
+              Dibuat {new Date(student.aiNarrative.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium" })} dari
+              jawaban siswa ini (AI-11)
+            </span>
+          </div>
+          <ul className="flex flex-col gap-3 text-sm leading-normal text-[#45474c]">
+            {student.aiNarrative.items.map((item) => {
+              const objective = student.learningObjectives.find((o) => o.learningObjective.id === item.learningObjectiveId);
+              return (
+                <li key={item.learningObjectiveId}>
+                  <p className="font-semibold text-[#1b1b1d]">
+                    {objective ? `TP ${objective.learningObjective.number} ${objective.learningObjective.description}` : "TP"}
+                  </p>
+                  <p>{item.explanation}</p>
+                  <p className="text-[#004695]">Tips: {item.tip}</p>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
       {openItem && selected ? (
         <QuestionDetail
           assessment={itemAssessment}

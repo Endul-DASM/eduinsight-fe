@@ -103,11 +103,10 @@ export function RegisterForm({
           Login
         </Link>
       </AuthFootnote>
-      <div className="flex justify-end">
-        <button className={`${primaryButtonClassName} w-full sm:w-auto`} disabled={pending} type="submit">
-          {pending ? "Memproses..." : "Daftarkan Akun"}
-        </button>
-      </div>
+      {/* As wide as the Google button under it. */}
+      <button className={`${primaryButtonClassName} w-full`} disabled={pending} type="submit">
+        {pending ? "Memproses..." : "Daftarkan Akun"}
+      </button>
     </form>
   );
 }

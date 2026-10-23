@@ -48,11 +48,10 @@ export function LoginForm({ role, initialNotice }: { role: AuthRole; initialNoti
           Lupa kata sandi?
         </Link>
       </div>
-      <div className="flex justify-end">
-        <button className={`${primaryButtonClassName} w-full sm:w-auto`} disabled={pending} type="submit">
-          {pending ? "Memproses..." : "Login"}
-        </button>
-      </div>
+      {/* As wide as the Google button under it. */}
+      <button className={`${primaryButtonClassName} w-full`} disabled={pending} type="submit">
+        {pending ? "Memproses..." : "Login"}
+      </button>
     </form>
   );
 }

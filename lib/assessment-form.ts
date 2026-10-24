@@ -220,17 +220,27 @@ export function validateSpecification(values: SpecificationValues, complete: boo
   return errors;
 }
 
-// Jenis soal (Figma 60:4677). The backend and SRS DR-07 only know pilihan ganda and uraian; the others wait for both.
+// Jenis soal (Figma 60:4677): the types a new question can have. Uraian is no longer offered; existing ones keep it.
 export const questionTypeOptions = [
-  { value: "pg", label: "Pilihan Ganda", enabled: true },
-  { value: "benar_salah", label: "Benar/Salah", enabled: false },
-  { value: "isian_singkat", label: "Isian Singkat", enabled: false },
-  { value: "pg_kompleks", label: "Pilihan Ganda Kompleks", enabled: false },
-  { value: "pilihan_majemuk", label: "Pilihan Majemuk", enabled: false },
-  { value: "uraian", label: "Essay", enabled: true },
-] as const;
+  { value: "pg", label: "Pilihan Ganda" },
+  { value: "benar_salah", label: "Benar/Salah" },
+] as const satisfies readonly { value: QuestionType; label: string }[];
 
-export const questionTypeLabels: Record<QuestionType, string> = { pg: "Pilihan Ganda", uraian: "Essay" };
+export type CreatableQuestionType = (typeof questionTypeOptions)[number]["value"];
+
+export const questionTypeLabels: Record<QuestionType, string> = {
+  pg: "Pilihan Ganda",
+  benar_salah: "Benar/Salah",
+  uraian: "Essay",
+};
+
+// Answered by picking an option and scored automatically.
+export function isChoiceType(type: QuestionType): boolean {
+  return type === "pg" || type === "benar_salah";
+}
+
+// The fixed options of a Benar/Salah question, keyed A and B.
+export const TRUE_FALSE_OPTIONS = ["Benar", "Salah"] as const;
 
 export const bloomLevels = [
   { value: "C1", label: "Mengingat" },
@@ -263,9 +273,9 @@ export type TypedQuestion = {
   id?: string;
   type: QuestionType;
   stem: string;
-  // Pilihan ganda only, keyed A–E in order.
+  // PG and Benar/Salah, keyed A–E in order; Benar/Salah always has TRUE_FALSE_OPTIONS.
   options: string[];
-  // Pilihan ganda: the key of the correct option ("B"). Uraian: the model answer or rubric.
+  // PG and Benar/Salah: the key of the correct option ("B"). Uraian: the model answer or rubric.
   answerKey: string;
   objectiveIds: string[];
   bloomLevel: BloomLevel | "";
@@ -282,6 +292,8 @@ export function validateTypedQuestion(question: TypedQuestion): string | undefin
     if (!OPTION_KEYS.slice(0, filled.length).some((key) => key === question.answerKey)) {
       return "Tandai jawaban yang benar.";
     }
+  } else if (question.type === "benar_salah") {
+    if (question.answerKey !== "A" && question.answerKey !== "B") return "Pilih Benar atau Salah sebagai kunci.";
   } else if (!question.answerKey.trim()) {
     return "Isi kunci jawaban atau rubrik penilaian.";
   }

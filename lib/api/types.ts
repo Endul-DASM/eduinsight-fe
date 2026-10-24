@@ -134,7 +134,8 @@ export type CurriculumTree = {
 
 // Bank Soal (GET /subjects/:id/questions).
 
-export type QuestionType = "pg" | "uraian";
+// New questions are PG or Benar/Salah; uraian only exists on questions made before it was retired.
+export type QuestionType = "pg" | "benar_salah" | "uraian";
 export type BloomLevel = "C1" | "C2" | "C3" | "C4" | "C5" | "C6";
 export type CognitiveLevel = "LOTS" | "MOTS" | "HOTS";
 export type QuestionStatus = "draft" | "pending_review" | "approved" | "rejected";

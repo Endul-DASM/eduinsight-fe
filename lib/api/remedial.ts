@@ -1,6 +1,7 @@
 import { cache } from "react";
 import type { AiJobAccepted } from "./ai-jobs";
 import { ApiError, apiFetch, isMockMode } from "./client";
+import type { QuestionCounts } from "./question-sources";
 import type { BloomLevel, LearningObjectiveRef, Question } from "./types";
 
 // Remedial module of eduinsight-be (BE-12, AI-12 – 14; SRS FR-G-100 – 107): Siswa Target, groups with their
@@ -141,7 +142,7 @@ export async function deleteRemedialItem(itemId: string): Promise<RemedialGroups
 // source's weak TPs, in its draft official remedial (made if missing). Review and ACC them in that assessment.
 export async function requestOfficialDraft(
   sourceId: string,
-  counts: { pg: number; uraian: number },
+  counts: QuestionCounts,
   bloomLevel: BloomLevel,
 ): Promise<AiJobAccepted & { assessmentId: string }> {
   return apiFetch(`/assessments/${path(sourceId)}/remedial/official-draft`, {

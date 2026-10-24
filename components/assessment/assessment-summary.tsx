@@ -29,7 +29,12 @@ export function AssessmentSummary({ assessment }: { assessment: AssessmentDetail
       <div className="grid gap-6 lg:grid-cols-2">
         <dl>
           <Row label="Total Soal" tone="text-[#0058be]" value={`${summary.totalQuestions} soal`} />
-          <Row label="Pilihan Ganda / Essay" value={`${summary.byType.pg} / ${summary.byType.uraian}`} />
+          <Row
+            label="Pilihan Ganda / Benar-Salah"
+            value={`${summary.byType.pg} / ${summary.byType.benar_salah ?? 0}`}
+          />
+          {/* Only an assessment that still has essays from before they were retired. */}
+          {summary.byType.uraian > 0 && <Row label="Essay" value={`${summary.byType.uraian}`} />}
           <Row label="Estimasi Durasi" value={`${summary.estimatedMinutes} menit`} />
           <Row
             label="Durasi Diatur"

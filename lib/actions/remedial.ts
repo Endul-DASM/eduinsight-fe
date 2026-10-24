@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { ApiError, isMockMode } from "@/lib/api/client";
+import type { QuestionCounts } from "@/lib/api/question-sources";
 import {
   approveGroup,
   deleteRemedialItem,
@@ -91,10 +92,10 @@ export async function practiceAction(groupId: string, count: number, bloomLevel:
 // Draf remedial resmi (AI-14, FR-G-103): AI questions on the weak TPs in the source's draft official remedial.
 export async function officialDraftAction(
   sourceId: string,
-  counts: { pg: number; uraian: number },
+  counts: QuestionCounts,
   bloomLevel: BloomLevel,
 ): Promise<RemedialAiResult> {
-  const total = counts.pg + counts.uraian;
+  const total = counts.pg + counts.benarSalah;
   if (total === 0) return { status: "error", message: "Isi jumlah soal minimal satu." };
   if (total > MAX_AI_QUESTIONS) return { status: "error", message: `Paling banyak ${MAX_AI_QUESTIONS} soal per permintaan.` };
   return queue(() => requestOfficialDraft(sourceId, counts, bloomLevel));

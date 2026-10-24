@@ -37,6 +37,7 @@ import {
   type BuilderMethod,
   builderPath,
   durationOf,
+  isChoiceType,
   MAX_AI_QUESTIONS,
   MAX_IMPORT_MB,
   MAX_PARSE_MB,
@@ -137,12 +138,12 @@ export async function saveSpecificationAction(
 }
 
 function questionInput(question: TypedQuestion): QuestionInput {
-  const pg = question.type === "pg";
+  const choice = isChoiceType(question.type);
   return {
     type: question.type,
     stem: question.stem.trim(),
-    options: pg ? question.options.map((text, index) => ({ key: OPTION_KEYS[index], text: text.trim() })) : null,
-    answerKey: pg ? question.answerKey : question.answerKey.trim(),
+    options: choice ? question.options.map((text, index) => ({ key: OPTION_KEYS[index], text: text.trim() })) : null,
+    answerKey: choice ? question.answerKey : question.answerKey.trim(),
     learningObjectiveIds: question.objectiveIds,
     bloomLevel: question.bloomLevel || null,
     difficulty: question.difficulty || null,
@@ -286,7 +287,7 @@ export async function generateQuestionsAction(
   assessmentId: string,
   input: GenerateQuestionsInput,
 ): Promise<AiRequestResult> {
-  const total = input.counts.pg + input.counts.uraian;
+  const total = input.counts.pg + input.counts.benarSalah;
   if (total === 0) return { status: "error", message: "Isi jumlah soal minimal satu." };
   if (total > MAX_AI_QUESTIONS) {
     return { status: "error", message: `Paling banyak ${MAX_AI_QUESTIONS} soal per permintaan.` };

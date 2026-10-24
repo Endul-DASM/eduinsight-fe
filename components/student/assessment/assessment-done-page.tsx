@@ -52,7 +52,7 @@ export function AssessmentDonePage({
               <span className="self-start rounded-3xl bg-[#ffedd5] px-2 py-0.5 text-xs font-semibold text-[#9a3412]">Menunggu penilaian guru</span>
               <p className="text-base text-[#45474c]">
                 {attempt.essaysPending ?? 0} jawaban uraian sedang dinilai gurumu.
-                {attempt.pgTotal ? ` Pilihan ganda: ${attempt.pgCorrect ?? 0} dari ${attempt.pgTotal} benar.` : ""}
+                {attempt.pgTotal ? ` Pilihan ganda dan benar/salah: ${attempt.pgCorrect ?? 0} dari ${attempt.pgTotal} benar.` : ""}
               </p>
             </>
           ) : (
@@ -60,7 +60,7 @@ export function AssessmentDonePage({
               <p className="text-[40px] font-bold text-[#0058be]">{formatPoints(attempt.score!)}/100</p>
               {attempt.pgTotal ? (
                 <p className="text-base text-[#45474c]">
-                  {attempt.pgCorrect ?? 0} dari {attempt.pgTotal} soal pilihan ganda benar.
+                  {attempt.pgCorrect ?? 0} dari {attempt.pgTotal} soal pilihan ganda dan benar/salah benar.
                 </p>
               ) : null}
             </>

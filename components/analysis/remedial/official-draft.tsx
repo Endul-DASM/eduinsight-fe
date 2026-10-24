@@ -17,7 +17,7 @@ const field = "h-[32px] rounded-lg border border-[#c5c6cd] bg-white px-2 text-xs
 export function OfficialDraft({ slug, sourceId }: { slug: string; sourceId: string }) {
   const router = useRouter();
   const [pg, setPg] = useState(10);
-  const [uraian, setUraian] = useState(0);
+  const [benarSalah, setBenarSalah] = useState(0);
   const [bloom, setBloom] = useState<BloomLevel>("C2");
   const [message, setMessage] = useState<string>();
   const [target, setTarget] = useState<{ jobId: string; assessmentId: string } | null>(null);
@@ -40,7 +40,7 @@ export function OfficialDraft({ slug, sourceId }: { slug: string; sourceId: stri
   function request() {
     setMessage(undefined);
     startTransition(async () => {
-      const result = await officialDraftAction(sourceId, { pg, uraian }, bloom);
+      const result = await officialDraftAction(sourceId, { pg, benarSalah }, bloom);
       if (result.status === "queued" && result.assessmentId) setTarget({ jobId: result.jobId, assessmentId: result.assessmentId });
       else if (result.status === "error") setMessage(result.message);
     });
@@ -63,14 +63,14 @@ export function OfficialDraft({ slug, sourceId }: { slug: string; sourceId: stri
           <input className={cn(field, "w-14")} max={20} min={0} onChange={(e) => setPg(Number(e.target.value))} type="number" value={pg} />
         </label>
         <label className="flex items-center gap-1">
-          Essay
+          Benar/Salah
           <input
             className={cn(field, "w-14")}
             max={20}
             min={0}
-            onChange={(e) => setUraian(Number(e.target.value))}
+            onChange={(e) => setBenarSalah(Number(e.target.value))}
             type="number"
-            value={uraian}
+            value={benarSalah}
           />
         </label>
         <select aria-label="Level kognitif" className={field} onChange={(e) => setBloom(e.target.value as BloomLevel)} value={bloom}>

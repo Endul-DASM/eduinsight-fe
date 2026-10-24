@@ -59,7 +59,8 @@ function regenerateInput(assessment: AssessmentDetail, drafts: Question[]) {
     learningObjectiveIds: ids.length > 0 ? ids : [...targets],
     counts: {
       pg: drafts.filter((draft) => draft.type === "pg").length,
-      uraian: drafts.filter((draft) => draft.type === "uraian").length,
+      // Older uraian drafts are not written again: the AI no longer makes uraian.
+      benarSalah: drafts.filter((draft) => draft.type === "benar_salah").length,
     },
     bloomLevel: (drafts.at(-1)?.bloomLevel ?? "C2") as BloomLevel,
     replacePending: true,

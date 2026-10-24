@@ -4,6 +4,7 @@ import { primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import type { ClassDiagnosis, DiagnosisItem, StudentDiagnosis } from "@/lib/api/diagnosis";
 import type { AssessmentDetail } from "@/lib/api/types";
+import { questionTypeLabels } from "@/lib/assessment-form";
 import { formatPercent, formatScore } from "@/lib/assessment-results";
 import { initialsOf, labelChip, patternTitle, toLabel } from "@/lib/diagnosis";
 import { diagnosisHref, type DiagnosisParams } from "./links";
@@ -62,7 +63,7 @@ function QuestionDetail({
       <section className={card}>
         <h4 className="text-base font-semibold text-[#1b1b1d]">Soal sumber</h4>
         <p className="text-sm text-[#0058be]">
-          TP {objectiveNumber}, {question?.type === "uraian" ? "uraian" : "pilihan ganda"}, {item.assessmentTitle}
+          TP {objectiveNumber}, {questionTypeLabels[question?.type ?? "pg"].toLowerCase()}, {item.assessmentTitle}
         </p>
         {!question ? (
           <p className="text-sm text-[#45474c]">Naskah soal tidak dapat dimuat.</p>
@@ -230,7 +231,7 @@ export function StudentView({
             <h4 className="text-base font-semibold text-[#1b1b1d]">Penjelasan AI yang dilihat siswa</h4>
             <span className="text-xs text-[#75777d]">
               Dibuat {new Date(student.aiNarrative.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium" })} dari
-              jawaban siswa ini (AI-11)
+              jawaban siswa ini
             </span>
           </div>
           <ul className="flex flex-col gap-3 text-sm leading-normal text-[#45474c]">
@@ -351,7 +352,7 @@ export function StudentView({
               </table>
             </div>
             <p className="text-xs text-[#75777d]">
-              Selisih = skor siswa − rata-rata kelas (poin persentase). Label mengikuti BR-04; ambang masih menunggu UAT.
+              Selisih = skor siswa − rata-rata kelas (poin persentase).
             </p>
           </section>
 

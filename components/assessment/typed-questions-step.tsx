@@ -14,7 +14,9 @@ import {
   builderPath,
   difficultyLabels,
   OPTION_KEYS,
+  questionTypeLabels,
   questionTypeOptions,
+  TRUE_FALSE_OPTIONS,
   type TypedQuestion,
   validateTypedQuestion,
 } from "@/lib/assessment-form";
@@ -99,20 +101,23 @@ function QuestionEditor({
 
       <SelectInput
         aria-label={`Jenis soal ${number}`}
-        onChange={(event) =>
-          onChange({
-            type: event.target.value as TypedQuestion["type"],
-            answerKey: "",
-            options: event.target.value === "pg" ? ["", ""] : [],
-          })
-        }
+        onChange={(event) => {
+          const type = event.target.value as TypedQuestion["type"];
+          onChange({ type, answerKey: "", options: type === "benar_salah" ? [...TRUE_FALSE_OPTIONS] : ["", ""] });
+        }}
         value={question.type}
       >
         {questionTypeOptions.map((option) => (
-          <option disabled={!option.enabled} key={option.value} value={option.value}>
-            {option.enabled ? option.label : `${option.label} (segera tersedia)`}
+          <option key={option.value} value={option.value}>
+            {option.label}
           </option>
         ))}
+        {/* An existing essay keeps its type; new essays cannot be made. */}
+        {question.type === "uraian" && (
+          <option disabled value="uraian">
+            {questionTypeLabels.uraian} (tidak lagi tersedia untuk soal baru)
+          </option>
+        )}
       </SelectInput>
 
       <div className="flex items-start gap-5">
@@ -125,7 +130,11 @@ function QuestionEditor({
             id={`${id}-stem`}
             maxLength={5000}
             onChange={(event) => onChange({ stem: event.target.value })}
-            placeholder="Contoh: Bentuk sederhana dari 2³ × 2⁵ adalah …"
+            placeholder={
+              question.type === "benar_salah"
+                ? "Contoh: Bentuk sederhana dari 2³ × 2⁵ adalah 2⁸."
+                : "Contoh: Bentuk sederhana dari 2³ × 2⁵ adalah …"
+            }
             rows={3}
             value={question.stem}
           />
@@ -141,7 +150,37 @@ function QuestionEditor({
         </button>
       </div>
 
-      {question.type === "pg" ? (
+      {question.type === "benar_salah" ? (
+        <fieldset className="flex max-w-[480px] flex-col gap-3">
+          <legend className="sr-only">Kunci jawaban: Benar atau Salah</legend>
+          <div className="grid grid-cols-2 gap-3">
+            {TRUE_FALSE_OPTIONS.map((text, index) => {
+              const key = OPTION_KEYS[index];
+              return (
+                <label
+                  className={cn(
+                    "flex h-[50px] cursor-pointer items-center gap-3 rounded-xl border bg-[#fbf8fa] px-[13px] text-base text-[#1b1b1d]",
+                    question.answerKey === key ? "border-[#0058be] bg-[#e6eff9]" : "border-[#c5c6cd]",
+                  )}
+                  key={key}
+                >
+                  <input
+                    checked={question.answerKey === key}
+                    className="size-5 shrink-0 accent-[#0058be]"
+                    name={`${id}-answer`}
+                    onChange={() => onChange({ answerKey: key })}
+                    type="radio"
+                  />
+                  {text}
+                </label>
+              );
+            })}
+          </div>
+          <p className="text-[10px] leading-normal text-[#75777d]">
+            Tulis soal sebagai pernyataan, lalu pilih apakah pernyataan itu Benar atau Salah.
+          </p>
+        </fieldset>
+      ) : question.type === "pg" ? (
         <fieldset className="flex max-w-[480px] flex-col gap-3">
           <legend className="sr-only">Opsi jawaban, tandai yang benar</legend>
           {question.options.map((option, index) => {

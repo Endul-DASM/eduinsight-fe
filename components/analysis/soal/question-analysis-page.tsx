@@ -150,7 +150,7 @@ function AttentionBanner({ analysis }: { analysis: AssessmentAnalysis }) {
         </p>
         <p className="text-xs text-[#45474c]">
           {advice.length
-            ? `${advice.join("; ").replace(/^./, (letter) => letter.toUpperCase())} berdasarkan aturan label FR-G-093.`
+            ? `${advice.join("; ").replace(/^./, (letter) => letter.toUpperCase())}.`
             : "Tidak ada butir berlabel Revisi atau Perlu Ditinjau."}
         </p>
       </div>
@@ -295,8 +295,7 @@ function MethodSection() {
             <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>Perlu konfirmasi</span>
           </div>
           <p className="text-xs leading-normal text-[#45474c]">
-            Label per butir mengikuti FR-G-093. Ambang P 0,30–0,70, r ≥ 0,30, dan reliabilitas ≥ 0,70 masih default (OI-12) sampai
-            dikonfirmasi guru mapel.
+            Ambang: P 0,30–0,70, r ≥ 0,30, dan reliabilitas ≥ 0,70.
           </p>
           <table className="w-full border-separate border-spacing-0 text-left text-xs">
             <thead className="bg-[#e6eff9] text-[#1b1b1d]">

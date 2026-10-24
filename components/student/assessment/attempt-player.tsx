@@ -7,7 +7,8 @@ import { outlineButtonClassName, primaryButtonClassName } from "@/components/aut
 import { cn } from "@/components/ui/cn";
 import { MaskIcon } from "@/components/ui/mask-icon";
 import { saveResponsesAction, submitAttemptAction } from "@/lib/actions/student-assessments";
-import type { Attempt } from "@/lib/api/student";
+import type { Attempt, AttemptQuestion } from "@/lib/api/student";
+import { isChoiceType, questionTypeLabels } from "@/lib/assessment-form";
 import { type AttemptSection, formatRemaining, isAnswered, sectionNames } from "@/lib/student-assessment";
 
 type Answers = Record<string, string | null>;
@@ -20,6 +21,12 @@ const SAVE_MAX_MS = 10_000;
 const timeFormat = new Intl.DateTimeFormat("id-ID", { timeZone: "Asia/Jakarta", hour: "2-digit", minute: "2-digit", second: "2-digit" });
 
 const card = "rounded-3xl bg-[#fafbfd] shadow-[0_8px_24px_rgba(0,0,0,0.08)]";
+
+// "B" for PG, "Salah" for Benar/Salah.
+function chosenLabel(question: AttemptQuestion, key: string | null | undefined): string {
+  if (question.type !== "benar_salah") return key ?? "";
+  return question.options?.find((option) => option.key === key)?.text ?? key ?? "";
+}
 
 // "Tandai Soal" is not stored by the backend; it stays in this browser per attempt.
 function useFlags(attemptId: string) {
@@ -301,7 +308,7 @@ export function AttemptPlayer({
               <section className={cn(card, "flex flex-col gap-5 p-6")}>
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <span className="rounded-3xl bg-[rgba(153,188,229,0.6)] px-2 py-0.5 text-xs font-semibold text-[#004695]">
-                    {subjectName}, {question.type === "pg" ? "Pilihan Ganda" : "Uraian"}
+                    {subjectName}, {questionTypeLabels[question.type]}
                   </span>
                   <button
                     aria-pressed={flags.includes(question.id)}
@@ -318,7 +325,7 @@ export function AttemptPlayer({
                 </div>
                 <h3 className="text-2xl font-semibold text-[#1b1b1d]">Soal {question.number}</h3>
                 <p className="whitespace-pre-line text-lg leading-normal text-[#1b1b1d]">{question.stem}</p>
-                {question.type === "pg" && question.options ? (
+                {isChoiceType(question.type) && question.options ? (
                   <div className="flex flex-col gap-3" role="radiogroup">
                     {question.options.map((option) => {
                       const selected = answers[question.id] === option.key;
@@ -342,9 +349,8 @@ export function AttemptPlayer({
                           >
                             {selected && "✓"}
                           </span>
-                          <span>
-                            {option.key}. {option.text}
-                          </span>
+                          {/* Benar/Salah reads better without the option letters. */}
+                          <span>{question.type === "benar_salah" ? option.text : `${option.key}. ${option.text}`}</span>
                         </button>
                       );
                     })}
@@ -361,8 +367,8 @@ export function AttemptPlayer({
                 )}
                 <p className="text-xs text-[#45474c]">
                   {isAnswered(answers[question.id])
-                    ? question.type === "pg"
-                      ? `Jawabanmu: ${answers[question.id]}. Klik lagi untuk membatalkan.`
+                    ? isChoiceType(question.type)
+                      ? `Jawabanmu: ${chosenLabel(question, answers[question.id])}. Klik lagi untuk membatalkan.`
                       : "Jawaban tersimpan otomatis saat kamu mengetik."
                     : "Belum memilih jawaban untuk soal ini."}
                 </p>

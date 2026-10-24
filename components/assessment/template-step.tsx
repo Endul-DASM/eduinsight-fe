@@ -76,8 +76,8 @@ export function TemplateStep({
           <div className="flex flex-col gap-1 text-sm leading-normal text-[#45474c]">
             <p className="text-base font-semibold text-[#1b1b1d]">Template Soal</p>
             <p>
-              Satu baris untuk satu soal. Kolom <b>tipe</b> diisi PG atau Uraian (Essay), <b>soal</b>, <b>opsi_a</b> sampai{" "}
-              <b>opsi_e</b> (khusus PG), <b>kunci</b> (huruf opsi untuk PG, jawaban model untuk uraian), <b>tp</b>{" "}
+              Satu baris untuk satu soal. Kolom <b>tipe</b> diisi PG atau BS (Benar/Salah), <b>soal</b>, <b>opsi_a</b>{" "}
+              sampai <b>opsi_e</b> (khusus PG), <b>kunci</b> (huruf opsi untuk PG, Benar atau Salah untuk BS), <b>tp</b>{" "}
               (nomor TP, mis. 1.2; pisahkan dengan titik koma bila lebih dari satu), serta <b>bloom</b> dan{" "}
               <b>kesulitan</b> yang opsional.
             </p>

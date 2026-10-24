@@ -9,11 +9,12 @@ import { greyButtonClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import { useAiJob } from "@/lib/ai-job";
 import { generateQuestionsAction, refreshAssessmentAction } from "@/lib/actions/assessments";
-import type { AssessmentDetail, BloomLevel, QuestionType } from "@/lib/api/types";
+import type { AssessmentDetail, BloomLevel } from "@/lib/api/types";
 import {
   bloomLevels,
   type BuilderMethod,
   builderPath,
+  type CreatableQuestionType,
   MAX_AI_QUESTIONS,
   questionTypeOptions,
 } from "@/lib/assessment-form";
@@ -33,8 +34,8 @@ export function AiStep({
   assessment: AssessmentDetail;
 }) {
   const id = useId();
-  const [types, setTypes] = useState<Set<QuestionType>>(new Set(["pg"]));
-  const [counts, setCounts] = useState<Record<QuestionType, string>>({ pg: "", uraian: "" });
+  const [types, setTypes] = useState<Set<CreatableQuestionType>>(new Set(["pg"]));
+  const [counts, setCounts] = useState<Record<CreatableQuestionType, string>>({ pg: "", benar_salah: "" });
   const [bloom, setBloom] = useState<BloomLevel>("C1");
   const [message, setMessage] = useState<string>();
   const [jobId, setJobId] = useState<string | null>(null);
@@ -51,7 +52,7 @@ export function AiStep({
     },
   });
 
-  function toggle(type: QuestionType) {
+  function toggle(type: CreatableQuestionType) {
     setTypes((current) => {
       const next = new Set(current);
       if (next.has(type)) next.delete(type);
@@ -63,19 +64,19 @@ export function AiStep({
 
   function preview() {
     setMessage(undefined);
-    const count = (type: QuestionType) => (types.has(type) ? Number(counts[type] || 0) : 0);
+    const count = (type: CreatableQuestionType) => (types.has(type) ? Number(counts[type] || 0) : 0);
     if (types.size === 0) return setMessage("Pilih minimal satu jenis soal.");
     for (const type of types) {
       const value = Number(counts[type] || 0);
       if (!Number.isInteger(value) || value < 1) return setMessage("Isi jumlah soal tiap jenis yang dipilih.");
     }
-    if (count("pg") + count("uraian") > MAX_AI_QUESTIONS) {
+    if (count("pg") + count("benar_salah") > MAX_AI_QUESTIONS) {
       return setMessage(`Paling banyak ${MAX_AI_QUESTIONS} soal sekali buat. Tambah lagi setelahnya bila perlu.`);
     }
     startTransition(async () => {
       const result = await generateQuestionsAction(slug, assessment.id, {
         learningObjectiveIds: assessment.learningObjectives.map((objective) => objective.id),
-        counts: { pg: count("pg"), uraian: count("uraian") },
+        counts: { pg: count("pg"), benarSalah: count("benar_salah") },
         bloomLevel: bloom,
       });
       if (result.status === "error") setMessage(result.message);
@@ -93,7 +94,6 @@ export function AiStep({
   }
 
   const bloomIndex = bloomLevels.findIndex((level) => level.value === bloom);
-  const enabledTypes = questionTypeOptions.filter((option) => option.enabled);
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,34 +101,30 @@ export function AiStep({
         <legend className="mb-2 text-xs font-semibold leading-normal text-[#1b1b1d]">Jenis soal</legend>
         <div className="grid gap-x-2 gap-y-3 sm:grid-cols-3">
           {questionTypeOptions.map((option) => {
-            const checked = option.enabled && types.has(option.value as QuestionType);
+            const checked = types.has(option.value);
             return (
               <label
                 className={cn(
-                  "flex h-[50px] items-center gap-3 rounded-xl border bg-[#fbf8fa] px-[13px] text-base leading-normal",
-                  option.enabled ? "cursor-pointer text-[#1b1b1d]" : "cursor-not-allowed text-[#75777d] opacity-60",
+                  "flex h-[50px] cursor-pointer items-center gap-3 rounded-xl border bg-[#fbf8fa] px-[13px] text-base leading-normal text-[#1b1b1d]",
                   checked ? "border-[#0058be]" : "border-[#c5c6cd]",
                 )}
                 key={option.value}
-                title={option.enabled ? undefined : "Segera tersedia"}
               >
                 <input
                   checked={checked}
                   className="size-5 shrink-0 accent-[#0058be]"
-                  disabled={!option.enabled}
-                  onChange={() => toggle(option.value as QuestionType)}
+                  onChange={() => toggle(option.value)}
                   type="checkbox"
                 />
                 <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                {!option.enabled && <span className="shrink-0 text-[10px] font-semibold">Segera</span>}
               </label>
             );
           })}
         </div>
       </fieldset>
 
-      {enabledTypes
-        .filter((option) => types.has(option.value as QuestionType))
+      {questionTypeOptions
+        .filter((option) => types.has(option.value))
         .map((option) => (
           <Field htmlFor={`${id}-${option.value}`} key={option.value} label={`Jumlah Soal ${option.label}`}>
             <TextInput
@@ -138,7 +134,7 @@ export function AiStep({
                 setCounts((current) => ({ ...current, [option.value]: event.target.value.replace(/\D/g, "") }))
               }
               placeholder="Masukkan Jumlah Soal"
-              value={counts[option.value as QuestionType]}
+              value={counts[option.value]}
             />
           </Field>
         ))}

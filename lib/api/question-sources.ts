@@ -10,10 +10,12 @@ export const AI_GENERATION_READY = true;
 // Scan soal kertas (FR-G-062) + AI Parsing (FR-G-063): eduinsight-be AI-07/08.
 export const OCR_READY = true;
 
+// How many questions of each type, e.g. { pg: 10, benarSalah: 2 }. The AI no longer writes uraian.
+export type QuestionCounts = { pg: number; benarSalah: number };
+
 export type GenerateQuestionsInput = {
   learningObjectiveIds: string[];
-  // How many questions of each type, e.g. { pg: 10, uraian: 2 }.
-  counts: { pg: number; uraian: number };
+  counts: QuestionCounts;
   bloomLevel: BloomLevel;
   // Regenerate Semua (FR-G-046): the assessment's AI drafts still waiting for ACC are rejected and replaced.
   replacePending?: boolean;

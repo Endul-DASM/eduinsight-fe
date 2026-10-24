@@ -22,7 +22,7 @@ const teacherNavItems: NavItem[] = [
   { label: "Kurikulum", href: "/curriculum", icon: "/dashboard/nav-kurikulum.svg" },
   { label: "Asesmen", href: "/assessment", icon: "/dashboard/nav-asesmen.svg" },
   { label: "Remedial", href: "/remedial", icon: "/dashboard/nav-remedial.svg" },
-  { label: "Analisis Soal", href: "/analysis", icon: "/dashboard/nav-analisis.svg" },
+  { label: "Analisis", href: "/analysis", icon: "/dashboard/nav-analisis.svg" },
 ];
 
 // Bantuan: FAQ and Pusat Bantuan (SRS FR-X-030), at the bottom of the sidebar.

@@ -136,7 +136,7 @@ export function RemedialAnalysisPage({
             </div>
             <p className="text-xs text-[#45474c]">
               Siswa target dikelompokkan menjadi Belum Paham, Paham Sebagian, dan Butuh Latihan berdasarkan pola kesalahan per TP, bukan
-              skor akhir saja (FR-G-101). Guru dapat memindahkan siswa, mengubah materi, dan menambah soal latihan AI sebelum ACC.
+              skor akhir saja. Guru dapat memindahkan siswa, mengubah materi, dan menambah soal latihan AI sebelum ACC.
             </p>
             <section className={card}>
               <p className="text-sm font-semibold text-[#1b1b1d]">TP yang belum tercapai siswa target</p>
@@ -178,7 +178,7 @@ export function RemedialAnalysisPage({
                   {practiceCount > 0 && <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>{practiceCount} soal AI</span>}
                 </div>
                 <p className="text-xs text-[#1b1b1d]">
-                  Tiap kelompok mendapat materi dan soal latihan AI dari TP yang belum tercapai (FR-G-102). Siswa melihatnya setelah
+                  Tiap kelompok mendapat materi dan soal latihan AI dari TP yang belum tercapai. Siswa melihatnya setelah
                   paket kelompok di-ACC.
                 </p>
                 <p className="text-xs leading-normal text-[#45474c]">
@@ -212,13 +212,12 @@ export function RemedialAnalysisPage({
                       {draft.title} ({draft.questionCount} soal, jenis remedial)
                     </p>
                     <p className="text-xs leading-normal text-[#45474c]">
-                      Khusus {pending} siswa berstatus Perlu Remedial pada {source?.title}. Siswa yang tuntas tidak akan melihat soal ini
-                      (BR-08).
+                      Khusus {pending} siswa berstatus Perlu Remedial pada {source?.title}. Siswa yang tuntas tidak akan melihat soal ini.
                     </p>
                   </>
                 ) : (
                   <p className="text-xs leading-normal text-[#45474c]">
-                    Belum ada draf remedial. Buat draf soal dari TP yang belum tercapai dengan AI (FR-G-103), atau buat secara manual.
+                    Belum ada draf remedial. Buat draf soal dari TP yang belum tercapai dengan AI, atau buat secara manual.
                   </p>
                 )}
                 {source && weak.length > 0 && groups && <OfficialDraft slug={slug} sourceId={source.id} />}

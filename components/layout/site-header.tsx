@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/ui/brand-logo";
 import { cn } from "@/components/ui/cn";
 
 function HelpLink() {
@@ -34,8 +35,7 @@ export function SiteHeader({
       )}
     >
       <Link className="flex items-center gap-2" href="/">
-        <Image alt="" className="size-9" height={36} src="/auth/logo.svg" width={36} />
-        <span className="text-lg font-semibold leading-normal text-[#1b1b1d]">EduInsight</span>
+        <BrandLogo size={36} textClassName="text-lg" />
       </Link>
       {mobileMenu ? <div className="hidden md:block">{action}</div> : action}
       {mobileMenu}

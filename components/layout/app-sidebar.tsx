@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useState } from "react";
@@ -8,6 +7,7 @@ import { outlineButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import { MaskIcon } from "@/components/ui/mask-icon";
 import { SIDEBAR_COLLAPSED, SIDEBAR_COOKIE } from "@/lib/sidebar";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 export type NavItem = {
   label: string;
@@ -120,8 +120,7 @@ export function AppSidebar({
       <div className="flex flex-col gap-4 md:gap-9">
         <div className={cn("flex items-center justify-between gap-2", collapsed && "md:flex-col md:justify-start")}>
           <Link className="flex items-center gap-2 px-2 py-2 md:py-4" href={homeHref} title="EduInsight">
-            <Image alt="" className="size-10 shrink-0" height={40} src="/auth/logo.svg" width={40} />
-            <span className={cn("text-xl font-bold leading-normal text-[#1b1b1d]", collapsed && "md:sr-only")}>EduInsight</span>
+            <BrandLogo textClassName={cn(collapsed && "md:sr-only")} />
           </Link>
           {toggleButton}
         </div>

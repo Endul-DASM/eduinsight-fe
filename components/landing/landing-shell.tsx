@@ -7,6 +7,7 @@ import type { CurrentUser } from "@/lib/api/types";
 import { SUPPORT_EMAIL } from "@/lib/help";
 import { continueLabelOf, homePathOf } from "@/lib/landing";
 import { LandingMobileMenu } from "./landing-mobile-menu";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
@@ -56,8 +57,7 @@ function LandingHeader({ page, user }: { page: "home" | "about"; user: CurrentUs
     <header className="sticky top-0 z-20 bg-[#f5f3f4] drop-shadow-[0_8px_12px_rgba(0,0,0,0.08)]">
       <div className="relative mx-auto flex min-h-16 max-w-[1440px] items-center justify-between gap-4 px-4 py-2 sm:px-8 lg:px-16">
         <Link className="flex items-center gap-2" href="/">
-          <Image alt="" className="size-9" height={36} src="/auth/logo.svg" width={36} />
-          <span className="text-lg font-semibold leading-normal text-[#1b1b1d]">EduInsight</span>
+          <BrandLogo size={36} textClassName="text-lg" />
         </Link>
         <nav aria-label="Navigasi utama" className="hidden items-center gap-4 md:flex">
           {links.map((link) => (
@@ -103,8 +103,7 @@ function LandingFooter() {
       <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-16">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <Image alt="" className="size-10" height={40} src="/auth/logo.svg" width={40} />
-            <span className="text-xl font-semibold leading-normal text-[#1b1b1d]">EduInsight</span>
+            <BrandLogo />
           </div>
           <p className="text-xs leading-normal text-[#45474c]">© 2026 EduInsight AI. Systematic &amp; Encouraging Learning.</p>
         </div>

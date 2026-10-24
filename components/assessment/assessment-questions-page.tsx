@@ -5,7 +5,7 @@ import { sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import type { AssessmentDetail, CurriculumTree, Subject } from "@/lib/api/types";
 import { chapterLabels } from "@/lib/assessment-list";
-import { assessmentModeLabels, assessmentTypeLabels, formatLongSchedule } from "@/lib/assessment-form";
+import { assessmentTypeLabels, formatLongSchedule } from "@/lib/assessment-form";
 import { PrintButton } from "./print-button";
 import { QuestionCard } from "./question-card";
 
@@ -63,8 +63,7 @@ export function AssessmentQuestionsPage({
         <header className="mb-6 border-b border-black pb-3">
           <h1 className="text-[16pt] font-bold">{assessment.title}</h1>
           <p>
-            {subject.name}, {subject.class.name}, {assessmentTypeLabels[assessment.type]},{" "}
-            {assessmentModeLabels[assessment.mode]}
+            {subject.name}, {subject.class.name}, {assessmentTypeLabels[assessment.type]}
           </p>
           <p>
             Jadwal: {formatLongSchedule(assessment.opensAt)}

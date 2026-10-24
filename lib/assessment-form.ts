@@ -1,6 +1,6 @@
 // Shared by the Buat Asesmen pages (client) and their Server Functions.
 
-import type { AssessmentMode, AssessmentStatus, AssessmentType, BloomLevel, QuestionType } from "@/lib/api/types";
+import type { AssessmentStatus, AssessmentType, BloomLevel, QuestionType } from "@/lib/api/types";
 
 export const assessmentTypeLabels: Record<AssessmentType, string> = {
   pre_test: "Pre-test",
@@ -16,11 +16,6 @@ export const assessmentStatusLabels: Record<AssessmentStatus, string> = {
   scheduled: "Terjadwal",
   ongoing: "Berlangsung",
   closed: "Selesai",
-};
-
-export const assessmentModeLabels: Record<AssessmentMode, string> = {
-  daring: "Daring",
-  luring: "Luring",
 };
 
 export const assessmentTypes = Object.keys(assessmentTypeLabels) as AssessmentType[];
@@ -209,7 +204,6 @@ export function validateSpecification(
   if (duration !== null && !(duration >= 1 && duration <= MAX_DURATION_MINUTES)) {
     errors.hours = `Durasi 1 menit sampai ${MAX_DURATION_MINUTES / 60} jam.`;
   }
-  if (values.mode && values.mode !== "daring" && values.mode !== "luring") errors.mode = "Pilih mode asesmen.";
   if (values.kkm && !isScore(values.kkm)) errors.kkm = "KKM berupa angka 0–100.";
   if (!isWhole(values.maxAttempts, 1, 10)) errors.maxAttempts = "Jumlah percobaan 1–10.";
   if (values.remedialThreshold && !isScore(values.remedialThreshold)) {
@@ -230,7 +224,6 @@ export function validateSpecification(
   if (complete) {
     if (values.objectiveIds.length === 0) errors.objectiveIds = MIN_LEARNING_OBJECTIVE_MESSAGE;
     if (duration === null) errors.hours = "Durasi pengerjaan wajib diisi.";
-    if (!values.mode) errors.mode = "Pilih mode asesmen.";
     if (!values.opensAt) errors.opensAt = "Jadwal buka wajib diisi.";
     if (!values.closesAt) errors.closesAt = "Jadwal tutup wajib diisi.";
   }

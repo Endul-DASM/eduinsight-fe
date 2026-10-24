@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { cn } from "@/components/ui/cn";
 import { logout } from "@/lib/actions/auth";
 import type { CurrentUser } from "@/lib/api/types";
+import { roleLabels } from "@/lib/auth/roles";
 import { firstName } from "@/lib/display-name";
 import { profilePhotoUrl } from "@/lib/profile-form";
 
@@ -32,14 +33,15 @@ function LogoutIcon() {
   );
 }
 
-// Account menu of the teacher and student top bars (Figma New Design 22:4162, popup 187:10090): Profile and Logout.
+// Account menu of the top bars (Figma New Design 22:4162, 22:3475, popup 187:10090): the name with the role under it,
+// then Profile and Logout. Inside a subject the popup also names the subject.
 export function ProfileMenu({
   profileHref,
   subjectLabel,
   user,
 }: {
   profileHref: string;
-  subjectLabel: string;
+  subjectLabel?: string;
   user: CurrentUser;
 }) {
   const [open, setOpen] = useState(false);
@@ -94,7 +96,7 @@ export function ProfileMenu({
         </span>
         <span className="hidden max-w-[200px] leading-tight text-[#1b1b1d] sm:block">
           <span className="block truncate text-lg font-semibold">{firstName(user.name)}</span>
-          <span className="block truncate text-xs">{subjectLabel}</span>
+          <span className="block truncate text-xs">{roleLabels[user.role]}</span>
         </span>
         <Image
           alt=""
@@ -111,6 +113,9 @@ export function ProfileMenu({
           id={menuId}
           role="menu"
         >
+          {subjectLabel && (
+            <p className="truncate border-b border-[#eae7e9] px-3 pb-2 pt-1 text-xs leading-normal text-[#45474c]">{subjectLabel}</p>
+          )}
           <Link className={itemClassName} href={profileHref} role="menuitem">
             <UserIcon />
             Profile

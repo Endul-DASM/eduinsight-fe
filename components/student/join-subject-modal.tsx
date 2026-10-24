@@ -15,14 +15,14 @@ function JoinForm({
 }: {
   initialCode: string;
   onClose: () => void;
-  onJoined: (subjectName: string) => void;
+  onJoined: (subjectName: string, alreadyJoined: boolean) => void;
 }) {
   const [state, formAction, pending] = useActionState(joinSubjectAction, undefined);
   // Checked in the browser before submitting; the Server Function repeats the same rule.
   const [clientError, setClientError] = useState<string>();
 
   useEffect(() => {
-    if (state?.status === "joined") onJoined(state.subjectName);
+    if (state?.status === "joined") onJoined(state.subjectName, state.alreadyJoined);
   }, [state, onJoined]);
 
   const failed = state?.status === "error" ? state : undefined;
@@ -79,7 +79,7 @@ export function JoinSubjectModal({
   open: boolean;
   initialCode: string;
   onClose: () => void;
-  onJoined: (subjectName: string) => void;
+  onJoined: (subjectName: string, alreadyJoined: boolean) => void;
 }) {
   return (
     <Modal className={subjectModalClassName} onClose={onClose} open={open} title="Ikut Kelas Baru">

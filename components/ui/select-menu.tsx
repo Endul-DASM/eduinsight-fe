@@ -67,7 +67,9 @@ export function SelectMenu({
   const [own, setOwn] = useState(defaultValue);
   const current = value ?? own;
   const selected = options.find((option) => option.value === current);
-  const [open, setOpen] = useState(false);
+  const [openState, setOpen] = useState(false);
+  // A field that becomes disabled while its list is open (e.g. Batal on Edit Profile) hides the list (UAT AUTH-H05).
+  const open = openState && !disabled;
   const [active, setActive] = useState(-1);
   const [upward, setUpward] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);

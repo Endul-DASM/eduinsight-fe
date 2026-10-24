@@ -22,7 +22,7 @@ import {
   variationAction,
 } from "@/lib/actions/assessments";
 import type { AssessmentDetail, BloomLevel, Question } from "@/lib/api/types";
-import { assessmentStatusLabels, type BuilderMethod, builderPath } from "@/lib/assessment-form";
+import { assessmentStatusLabels, type BuilderMethod, builderPath, isEditable } from "@/lib/assessment-form";
 import { claimPendingSummaryPreference, useSummaryPreference } from "@/lib/summary-preference";
 import { AssessmentSummary } from "./assessment-summary";
 import { FormMessage, InfoMessage } from "./builder-fields";
@@ -69,7 +69,8 @@ function regenerateInput(assessment: AssessmentDetail, drafts: Question[]) {
 
 // Langkah 3 Review (Figma New Design 61:5079, 61:7934): every question as students will see it, the summary, and
 // publishing (FR-G-050, FR-G-051). AI drafts wait here for the teacher's ACC (FR-X-010 – 012), and can be varied or
-// regenerated (FR-G-046). A published assessment is shown read-only.
+// regenerated (FR-G-046). A published assessment can still have its questions edited or removed until it opens;
+// after that it is read-only.
 export function ReviewStep({
   slug,
   method,
@@ -81,6 +82,7 @@ export function ReviewStep({
 }) {
   const router = useRouter();
   const draft = assessment.status === "draft";
+  const editable = isEditable(assessment.status);
   const showSummary = useSummaryPreference(assessment.id);
   const [state, setState] = useState<PublishState>();
   const [removing, setRemoving] = useState<Question | null>(null);
@@ -162,13 +164,16 @@ export function ReviewStep({
 
   // AI drafts are edited in the typed-question editor, which shows every question of the assessment.
   const editHref = builderPath(slug, assessment.id, method === "ai" ? "ketik" : method, "soal");
+  // ✏ on one question opens the typed-question editor with only that question (UAT), whatever the method.
+  const questionEditHref = (question: Question) => `${builderPath(slug, assessment.id, "ketik", "soal")}&question=${question.id}`;
 
   return (
     <div className="flex flex-col gap-6">
       {!draft && (
         <InfoMessage>
-          Asesmen ini sudah dipublikasikan ({assessmentStatusLabels[assessment.status]}) sehingga tidak dapat diubah.
-          {assessment.status === "scheduled" && " Batalkan publikasi untuk mengubahnya sebelum jadwal buka."}
+          {editable
+            ? "Asesmen ini sudah dipublikasikan. Soal dan spesifikasinya masih bisa diubah sampai jadwal buka."
+            : `Asesmen ini sudah dipublikasikan (${assessmentStatusLabels[assessment.status]}) sehingga tidak dapat diubah.`}
         </InfoMessage>
       )}
 
@@ -201,7 +206,7 @@ export function ReviewStep({
       {assessment.questions.length === 0 ? (
         <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-[#c5c6cd] px-6 py-10 text-center">
           <p className="text-sm text-[#45474c]">Belum ada soal di asesmen ini.</p>
-          {draft && (
+          {editable && (
             <Link className={outlineButtonClassName} href={editHref}>
               Tambah Soal
             </Link>
@@ -212,9 +217,9 @@ export function ReviewStep({
           {assessment.questions.map((question, index) => (
             <QuestionCard
               actions={
-                draft && (
+                editable && (
                   <>
-                    {question.status === "pending_review" && (
+                    {draft && question.status === "pending_review" && (
                       <>
                         <button
                           className={cn(textButtonClassName, "bg-[#0058be] text-white hover:bg-[#004695]")}
@@ -234,7 +239,7 @@ export function ReviewStep({
                         </button>
                       </>
                     )}
-                    {question.origin === "ai" && question.learningObjectives.length > 0 && (
+                    {draft && question.origin === "ai" && question.learningObjectives.length > 0 && (
                       <button
                         className={cn(textButtonClassName, "text-[#0058be] hover:bg-[#e6eff9]")}
                         disabled={pending || aiBusy}
@@ -245,7 +250,12 @@ export function ReviewStep({
                         Buat Variasi
                       </button>
                     )}
-                    <Link aria-label={`Ubah soal ${index + 1}`} className={iconButtonClassName} href={editHref} title="Ubah soal">
+                    <Link
+                      aria-label={`Ubah soal ${index + 1}`}
+                      className={iconButtonClassName}
+                      href={questionEditHref(question)}
+                      title="Ubah soal"
+                    >
                       <Image alt="" height={20} src="/curriculum/pencil.svg" width={20} />
                     </Link>
                     <button

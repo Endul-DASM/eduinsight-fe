@@ -55,6 +55,11 @@ export function isAssessmentStatus(value: unknown): value is AssessmentStatus {
   return typeof value === "string" && value in assessmentStatusLabels;
 }
 
+// A draft, or a published assessment before its jadwal buka, can still be changed (UAT; the backend checks too).
+export function isEditable(status: AssessmentStatus): boolean {
+  return status === "draft" || status === "scheduled";
+}
+
 // Buat Asesmen (PRD 5.4.2; Figma New Design 60:4158). The method only lives in the URL, the backend does not store
 // it: /{slug}/assessment/{id}?method=ketik&step=soal.
 export const builderMethods = {
@@ -97,6 +102,11 @@ export function wibInputToIso(value: string): string | null {
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
   const iso = `${value}:00${SCHEDULE_OFFSET}`;
   return Number.isNaN(Date.parse(iso)) ? null : iso;
+}
+
+// Midnight today in WIB as a datetime-local value: the earliest jadwal buka (UAT).
+export function todayWibInput(): string {
+  return `${isoToWibInput(new Date().toISOString()).slice(0, 10)}T00:00`;
 }
 
 // An ISO time from the backend → "2026-11-01T07:00" in WIB, for a datetime-local input.
@@ -183,8 +193,13 @@ export function durationParts(total: number | null): { hours: string; minutes: s
 }
 
 // "Simpan Draft" only needs what the backend needs to create the draft (title and type); "Selanjutnya" also needs
-// everything publishing will ask for, so the teacher finds out here and not at the last step.
-export function validateSpecification(values: SpecificationValues, complete: boolean): SpecificationErrors {
+// everything publishing will ask for, so the teacher finds out here and not at the last step. With the saved jadwal
+// buka, a changed one may not be before today; an unchanged one keeps older drafts editable.
+export function validateSpecification(
+  values: SpecificationValues,
+  complete: boolean,
+  savedOpensAt?: string,
+): SpecificationErrors {
   const errors: SpecificationErrors = {};
 
   if (!values.title || values.title.length > 200) errors.title = "Judul asesmen 1–200 karakter.";
@@ -204,6 +219,9 @@ export function validateSpecification(values: SpecificationValues, complete: boo
   const opensAt = values.opensAt ? wibInputToIso(values.opensAt) : null;
   const closesAt = values.closesAt ? wibInputToIso(values.closesAt) : null;
   if (values.opensAt && !opensAt) errors.opensAt = "Format jadwal buka tidak valid.";
+  else if (opensAt && savedOpensAt !== undefined && values.opensAt !== savedOpensAt && values.opensAt < todayWibInput()) {
+    errors.opensAt = "Jadwal buka tidak boleh sebelum hari ini.";
+  }
   if (values.closesAt && !closesAt) errors.closesAt = "Format jadwal tutup tidak valid.";
   if (opensAt && closesAt && Date.parse(closesAt) <= Date.parse(opensAt)) {
     errors.closesAt = "Jadwal tutup harus setelah jadwal buka.";

@@ -6,13 +6,14 @@ import { useId, useState, useTransition } from "react";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName, iconButtonClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
-import { saveTypedQuestionsAction } from "@/lib/actions/assessments";
+import { saveSingleQuestionAction, saveTypedQuestionsAction } from "@/lib/actions/assessments";
 import type { AssessmentDetail, LearningObjectiveRef, Question } from "@/lib/api/types";
 import {
   bloomLevels,
   type BuilderMethod,
   builderPath,
   difficultyLabels,
+  isEditable,
   OPTION_KEYS,
   questionTypeLabels,
   questionTypeOptions,
@@ -69,7 +70,8 @@ function QuestionEditor({
   objectives: LearningObjectiveRef[];
   error?: string;
   onChange: (change: Partial<TypedQuestion>) => void;
-  onRemove: () => void;
+  // Left out when the question cannot be removed here (editing one question).
+  onRemove?: () => void;
 }) {
   const id = useId();
   const [detailsOpen, setDetailsOpen] = useState(Boolean(question.bloomLevel || question.difficulty));
@@ -329,9 +331,11 @@ function QuestionEditor({
       )}
 
       <div className="flex justify-end gap-1 border-t border-[#c5c6cd] pt-4">
-        <button aria-label={`Hapus soal ${number}`} className={iconButtonClassName} onClick={onRemove} title="Hapus soal" type="button">
-          <Image alt="" height={24} src="/assessment/trash.svg" width={24} />
-        </button>
+        {onRemove && (
+          <button aria-label={`Hapus soal ${number}`} className={iconButtonClassName} onClick={onRemove} title="Hapus soal" type="button">
+            <Image alt="" height={24} src="/assessment/trash.svg" width={24} />
+          </button>
+        )}
         <button
           aria-expanded={detailsOpen}
           aria-label="Level Bloom dan kesulitan"
@@ -348,33 +352,53 @@ function QuestionEditor({
 }
 
 // Langkah 2 "Ketik di EduInsight" (Figma New Design 61:8772). Each question goes to the Bank Soal with its TP tags
-// (FR-G-060, FR-G-065) and joins the assessment in this order (FR-G-043).
+// (FR-G-060, FR-G-065) and joins the assessment in this order (FR-G-043). With questionId (✏ in Review), only that
+// question is shown and saved (UAT).
 export function TypedQuestionsStep({
   slug,
   subjectId,
   method,
   assessment,
+  questionId,
 }: {
   slug: string;
   subjectId: string;
   method: BuilderMethod;
+  questionId?: string;
   assessment: AssessmentDetail;
 }) {
   const objectives = assessment.learningObjectives;
   const [questions, setQuestions] = useState<TypedQuestion[]>(() =>
-    assessment.questions.length > 0 ? assessment.questions.map(fromQuestion) : [emptyQuestion(objectives)],
+    questionId
+      ? assessment.questions.filter((question) => question.id === questionId).map(fromQuestion)
+      : assessment.questions.length > 0
+        ? assessment.questions.map(fromQuestion)
+        : [emptyQuestion(objectives)],
   );
+  // Its number in the assessment, when editing one question.
+  const position = questionId ? assessment.questions.findIndex((question) => question.id === questionId) : -1;
+  const reviewHref = builderPath(slug, assessment.id, method, "review");
   const [removedIds, setRemovedIds] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [message, setMessage] = useState<string>();
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  if (assessment.status !== "draft") {
+  if (!isEditable(assessment.status)) {
     return (
       <InfoMessage>
-        Asesmen ini sudah dipublikasikan sehingga soalnya tidak dapat diubah.{" "}
-        <Link className="font-semibold underline" href={builderPath(slug, assessment.id, method, "review")}>
+        Asesmen ini sudah dibuka sehingga soalnya tidak dapat diubah.{" "}
+        <Link className="font-semibold underline" href={reviewHref}>
+          Lihat Review
+        </Link>
+      </InfoMessage>
+    );
+  }
+  if (questionId && position < 0) {
+    return (
+      <InfoMessage>
+        Soal ini tidak ada di asesmen ini.{" "}
+        <Link className="font-semibold underline" href={reviewHref}>
           Lihat Review
         </Link>
       </InfoMessage>
@@ -406,6 +430,14 @@ export function TypedQuestionsStep({
     if (Object.keys(found).length > 0) return setMessage("Periksa lagi soal yang ditandai.");
     if (next && questions.length === 0) return setMessage("Tambahkan minimal satu soal.");
 
+    if (questionId) {
+      return startTransition(async () => {
+        // Back to Review on success.
+        const result = await saveSingleQuestionAction(slug, assessment.id, method, questions[0]);
+        if (result.status === "error") setMessage(result.message);
+      });
+    }
+
     startTransition(async () => {
       const result = await saveTypedQuestionsAction(slug, subjectId, assessment.id, method, questions, removedIds, next);
       // New questions keep the ids they got, also when a later one failed, so saving again does not duplicate them.
@@ -436,20 +468,64 @@ export function TypedQuestionsStep({
         <QuestionEditor
           error={errors[question.key] || undefined}
           key={question.key}
-          number={index + 1}
+          number={questionId ? position + 1 : index + 1}
           objectives={objectives}
           onChange={(change) => update(question.key, change)}
-          onRemove={() => remove(question)}
+          onRemove={questionId ? undefined : () => remove(question)}
           question={question}
         />
       ))}
 
+      {questionId ? (
+        <>
+          {message && <FormMessage>{message}</FormMessage>}
+          <div className="flex flex-wrap justify-end gap-3">
+            <Link className={greyButtonClassName} href={reviewHref}>
+              Batal
+            </Link>
+            <button className={primaryButtonClassName} disabled={pending} onClick={() => save(true)} type="button">
+              {pending ? "Menyimpan..." : "Simpan Soal"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <AllQuestionsFooter
+          message={message}
+          onAdd={() => {
+            setQuestions((current) => [...current, emptyQuestion(objectives)]);
+            setSaved(false);
+          }}
+          onSave={save}
+          pending={pending}
+          published={assessment.status === "scheduled"}
+          saved={saved}
+        />
+      )}
+    </div>
+  );
+}
+
+// Tambah Pertanyaan and the save buttons of the editor with every question.
+function AllQuestionsFooter({
+  message,
+  saved,
+  pending,
+  published,
+  onAdd,
+  onSave,
+}: {
+  message?: string;
+  saved: boolean;
+  pending: boolean;
+  published: boolean;
+  onAdd: () => void;
+  onSave: (next: boolean) => void;
+}) {
+  return (
+    <>
       <button
         className="flex items-center justify-center gap-3 rounded-xl bg-[rgba(153,188,229,0.6)] px-4 py-3 text-base font-semibold leading-normal text-[#004695] transition-colors hover:bg-[rgba(153,188,229,0.85)]"
-        onClick={() => {
-          setQuestions((current) => [...current, emptyQuestion(objectives)]);
-          setSaved(false);
-        }}
+        onClick={onAdd}
         type="button"
       >
         <Image alt="" height={24} src="/assessment/circle-plus.svg" width={24} />
@@ -457,16 +533,16 @@ export function TypedQuestionsStep({
       </button>
 
       {message && <FormMessage>{message}</FormMessage>}
-      {saved && <InfoMessage>Draf tersimpan. Soal juga masuk ke Bank Soal.</InfoMessage>}
+      {saved && <InfoMessage>{published ? "Perubahan tersimpan." : "Draf tersimpan."} Soal juga masuk ke Bank Soal.</InfoMessage>}
 
       <div className="flex flex-wrap justify-end gap-3">
-        <button className={greyButtonClassName} disabled={pending} onClick={() => save(false)} type="button">
-          Simpan Draft
+        <button className={greyButtonClassName} disabled={pending} onClick={() => onSave(false)} type="button">
+          {published ? "Simpan" : "Simpan Draft"}
         </button>
-        <button className={primaryButtonClassName} disabled={pending} onClick={() => save(true)} type="button">
+        <button className={primaryButtonClassName} disabled={pending} onClick={() => onSave(true)} type="button">
           {pending ? "Menyimpan..." : "Selanjutnya"}
         </button>
       </div>
-    </div>
+    </>
   );
 }

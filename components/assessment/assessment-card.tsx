@@ -120,6 +120,7 @@ export function AssessmentCard({ slug, card }: { slug: string; card: Card }) {
                   </>
                 ) : (
                   <>
+                    {assessment.status === "scheduled" && <MenuLink href={editHref}>Edit Asesmen</MenuLink>}
                     <MenuLink href={questionsHref}>Lihat Soal</MenuLink>
                     {assessment.status === "scheduled" && (
                       <button
@@ -171,6 +172,12 @@ export function AssessmentCard({ slug, card }: { slug: string; card: Card }) {
         ) : (
           <Link className={cn(outlineButtonClassName, "w-full")} href={questionsHref}>
             Lihat Soal
+          </Link>
+        )}
+        {/* Published but not open yet: still editable until the jadwal buka (UAT). */}
+        {assessment.status === "scheduled" && (
+          <Link className={cn(ghostButtonClassName, "w-full")} href={editHref}>
+            Edit Asesmen
           </Link>
         )}
         {assessment.status === "closed" && (

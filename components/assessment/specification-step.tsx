@@ -15,9 +15,11 @@ import {
   type BuilderMethod,
   builderPath,
   durationParts,
+  isEditable,
   isoToWibInput,
   type SpecificationErrors,
   type SpecificationValues,
+  todayWibInput,
   validateSpecification,
 } from "@/lib/assessment-form";
 import { saveSummaryPreference, useSummaryPreference } from "@/lib/summary-preference";
@@ -66,9 +68,14 @@ export function SpecificationStep({
   const formId = useId();
   const objectives = objectivesOf(chapters);
   const objectiveById = new Map(objectives.map((objective) => [objective.id, objective]));
-  const locked = Boolean(assessment && assessment.status !== "draft");
+  const locked = Boolean(assessment && !isEditable(assessment.status));
+  const published = assessment?.status === "scheduled";
 
   const [values, setValues] = useState(() => initialValues(assessment, initialType));
+  const [savedOpensAt] = useState(values.opensAt);
+  const today = todayWibInput();
+  // An older jadwal buka stays selectable until it is changed.
+  const minOpensAt = savedOpensAt && savedOpensAt < today ? savedOpensAt : today;
   // The Bab only narrows the TP list; it starts on the Bab of the chosen TPs when they share one.
   const [chapterId, setChapterId] = useState(() => {
     const ids = new Set(values.objectiveIds.map((id) => objectiveById.get(id)?.chapter.id));
@@ -98,7 +105,7 @@ export function SpecificationStep({
   }
 
   function save(next: boolean) {
-    const found = validateSpecification(values, next);
+    const found = validateSpecification(values, next, savedOpensAt);
     setErrors(found);
     setMessage(undefined);
     if (Object.keys(found).length > 0) return;
@@ -126,11 +133,14 @@ export function SpecificationStep({
     >
       {locked && (
         <InfoMessage>
-          Asesmen ini sudah dipublikasikan sehingga spesifikasinya tidak dapat diubah.{" "}
+          Asesmen ini sudah dibuka sehingga spesifikasinya tidak dapat diubah.{" "}
           <Link className="font-semibold underline" href={builderPath(slug, assessment!.id, method, "review")}>
             Lihat Review
           </Link>
         </InfoMessage>
+      )}
+      {published && (
+        <InfoMessage>Asesmen ini sudah dipublikasikan. Perubahan masih bisa disimpan sampai jadwal buka.</InfoMessage>
       )}
       <fieldset className="flex min-w-0 flex-col gap-4" disabled={locked || pending}>
         <Field error={errors.title} htmlFor={field("title")} label="Judul Asesmen">
@@ -274,6 +284,7 @@ export function SpecificationStep({
             <TextInput
               id={field("opensAt")}
               invalid={Boolean(errors.opensAt)}
+              min={minOpensAt}
               onChange={(event) => set("opensAt", event.target.value)}
               type="datetime-local"
               value={values.opensAt}
@@ -283,6 +294,7 @@ export function SpecificationStep({
             <TextInput
               id={field("closesAt")}
               invalid={Boolean(errors.closesAt)}
+              min={values.opensAt || minOpensAt}
               onChange={(event) => set("closesAt", event.target.value)}
               type="datetime-local"
               value={values.closesAt}
@@ -328,12 +340,12 @@ export function SpecificationStep({
       </fieldset>
 
       {message && <FormMessage>{message}</FormMessage>}
-      {saved && <InfoMessage>Draf tersimpan.</InfoMessage>}
+      {saved && <InfoMessage>{published ? "Perubahan tersimpan." : "Draf tersimpan."}</InfoMessage>}
 
       {!locked && (
         <div className="flex flex-wrap justify-end gap-3">
           <button className={greyButtonClassName} disabled={pending} onClick={() => save(false)} type="button">
-            Simpan Draft
+            {published ? "Simpan" : "Simpan Draft"}
           </button>
           <button className={primaryButtonClassName} disabled={pending} type="submit">
             {pending ? "Menyimpan..." : "Selanjutnya"}

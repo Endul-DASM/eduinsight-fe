@@ -6,6 +6,7 @@ import {
   type AssessmentInput,
   createAssessment,
   deleteAssessment,
+  getAssessment,
   publishAssessment,
   replaceAssessmentLearningObjectives,
   replaceAssessmentQuestions,
@@ -206,6 +207,36 @@ export async function saveTypedQuestionsAction(
   refresh(slug, assessmentId);
   if (next) redirect(builderPath(slug, assessmentId, method, "review"));
   return { status: "saved", questionIds };
+}
+
+// ✏ on one question in Review (UAT): saves only that question. Editing an answered question makes a new version
+// (BR-10). The backend moves editable assessments to it; should this one still hold the old id, it is swapped here.
+export async function saveSingleQuestionAction(
+  slug: string,
+  assessmentId: string,
+  method: BuilderMethod,
+  question: TypedQuestion,
+): Promise<BuilderResult> {
+  const problem = validateTypedQuestion(question);
+  if (problem) return { status: "error", message: problem };
+  if (!question.id) return { status: "error", message: "Soal tidak ditemukan." };
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+
+  try {
+    const saved = await updateQuestion(question.id, questionInput(question));
+    const assessment = saved.id !== question.id ? await getAssessment(assessmentId) : null;
+    if (assessment?.questions.some((entry) => entry.id === question.id)) {
+      const ids = assessment.questions.map((entry) => (entry.id === question.id ? saved.id : entry.id));
+      await replaceAssessmentQuestions(assessmentId, ids);
+    }
+  } catch (error) {
+    unstable_rethrow(error);
+    refresh(slug, assessmentId);
+    return errorResult(error);
+  }
+
+  refresh(slug, assessmentId);
+  redirect(builderPath(slug, assessmentId, method, "review"));
 }
 
 // 🗑 on a question in Review: it leaves the assessment (and the Bank Soal when nothing else uses it).

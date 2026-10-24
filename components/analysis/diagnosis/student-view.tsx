@@ -231,7 +231,7 @@ export function StudentView({
             <h4 className="text-base font-semibold text-[#1b1b1d]">Penjelasan AI yang dilihat siswa</h4>
             <span className="text-xs text-[#75777d]">
               Dibuat {new Date(student.aiNarrative.createdAt).toLocaleDateString("id-ID", { dateStyle: "medium" })} dari
-              jawaban siswa ini (AI-11)
+              jawaban siswa ini
             </span>
           </div>
           <ul className="flex flex-col gap-3 text-sm leading-normal text-[#45474c]">
@@ -352,7 +352,7 @@ export function StudentView({
               </table>
             </div>
             <p className="text-xs text-[#75777d]">
-              Selisih = skor siswa − rata-rata kelas (poin persentase). Label mengikuti BR-04; ambang masih menunggu UAT.
+              Selisih = skor siswa − rata-rata kelas (poin persentase).
             </p>
           </section>
 

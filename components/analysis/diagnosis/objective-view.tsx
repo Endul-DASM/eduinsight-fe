@@ -88,10 +88,6 @@ function SelectedObjective({
             </span>
           ))}
         </div>
-        <p className="text-xs text-[#75777d]">
-          Label mengikuti BR-04 (SB ≥ {diagnosis.thresholds.sb}, B ≥ {diagnosis.thresholds.b}, C ≥ {diagnosis.thresholds.c}); ambang masih
-          menunggu UAT.
-        </p>
       </section>
 
       <ObjectiveStudentTable objectiveNumber={objective.learningObjective.number} params={params} rows={rows} slug={slug} />

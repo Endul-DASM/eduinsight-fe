@@ -123,7 +123,7 @@ export function ClassView({
           Skor tinggi (rentang 0–100%)
         </div>
         <p className="text-xs text-[#45474c]">
-          Persentase = skor TP rata-rata siswa (BR-03). Skala warna bukan ambang kategori SB/B/C/K.
+          Persentase = skor TP rata-rata siswa. Skala warna bukan ambang kategori SB/B/C/K.
         </p>
       </section>
 
@@ -207,10 +207,7 @@ export function ClassView({
             ))}
           </table>
         </div>
-        <p className="text-xs text-[#45474c]">
-          Label mengikuti BR-04: SB ≥ {diagnosis.thresholds.sb}, B ≥ {diagnosis.thresholds.b}, C ≥ {diagnosis.thresholds.c}, K di
-          bawahnya; ambang masih menunggu UAT. TP dengan kurang dari 3 butir ditandai data terbatas (BR-05).
-        </p>
+        <p className="text-xs text-[#45474c]">TP dengan kurang dari 3 butir ditandai data terbatas.</p>
       </section>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -293,7 +290,7 @@ export function ClassView({
             );
           })}
           <p className="text-xs text-[#75777d]">
-            Pola diurutkan berdasarkan jumlah siswa terdampak (BR-06). Satu siswa dapat terlibat dalam lebih dari satu pola;
+            Pola diurutkan berdasarkan jumlah siswa terdampak. Satu siswa dapat terlibat dalam lebih dari satu pola;
             persentase tidak dijumlahkan.
           </p>
         </>

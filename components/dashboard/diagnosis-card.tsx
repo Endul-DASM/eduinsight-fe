@@ -252,8 +252,7 @@ export function ObjectiveTable({ chapter, baseHref }: { chapter: ChapterDiagnosi
         </div>
       )}
       <p className="text-xs leading-normal text-[#45474c]">
-        Label mengikuti BR-04: SB ≥ 90, B 75–89, C 60–74, K &lt; 60. TP bertanda &ldquo;data terbatas&rdquo; dinilai
-        dari kurang dari {MIN_ITEMS_PER_TP} butir soal (BR-05).
+        TP bertanda &ldquo;data terbatas&rdquo; dinilai dari kurang dari {MIN_ITEMS_PER_TP} butir soal.
       </p>
       {weakest && (
         <p className="text-xs leading-normal text-[#1b1b1d]">

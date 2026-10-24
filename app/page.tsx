@@ -8,7 +8,7 @@ export default async function Home() {
 
   return (
     <LandingShell page="home" user={user}>
-      <HomePage />
+      <HomePage user={user} />
     </LandingShell>
   );
 }

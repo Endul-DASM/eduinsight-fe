@@ -72,7 +72,7 @@ export function LandingMobileMenu({ links, actions }: { links: LandingNavLink[];
             {actions.map((action) => (
               <Link
                 className={cn(
-                  "rounded-xl px-4 py-2.5 text-center text-base font-semibold",
+                  "truncate rounded-xl px-4 py-2.5 text-center text-base font-semibold",
                   action.primary ? "bg-[#0058be] text-[#f5f3f4]" : "border-2 border-[#0058be] text-[#0058be]",
                 )}
                 href={action.href}

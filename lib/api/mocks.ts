@@ -9,6 +9,7 @@ export const mockTeacher: CurrentUser = {
   initials: "MP",
   province: null,
   photoUpdatedAt: null,
+  hasPassword: true,
 };
 
 // Mock mode has no sessions, so the student pages show this user instead of mockTeacher.
@@ -21,6 +22,7 @@ export const mockStudent: CurrentUser = {
   initials: "A",
   province: null,
   photoUpdatedAt: null,
+  hasPassword: true,
 };
 
 const mockTeacherSummary: TeacherSummary = {

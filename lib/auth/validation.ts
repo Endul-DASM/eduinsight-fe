@@ -1,9 +1,13 @@
 // Sign-up rules and messages from SRS 6.1.1. Used by the forms and again by the Server Functions.
 
-export const USERNAME_MESSAGE = "Username 3–30 karakter, hanya huruf kecil, angka, titik, atau garis bawah.";
+export const USERNAME_MESSAGE =
+  "Username 3–30 karakter, hanya huruf kecil, angka, titik, atau garis bawah, dan tidak diawali angka.";
+export const USERNAME_DIGIT_START_MESSAGE = "Username tidak boleh diawali angka.";
 export const NAME_MESSAGE = "Nama wajib diisi, maksimal 120 karakter.";
 export const EMAIL_MESSAGE = "Format email tidak valid.";
-export const PASSWORD_MESSAGE = "Kata sandi minimal 8 dan maksimal 72 karakter.";
+export const PASSWORD_LENGTH_MESSAGE = "Kata sandi harus 8–20 karakter.";
+// Any letter and any digit; upper or lower case does not matter.
+export const PASSWORD_MIX_MESSAGE = "Kata sandi harus berisi gabungan huruf dan angka.";
 export const PASSWORD_CONFIRMATION_MESSAGE = "Konfirmasi kata sandi tidak sama.";
 // Shown for every failed sign-in so it never reveals whether an email or username exists.
 export const INVALID_CREDENTIALS_MESSAGE = "Email/username atau kata sandi salah.";
@@ -25,6 +29,8 @@ export type RegisterField = keyof RegisterValues;
 export type FieldErrors = Partial<Record<RegisterField, string>>;
 
 export function validateUsername(username: string): string | undefined {
+  // Checked first, so "1" or "1 siti" gets the specific message too.
+  if (/^[0-9]/.test(username)) return USERNAME_DIGIT_START_MESSAGE;
   return USERNAME_PATTERN.test(username) ? undefined : USERNAME_MESSAGE;
 }
 
@@ -38,7 +44,8 @@ export function validateEmail(email: string): string | undefined {
 }
 
 export function validatePassword(password: string): string | undefined {
-  return password.length >= 8 && password.length <= 72 ? undefined : PASSWORD_MESSAGE;
+  if (password.length < 8 || password.length > 20) return PASSWORD_LENGTH_MESSAGE;
+  return /\p{L}/u.test(password) && /\p{Nd}/u.test(password) ? undefined : PASSWORD_MIX_MESSAGE;
 }
 
 export function validatePasswordConfirmation(password: string, confirmation: string): string | undefined {
@@ -62,5 +69,7 @@ export function suggestUsername(email: string): string {
     .split("@")[0]
     .toLowerCase()
     .replace(/[^a-z0-9._]/g, "")
+    // A username cannot start with a digit.
+    .replace(/^[0-9]+/, "")
     .slice(0, 30);
 }

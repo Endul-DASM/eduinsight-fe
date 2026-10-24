@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useId, useRef, useState, useTransition } from "react";
 import { ChangePasswordForm } from "@/components/account/change-password-form";
+import { SetPasswordForm } from "@/components/account/set-password-form";
 import { Field, FormMessage, InfoMessage, SelectInput, TextInput } from "@/components/assessment/builder-fields";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName, sectionClassName } from "@/components/curriculum/styles";
@@ -121,19 +122,22 @@ function PhotoCard({ user }: { user: CurrentUser }) {
   );
 }
 
-// Ubah Password: the change-password form of POST /auth/password/change (other sessions are signed out).
-function PasswordModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+// Ubah Password (POST /auth/password/change) or, for a Google-only account, Buat Password (POST /auth/password/set).
+// Either signs out the other sessions. The mode is fixed when the modal opens, so a new password keeps its success
+// message even though the page then reloads with hasPassword set.
+function PasswordModal({ mode, onClose }: { mode: "change" | "set" | null; onClose: () => void }) {
   return (
     <Modal
       align="start"
       className="max-w-[520px] rounded-3xl bg-[#fafbfd] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop:bg-[rgba(9,20,38,0.2)] backdrop:backdrop-blur-sm"
       onClose={onClose}
-      open={open}
+      open={mode !== null}
       showClose
-      title="Ubah Password"
+      title={mode === "set" ? "Buat Password" : "Ubah Password"}
     >
       {/* Mounted only while open, so the fields and the last message reset each time. */}
-      {open && <ChangePasswordForm />}
+      {mode === "change" && <ChangePasswordForm />}
+      {mode === "set" && <SetPasswordForm />}
     </Modal>
   );
 }
@@ -150,7 +154,9 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
   const [notice, setNotice] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordMode, setPasswordMode] = useState<"change" | "set" | null>(null);
+  // An older backend does not send hasPassword; every account there has a password.
+  const hasPassword = user.hasPassword !== false;
 
   const set = (key: keyof ProfileValues) => (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const next = { ...values, [key]: event.target.value };
@@ -253,9 +259,17 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
         </Field>
         <Field htmlFor={`${id}-password`} label="Password">
           <div className="flex gap-3">
-            <TextInput className="flex-1" disabled id={`${id}-password`} readOnly type="password" value="password" />
-            <button className={cn(greyButtonClassName, "shrink-0 px-4 text-base")} onClick={() => setPasswordOpen(true)} type="button">
-              Ubah Password
+            {hasPassword ? (
+              <TextInput className="flex-1" disabled id={`${id}-password`} readOnly type="password" value="password" />
+            ) : (
+              <TextInput className="flex-1" disabled id={`${id}-password`} readOnly value="Masuk dengan Google" />
+            )}
+            <button
+              className={cn(greyButtonClassName, "shrink-0 px-4 text-base")}
+              onClick={() => setPasswordMode(hasPassword ? "change" : "set")}
+              type="button"
+            >
+              {hasPassword ? "Ubah Password" : "Buat Password"}
             </button>
           </div>
         </Field>
@@ -264,7 +278,7 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
         {notice && <InfoMessage>{notice}</InfoMessage>}
       </form>
 
-      <PasswordModal onClose={() => setPasswordOpen(false)} open={passwordOpen} />
+      <PasswordModal mode={passwordMode} onClose={() => setPasswordMode(null)} />
     </div>
   );
 }

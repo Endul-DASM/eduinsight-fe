@@ -8,6 +8,8 @@ type RoleConfig = {
   apiRole: Extract<UserRole, "siswa" | "guru">;
   label: string;
   loginPath: string;
+  // Where signing in with an unverified email leads (FR-X-008).
+  verifyEmailPath: string;
   registerPath: string;
   registerGooglePath: string;
   // Where a signed-in user of this role lands.
@@ -21,6 +23,7 @@ export const authRoles: Record<AuthRole, RoleConfig> = {
     apiRole: "guru",
     label: "Guru",
     loginPath: "/login/teacher",
+    verifyEmailPath: "/login/teacher/verify-email",
     registerPath: "/register/teacher",
     registerGooglePath: "/register/teacher/google",
     homePath: "/choose-subject",
@@ -30,6 +33,7 @@ export const authRoles: Record<AuthRole, RoleConfig> = {
     apiRole: "siswa",
     label: "Siswa",
     loginPath: "/login/student",
+    verifyEmailPath: "/login/student/verify-email",
     registerPath: "/register/student",
     registerGooglePath: "/register/student/google",
     homePath: "/student",

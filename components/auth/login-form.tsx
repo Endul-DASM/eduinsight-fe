@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { login, resendVerification } from "@/lib/actions/auth";
+import { login } from "@/lib/actions/auth";
 import type { AuthNotice } from "@/lib/auth/messages";
 import { type AuthRole, authRoles } from "@/lib/auth/roles";
 import { AuthFootnote } from "./auth-card";
@@ -15,7 +15,6 @@ import { TextField } from "./text-field";
 export function LoginForm({ role, initialNotice }: { role: AuthRole; initialNotice?: AuthNotice }) {
   // The role comes from the page's URL (/login/[role]).
   const [state, formAction, pending] = useActionState(login.bind(null, role), undefined);
-  const [resendState, resendAction, resending] = useActionState(resendVerification, undefined);
   const notice = state ?? initialNotice;
 
   return (
@@ -37,24 +36,7 @@ export function LoginForm({ role, initialNotice }: { role: AuthRole; initialNoti
           required
         />
       </div>
-      {notice && (
-        <AuthNoticeMessage notice={notice}>
-          {state?.unverified && (
-            <div className="mt-2 flex flex-col items-start gap-1">
-              {/* Same form, so the resend request carries the identifier typed above. */}
-              <button
-                className={`${textLinkClassName} font-semibold disabled:opacity-60`}
-                disabled={resending}
-                formAction={resendAction}
-                type="submit"
-              >
-                {resending ? "Mengirim..." : "Kirim ulang tautan verifikasi"}
-              </button>
-              {resendState && <p aria-live="polite">{resendState.message}</p>}
-            </div>
-          )}
-        </AuthNoticeMessage>
-      )}
+      {notice && <AuthNoticeMessage notice={notice} />}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <AuthFootnote>
           Belum punya akun?{" "}
@@ -66,11 +48,10 @@ export function LoginForm({ role, initialNotice }: { role: AuthRole; initialNoti
           Lupa kata sandi?
         </Link>
       </div>
-      <div className="flex justify-end">
-        <button className={`${primaryButtonClassName} w-full sm:w-auto`} disabled={pending} type="submit">
-          {pending ? "Memproses..." : "Login"}
-        </button>
-      </div>
+      {/* As wide as the Google button under it. */}
+      <button className={`${primaryButtonClassName} w-full`} disabled={pending} type="submit">
+        {pending ? "Memproses..." : "Login"}
+      </button>
     </form>
   );
 }

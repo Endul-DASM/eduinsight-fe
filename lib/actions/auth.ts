@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import {
   changePasswordRequest,
@@ -9,6 +10,7 @@ import {
   registerRequest,
   resendVerificationRequest,
   resetPasswordRequest,
+  setPasswordRequest,
   verifyEmailRequest,
 } from "@/lib/api/auth";
 import { ApiError, isMockMode } from "@/lib/api/client";
@@ -23,6 +25,7 @@ import {
   SERVER_UNREACHABLE_MESSAGE,
   wrongRoleNotice,
 } from "@/lib/auth/messages";
+import { getPendingVerification, setPendingVerification } from "@/lib/auth/pending-verification";
 import { takeReturnPath } from "@/lib/auth/return-to";
 import { type AuthRole, authRoleOf, authRoles, isAuthRole } from "@/lib/auth/roles";
 import {
@@ -82,7 +85,7 @@ async function pageAfterSignIn(role: AuthRole): Promise<string> {
   return (await takeReturnPath()) ?? authRoles[role].homePath;
 }
 
-export type LoginState = (AuthNotice & { identifier: string; unverified?: boolean }) | undefined;
+export type LoginState = (AuthNotice & { identifier: string }) | undefined;
 
 export async function login(role: AuthRole, _previous: LoginState, formData: FormData): Promise<LoginState> {
   assertRole(role);
@@ -106,11 +109,14 @@ export async function login(role: AuthRole, _previous: LoginState, formData: For
       // Admin accounts have no sign-in page, so they read as wrong credentials.
       return { ...(accountRole ? wrongRoleNotice(accountRole) : { message: INVALID_CREDENTIALS_MESSAGE }), identifier };
     }
-    // FR-X-008: the password is right but the email is not verified yet; the form offers a new link.
+    // FR-X-008: the password is right but the email is not verified yet; a page of its own offers a new link.
     if (error instanceof ApiError && error.code === "email_not_verified") {
-      return { message: "Verifikasi email Anda terlebih dahulu.", identifier, unverified: true };
+      const email = typeof error.extra?.email === "string" ? error.extra.email : identifier;
+      await setPendingVerification(email);
+      // Thrown from the catch block, so nothing here catches it.
+      redirect(authRoles[role].verifyEmailPath);
     }
-    // 422 is the backend rejecting a username in the email field; it reads the same as wrong credentials.
+    // A 422 is a malformed request body; it reads the same as wrong credentials.
     if (error instanceof ApiError && (error.status === 401 || error.status === 422)) {
       return { message: INVALID_CREDENTIALS_MESSAGE, identifier };
     }
@@ -123,9 +129,11 @@ export async function login(role: AuthRole, _previous: LoginState, formData: For
 
 export type ResendState = { message: string } | undefined;
 
-// FR-X-008: sends a new verification link. Submitted from the sign-in form, so it reuses its identifier.
+// FR-X-008: sends a new verification link. The sign-up page sends the email it registered; the "Email Belum
+// Diverifikasi" page sends nothing, and the email comes from the cookie set when signing in.
 export async function resendVerification(_previous: ResendState, formData: FormData): Promise<ResendState> {
-  const identifier = text(formData, "identifier");
+  const identifier = text(formData, "identifier") || (await getPendingVerification());
+  if (!identifier) return { message: "Sesi verifikasi berakhir. Silakan masuk kembali." };
   if (isMockMode) return { message: MOCK_MODE_MESSAGE };
   try {
     await resendVerificationRequest(identifier);
@@ -347,7 +355,36 @@ export async function changePassword(_previous: ChangePasswordState, formData: F
   return { changed: true, message: "Kata sandi berhasil diubah. Sesi di perangkat lain telah dikeluarkan." };
 }
 
+export type SetPasswordState = { message?: string; created?: boolean; fields?: PasswordErrors } | undefined;
+
+// Buat Password for an account that signs in with Google. Like a change, other sessions are signed out and this
+// browser gets a new one; the pages are read again so Edit Profile shows Ubah Password from now on.
+export async function setPassword(_previous: SetPasswordState, formData: FormData): Promise<SetPasswordState> {
+  const input = newPasswordOf(formData);
+  const fields = validateNewPassword(input);
+  if (Object.keys(fields).length > 0) return { fields };
+  if (isMockMode) return { message: MOCK_ACCOUNT_MESSAGE };
+
+  try {
+    const result = await setPasswordRequest(input);
+    await setSessionToken(result.accessToken);
+  } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing.
+    unstable_rethrow(error);
+    const fields = passwordFieldsOf(error, ["password", "passwordConfirmation"]);
+    return fields ? { fields } : { message: messageOf(error) };
+  }
+  revalidatePath("/", "layout");
+  return { created: true, message: "Kata sandi berhasil dibuat. Sekarang Anda juga bisa masuk dengan username atau email." };
+}
+
 export async function logout() {
   await clearSessionToken();
   redirect("/login");
+}
+
+// "Bukan Anda? Keluar" on Home: signs out and stays there, now with the sign-up options.
+export async function logoutToHome() {
+  await clearSessionToken();
+  redirect("/#mulai");
 }

@@ -24,7 +24,7 @@ export function ChangePasswordForm() {
         error={state?.fields?.password}
         label="Kata Sandi Baru"
         name="password"
-        placeholder="Minimal 8 karakter"
+        placeholder="8–20 karakter, gabungan huruf dan angka"
       />
       <PasswordField
         autoComplete="new-password"

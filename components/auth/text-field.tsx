@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode, Ref } from "react";
 import { cn } from "@/components/ui/cn";
 
 export type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
@@ -8,6 +8,8 @@ export type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   error?: string;
   // Content at the end of the input box, e.g. the show-password button.
   trailing?: ReactNode;
+  // Passed on to the input, e.g. to place the caret (React 19 takes ref as a prop).
+  ref?: Ref<HTMLInputElement>;
 };
 
 // Input Bar from the auth designs (Figma New Design 22:3103), with its warning line under the box.

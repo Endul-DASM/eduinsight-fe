@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { ApiError, isMockMode } from "@/lib/api/client";
-import { getSubjects, joinSubject } from "@/lib/api/subjects";
+import { getSubjects, joinSubject, leaveSubject } from "@/lib/api/subjects";
 import { validateJoinCode } from "@/lib/join-code";
 
 const MOCK_MODE_MESSAGE = "Mode demo: sambungkan backend (API_BASE_URL) untuk bergabung ke kelas.";
@@ -43,4 +43,20 @@ export async function joinSubjectAction(_previous: JoinSubjectState, formData: F
     // A wrong code or an already joined subject comes back with the backend's own message.
     return { status: "error", message: error.code ? error.message : REQUEST_FAILED_MESSAGE, joinCode };
   }
+}
+
+export type LeaveSubjectState = { status: "error"; message: string } | { status: "left" };
+
+// Pilih Mapel: the student leaves a subject themselves (UAT MAPEL-H05, MAPEL-U02).
+export async function leaveSubjectAction(subjectId: string): Promise<LeaveSubjectState> {
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+  try {
+    await leaveSubject(subjectId);
+  } catch (error) {
+    unstable_rethrow(error);
+    if (!(error instanceof ApiError)) return { status: "error", message: SERVER_UNREACHABLE_MESSAGE };
+    return { status: "error", message: error.code ? error.message : REQUEST_FAILED_MESSAGE };
+  }
+  revalidatePath("/student");
+  return { status: "left" };
 }

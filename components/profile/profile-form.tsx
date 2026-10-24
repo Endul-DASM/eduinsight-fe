@@ -143,7 +143,7 @@ function PasswordModal({ mode, onClose }: { mode: "change" | "set" | null; onClo
 }
 
 // Edit Profile (Figma New Design 187:10583): photo, Personal Info and password, from GET /me. Name and province are
-// saved with PATCH /me; the email is read-only.
+// saved with PATCH /me; the username and email are read-only.
 export function ProfileForm({ user }: { user: CurrentUser }) {
   const id = useId();
   const router = useRouter();
@@ -237,6 +237,9 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
             onChange={set("name")}
             value={values.name}
           />
+        </Field>
+        <Field hint={editing ? "Username tidak dapat diubah." : undefined} htmlFor={`${id}-username`} label="Username">
+          <TextInput autoComplete="username" disabled id={`${id}-username`} readOnly value={user.username} />
         </Field>
         <Field hint={editing ? "Email tidak dapat diubah." : undefined} htmlFor={`${id}-email`} label="Email">
           <TextInput autoComplete="email" disabled id={`${id}-email`} readOnly type="email" value={user.email} />

@@ -4,14 +4,20 @@
 import type { ChapterInput, CpInput } from "@/lib/api/curriculum";
 import type { Fase } from "@/lib/api/types";
 
+// The classes of each Fase in Kurikulum Merdeka (lib/subject-form.ts faseOfClass maps a class name to its Fase).
 export const fases: { value: Fase; label: string; grades: string }[] = [
-  { value: "A", label: "Fase A", grades: "kelas I, II" },
-  { value: "B", label: "Fase B", grades: "kelas III, IV" },
-  { value: "C", label: "Fase C", grades: "kelas V, VI" },
-  { value: "D", label: "Fase D", grades: "kelas VII–IX" },
-  { value: "E", label: "Fase E", grades: "kelas X" },
-  { value: "F", label: "Fase F", grades: "kelas XI, XII" },
+  { value: "A", label: "Fase A", grades: "kelas I–II SD/MI/sederajat" },
+  { value: "B", label: "Fase B", grades: "kelas III–IV SD/MI/sederajat" },
+  { value: "C", label: "Fase C", grades: "kelas V–VI SD/MI/sederajat" },
+  { value: "D", label: "Fase D", grades: "kelas VII–IX SMP/MTs/sederajat" },
+  { value: "E", label: "Fase E", grades: "kelas X SMA/SMK/MA/MAK/Paket C" },
+  { value: "F", label: "Fase F", grades: "kelas XI–XII SMA/MA/Paket C, XI–XIII SMK/MAK" },
 ];
+
+export const faseInfo = (fase: Fase) => fases.find((option) => option.value === fase)!;
+
+// A Bab cannot have the same TP twice, under the same CP or another one (UAT KUR-H03).
+export const DUPLICATE_OBJECTIVE_MESSAGE = "Setiap TP hanya boleh muncul sekali.";
 
 export type FieldErrors = Record<string, string>;
 
@@ -43,6 +49,6 @@ export function validateChapter(input: ChapterInput, takenNumbers: number[]): Fi
     }
   }
   const texts = input.learningObjectives.map((objective) => objective.description.trim().toLowerCase());
-  if (new Set(texts).size !== texts.length) errors.learningObjectives = "Setiap TP hanya boleh muncul sekali.";
+  if (new Set(texts).size !== texts.length) errors.learningObjectives = DUPLICATE_OBJECTIVE_MESSAGE;
   return errors;
 }

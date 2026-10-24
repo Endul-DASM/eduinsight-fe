@@ -103,7 +103,7 @@ export function analysisCsv(analysis: AssessmentAnalysis): string {
   ];
   const rows = analysis.items.map((item) => [
     item.number,
-    item.type === "pg" ? "PG" : "Uraian",
+    { pg: "PG", benar_salah: "Benar/Salah", uraian: "Uraian" }[item.type],
     item.learningObjectives.map((objective) => objective.number).join(", "),
     item.stem.replace(/\s+/g, " ").trim(),
     correctOf(item),

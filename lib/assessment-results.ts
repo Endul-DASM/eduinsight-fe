@@ -70,8 +70,11 @@ export function followUp(results: AssessmentResults) {
 }
 
 // Pilihan ganda keys per question number, for the "Kunci A" header of the student table.
+// The key as shown: the option letter for PG, "Benar" or "Salah" for Benar/Salah.
 export function answerKeyOf(question: QuestionPerformance): string | null {
-  return question.options?.find((option) => option.isKey)?.key ?? null;
+  const key = question.options?.find((option) => option.isKey);
+  if (!key) return null;
+  return question.type === "benar_salah" ? key.text : key.key;
 }
 
 // The recap row of Performa Siswa: per question the right answers among those who answered it, and the totals.

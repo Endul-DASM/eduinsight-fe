@@ -5,6 +5,7 @@ import { useState } from "react";
 import { cn } from "@/components/ui/cn";
 import { SelectMenu } from "@/components/ui/select-menu";
 import type { AssessmentResults, StudentPerformance } from "@/lib/api/results";
+import { isChoiceType } from "@/lib/assessment-form";
 import {
   answerKeyOf,
   correctCountOf,
@@ -119,7 +120,7 @@ export function StudentPerformanceView({ results }: { results: AssessmentResults
                 <th className={cn(headCell, "min-w-[56px]")} key={question.questionId} title={question.stem}>
                   B{question.number}
                   <span className="block text-[10px] font-normal text-[#75777d]">
-                    {question.type === "pg" ? `Kunci ${answerKeyOf(question) ?? "–"}` : "Uraian"}
+                    {isChoiceType(question.type) ? `Kunci ${answerKeyOf(question) ?? "–"}` : "Uraian"}
                   </span>
                 </th>
               ))}
@@ -184,7 +185,7 @@ export function StudentPerformanceView({ results }: { results: AssessmentResults
 
       <div className="flex flex-wrap justify-between gap-2 text-xs leading-normal">
         <span className="text-[#45474c]">
-          Pilihan ganda benar = 1, salah = 0; uraian memakai skor dari guru. Skor total = rata-rata skor butir (0–100);
+          Pilihan ganda dan benar/salah: benar = 1, salah = 0; uraian memakai skor dari guru. Skor total = rata-rata skor butir (0–100);
           baris rekap menampilkan rata-rata skor kelas.
         </span>
         <span className="font-semibold text-[#1b1b1d]">

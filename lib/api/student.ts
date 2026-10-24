@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { ApiError, apiFetch, isMockMode } from "./client";
 import type { DiagnosisAssessment } from "./diagnosis";
-import type { AssessmentMode, AssessmentStatus, AssessmentType, LearningObjectiveRef } from "./types";
+import type { AssessmentMode, AssessmentStatus, AssessmentType, LearningObjectiveRef, QuestionType } from "./types";
 
 // Sisi Siswa (PRD 6.1, SRS FR-S-001 – 004, 032): only the student's own data plus class averages. Scores are 0–100
 // with two decimals.
@@ -101,7 +101,7 @@ export type AttemptQuestion = {
   id: string;
   // Position in the assessment, starting at 1.
   number: number;
-  type: "pg" | "uraian";
+  type: QuestionType;
   stem: string;
   options: { key: string; text: string }[] | null;
 };

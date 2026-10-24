@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/components/ui/cn";
 import type { AssessmentResults, QuestionPerformance } from "@/lib/api/results";
+import { isChoiceType } from "@/lib/assessment-form";
 import { answerKeyOf, chapterLabelOf, formatPercent, proportionOf, weakestQuestion } from "@/lib/assessment-results";
 
 const percentOf = (count: number, total: number) => (total ? (count / total) * 100 : 0);
@@ -108,7 +109,7 @@ export function QuestionPerformanceView({ slug, results }: { slug: string; resul
                     {question.learningObjectives.map((objective) => `TP ${objective.number}`).join(", ") || "–"}
                   </td>
                   <td className="border-b border-[#eae7e9] px-3 py-3 font-semibold text-[#0058be]">
-                    {question.type === "pg" ? (answerKeyOf(question) ?? "–") : "Uraian"}
+                    {isChoiceType(question.type) ? (answerKeyOf(question) ?? "–") : "Uraian"}
                   </td>
                   <td className="w-[180px] border-b border-[#eae7e9] px-3 py-3">
                     <p className="font-semibold text-[#1b1b1d]">

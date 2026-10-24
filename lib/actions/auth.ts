@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect, unstable_rethrow } from "next/navigation";
 import {
   changePasswordRequest,
@@ -9,6 +10,7 @@ import {
   registerRequest,
   resendVerificationRequest,
   resetPasswordRequest,
+  setPasswordRequest,
   verifyEmailRequest,
 } from "@/lib/api/auth";
 import { ApiError, isMockMode } from "@/lib/api/client";
@@ -351,6 +353,29 @@ export async function changePassword(_previous: ChangePasswordState, formData: F
     return fields ? { fields } : { message: messageOf(error) };
   }
   return { changed: true, message: "Kata sandi berhasil diubah. Sesi di perangkat lain telah dikeluarkan." };
+}
+
+export type SetPasswordState = { message?: string; created?: boolean; fields?: PasswordErrors } | undefined;
+
+// Buat Password for an account that signs in with Google. Like a change, other sessions are signed out and this
+// browser gets a new one; the pages are read again so Edit Profile shows Ubah Password from now on.
+export async function setPassword(_previous: SetPasswordState, formData: FormData): Promise<SetPasswordState> {
+  const input = newPasswordOf(formData);
+  const fields = validateNewPassword(input);
+  if (Object.keys(fields).length > 0) return { fields };
+  if (isMockMode) return { message: MOCK_ACCOUNT_MESSAGE };
+
+  try {
+    const result = await setPasswordRequest(input);
+    await setSessionToken(result.accessToken);
+  } catch (error) {
+    // An expired session makes apiFetch redirect to sign in, which works by throwing.
+    unstable_rethrow(error);
+    const fields = passwordFieldsOf(error, ["password", "passwordConfirmation"]);
+    return fields ? { fields } : { message: messageOf(error) };
+  }
+  revalidatePath("/", "layout");
+  return { created: true, message: "Kata sandi berhasil dibuat. Sekarang Anda juga bisa masuk dengan username atau email." };
 }
 
 export async function logout() {

@@ -66,6 +66,12 @@ export async function resetPasswordRequest(token: string, input: NewPasswordInpu
 }
 
 // POST /auth/password/change — signs out every other session, so it returns a new one for this browser.
+// POST /auth/password/set — Buat Password for a Google-only account; returns a new session (409 password_exists
+// when the account already has one).
+export async function setPasswordRequest(input: NewPasswordInput): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>("/auth/password/set", { method: "POST", body: JSON.stringify(input) });
+}
+
 export async function changePasswordRequest(currentPassword: string, input: NewPasswordInput): Promise<LoginResponse> {
   return apiFetch<LoginResponse>("/auth/password/change", {
     method: "POST",

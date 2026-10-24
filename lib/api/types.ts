@@ -14,6 +14,9 @@ export type CurrentUser = {
   province: string | null;
   // Null without a photo. Changes whenever the photo does, so it also busts the cached image.
   photoUpdatedAt: string | null;
+  // False for an account that signs in with Google only: Edit Profile offers Buat Password. Missing from an older
+  // backend, where it counts as true.
+  hasPassword?: boolean;
 };
 
 export type TeacherSummary = {

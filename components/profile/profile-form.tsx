@@ -264,8 +264,9 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
             ) : (
               <TextInput className="flex-1" disabled id={`${id}-password`} readOnly value="Masuk dengan Google" />
             )}
+            {/* Blue while Personal Info is being edited, like the other active controls (UAT AUTH-H05). */}
             <button
-              className={cn(greyButtonClassName, "shrink-0 px-4 text-base")}
+              className={cn(editing ? primaryButtonClassName : greyButtonClassName, "shrink-0 px-4 text-base")}
               onClick={() => setPasswordMode(hasPassword ? "change" : "set")}
               type="button"
             >

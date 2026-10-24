@@ -9,24 +9,26 @@ import { SelectMenu } from "@/components/ui/select-menu";
 import { subjectModalClassName } from "@/components/subject-select/styles";
 import { saveCpAction } from "@/lib/actions/curriculum";
 import type { CurriculumCp, Fase } from "@/lib/api/types";
-import { fases, type FieldErrors, validateCp } from "@/lib/curriculum-form";
+import { faseInfo, fases, type FieldErrors, validateCp } from "@/lib/curriculum-form";
 import { fieldLabelClassName, inputBoxClassName } from "./styles";
 
 function CpForm({
   slug,
   subjectId,
   cp,
-  defaultFase,
+  classFase,
   onClose,
 }: {
   slug: string;
   subjectId: string;
   cp?: CurriculumCp;
-  defaultFase: Fase;
+  classFase: Fase | null;
   onClose: () => void;
 }) {
   const [element, setElement] = useState(cp?.element ?? "");
-  const [fase, setFase] = useState<Fase>(cp?.fase ?? defaultFase);
+  // A new CP takes the Fase of the class; an existing one keeps its own (UAT KUR-H01). Without a grade in the class
+  // name the Fase cannot be known, so only then the teacher picks it, starting at Fase E as before.
+  const [fase, setFase] = useState<Fase>(cp?.fase ?? classFase ?? "E");
   const [code, setCode] = useState(cp?.code ?? "");
   const [description, setDescription] = useState(cp?.description ?? "");
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -66,18 +68,27 @@ function CpForm({
           placeholder="mis. Bilangan; Membaca dan Memirsa"
           value={element}
         />
-        <div className="flex flex-col gap-2">
-          <label className={fieldLabelClassName} htmlFor="cp-fase">
-            Fase
-          </label>
-          <SelectMenu id="cp-fase" onChange={(event) => setFase(event.target.value as Fase)} value={fase}>
-            {fases.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label} ({option.grades})
-              </option>
-            ))}
-          </SelectMenu>
-        </div>
+        {classFase ? (
+          <div className="flex flex-col gap-2">
+            <p className={fieldLabelClassName}>Fase</p>
+            <p className="rounded-xl bg-[#e6eff9] px-[13px] py-3 text-sm leading-normal text-[#004695]">
+              {faseInfo(fase).label} ({faseInfo(fase).grades}){cp ? "" : ", mengikuti kelas mata pelajaran ini."}
+            </p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <label className={fieldLabelClassName} htmlFor="cp-fase">
+              Fase
+            </label>
+            <SelectMenu id="cp-fase" onChange={(event) => setFase(event.target.value as Fase)} value={fase}>
+              {fases.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label} ({option.grades})
+                </option>
+              ))}
+            </SelectMenu>
+          </div>
+        )}
         <TextField
           error={errors.code}
           label="Kode (Opsional)"
@@ -126,19 +137,20 @@ export function CpFormModal({
   slug,
   subjectId,
   cp,
-  defaultFase,
+  classFase,
   onClose,
 }: {
   open: boolean;
   slug: string;
   subjectId: string;
   cp?: CurriculumCp;
-  defaultFase: Fase;
+  // The Fase of the subject's class, or null when the class name has no grade.
+  classFase: Fase | null;
   onClose: () => void;
 }) {
   return (
     <Modal className={subjectModalClassName} onClose={onClose} open={open} title={cp ? "Edit CP" : "Tambah CP Sendiri"}>
-      <CpForm cp={cp} defaultFase={defaultFase} key={cp?.id ?? "new"} onClose={onClose} slug={slug} subjectId={subjectId} />
+      <CpForm classFase={classFase} cp={cp} key={cp?.id ?? "new"} onClose={onClose} slug={slug} subjectId={subjectId} />
     </Modal>
   );
 }

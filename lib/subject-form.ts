@@ -45,9 +45,14 @@ export function validateSubjectForm(values: SubjectFormValues): SubjectFormError
     errors.className = CLASS_LEVEL_MESSAGE;
   }
 
+  // One message per case (UAT MAPEL-U01): empty, not 8 digits, or the second year not right after the first.
   const years = values.academicYear.match(/^(\d{4})\/(\d{4})$/);
-  if (!years || Number(years[2]) !== Number(years[1]) + 1) {
-    errors.academicYear = "Tahun ajaran berformat YYYY/YYYY, mis. 2026/2027.";
+  if (!values.academicYear) {
+    errors.academicYear = "Tahun ajaran wajib diisi, mis. 2026/2027.";
+  } else if (!years) {
+    errors.academicYear = "Tahun ajaran terdiri dari 8 angka, mis. 2026/2027.";
+  } else if (Number(years[2]) !== Number(years[1]) + 1) {
+    errors.academicYear = "Tahun kedua harus satu tahun setelah tahun pertama, mis. 2026/2027.";
   }
 
   return errors;

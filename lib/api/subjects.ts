@@ -57,3 +57,30 @@ export async function deleteSubject(id: string): Promise<void> {
 export async function joinSubject(joinCode: string): Promise<Subject> {
   return apiFetch<Subject>("/subjects/join", { method: "POST", body: JSON.stringify({ joinCode }) });
 }
+
+// A student in the subject (Daftar Siswa). name is the username until the student fills in a name (BR-11).
+export type EnrolledStudent = { id: string; name: string; username: string; nis: string | null; joinedAt: string };
+
+// GET /subjects/:id/students — the students who joined the subject, by name. Null when it is not the teacher's.
+export const getSubjectStudents = cache(async (subjectId: string): Promise<EnrolledStudent[] | null> => {
+  if (isMockMode) return [];
+  try {
+    return await apiFetch<EnrolledStudent[]>(`/subjects/${encodeURIComponent(subjectId)}/students`);
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) return null;
+    throw error;
+  }
+});
+
+// DELETE /subjects/:id/students/:studentId — the teacher takes a student out; scores stay and the student can join
+// again with the code.
+export async function removeSubjectStudent(subjectId: string, studentId: string): Promise<void> {
+  await apiFetch<void>(`/subjects/${encodeURIComponent(subjectId)}/students/${encodeURIComponent(studentId)}`, {
+    method: "DELETE",
+  });
+}
+
+// DELETE /subjects/:id/enrollment — a student leaves the subject; scores stay and they can join again with the code.
+export async function leaveSubject(subjectId: string): Promise<void> {
+  await apiFetch<void>(`/subjects/${encodeURIComponent(subjectId)}/enrollment`, { method: "DELETE" });
+}

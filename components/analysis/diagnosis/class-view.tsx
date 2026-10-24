@@ -286,6 +286,18 @@ export function ClassView({
                     Lihat detail
                   </Link>
                 )}
+                {/* Without a tag the pattern has no name of its own; its AI explanation tells what went wrong (UAT). */}
+                {pattern.tag === null && (
+                  <div className="basis-full">
+                    <RootCauseNarrative
+                      filters={{ assessmentId: params.assessment, semester: params.semester, chapterId: params.chapter }}
+                      narrative={pattern.narrative ?? null}
+                      rank={pattern.rank}
+                      slug={slug}
+                      subjectId={subjectId}
+                    />
+                  </div>
+                )}
               </section>
             );
           })}

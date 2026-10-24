@@ -119,7 +119,8 @@ export function sourceLabel(pattern: MisconceptionPattern): string {
     .join(", ");
 }
 
-export const patternTitle = (pattern: MisconceptionPattern) => pattern.tag ?? "Jawaban salah tanpa tag miskonsepsi";
+// Wrong answers without a misconception tag are read through their AI root-cause explanation (UAT).
+export const patternTitle = (pattern: MisconceptionPattern) => pattern.tag ?? "Penjelasan Akar Masalah";
 
 export function initialsOf(name: string): string {
   return name

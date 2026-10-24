@@ -138,8 +138,10 @@ export const getClassDiagnosis = cache(async (subjectId: string, filters: Diagno
 });
 
 // POST /subjects/:id/diagnosis/root-cause — the top pattern's narrative: cached (ready) or a job to poll (queued).
-export async function requestRootCause(subjectId: string, filters: DiagnosisFilters): Promise<RootCauseRequest> {
-  return apiFetch<RootCauseRequest>(`/subjects/${encodeURIComponent(subjectId)}/diagnosis/root-cause${filterQuery(filters)}`, {
+export async function requestRootCause(subjectId: string, filters: DiagnosisFilters, rank = 1): Promise<RootCauseRequest> {
+  const query = filterQuery(filters);
+  const rankQuery = rank === 1 ? "" : `${query ? "&" : "?"}rank=${rank}`;
+  return apiFetch<RootCauseRequest>(`/subjects/${encodeURIComponent(subjectId)}/diagnosis/root-cause${query}${rankQuery}`, {
     method: "POST",
   });
 }

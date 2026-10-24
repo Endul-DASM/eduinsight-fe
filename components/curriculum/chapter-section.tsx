@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { outlineButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import type { CurriculumChapter, CurriculumCp } from "@/lib/api/types";
+import { StatusFilter, type StatusFilterOption } from "./status-filter";
 import { addButtonClassName, iconButtonClassName, sectionClassName } from "./styles";
 
 function BookIcon({ className }: { className?: string }) {
@@ -93,6 +94,21 @@ function ChapterCard({
   );
 }
 
+type ChapterFilter = "all" | "final" | "draft";
+
+// List Bab filters (UAT KUR-H04): every Bab, the saved (final) ones, or the drafts.
+const chapterFilters: StatusFilterOption<ChapterFilter>[] = [
+  { value: "all", label: "Lihat Semua", tone: "neutral" },
+  { value: "final", label: "Sudah Di-upload", tone: "blue" },
+  { value: "draft", label: "Draft", tone: "orange" },
+];
+
+const emptyChapterText: Record<ChapterFilter, string> = {
+  all: "",
+  final: "Belum ada Bab yang sudah di-upload.",
+  draft: "Belum ada Bab berstatus Draft.",
+};
+
 // Daftar Bab (FR-G-023; Figma New Design 37:5961, 50:3478, 54:6916).
 export function ChapterSection({
   chapters,
@@ -107,6 +123,9 @@ export function ChapterSection({
   onCreate: () => void;
   onContinue: (chapter: CurriculumChapter) => void;
 }) {
+  const [filter, setFilter] = useState<ChapterFilter>("all");
+  const shown = filter === "all" ? chapters : chapters.filter((chapter) => chapter.status === filter);
+
   return (
     <section className={sectionClassName}>
       <Header />
@@ -122,16 +141,10 @@ export function ChapterSection({
         </div>
       ) : (
         <>
-          <div className="flex gap-3">
-            <span className="rounded-3xl bg-[rgba(153,188,229,0.6)] px-2 py-1 text-xs font-semibold leading-normal text-[#004695]">
-              Sudah Di-upload
-            </span>
-            <span className="rounded-3xl border border-[#7c2d12] bg-[rgba(254,215,170,0.6)] px-2 py-1 text-xs font-semibold leading-normal text-[#c2410c]">
-              Draft
-            </span>
-          </div>
+          <StatusFilter label="Saring Bab" onChange={setFilter} options={chapterFilters} value={filter} />
+          {shown.length === 0 && <p className="px-1 text-sm leading-normal text-[#45474c]">{emptyChapterText[filter]}</p>}
           <div className="flex max-h-[490px] flex-col gap-3 overflow-y-auto p-1">
-            {chapters.map((chapter) => (
+            {shown.map((chapter) => (
               <ChapterCard
                 chapter={chapter}
                 cps={cps}

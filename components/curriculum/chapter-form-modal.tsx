@@ -10,7 +10,7 @@ import { SelectMenu as SelectInput } from "@/components/ui/select-menu";
 import { saveChapterAction } from "@/lib/actions/curriculum";
 import type { ChapterInput } from "@/lib/api/curriculum";
 import type { CurriculumChapter, CurriculumCp } from "@/lib/api/types";
-import { type FieldErrors, validateChapter } from "@/lib/curriculum-form";
+import { DUPLICATE_OBJECTIVE_MESSAGE, type FieldErrors, validateChapter } from "@/lib/curriculum-form";
 import { ChapterHead, ChapterSummary } from "./chapter-section";
 import { ConfirmModal } from "./confirm-modal";
 import {
@@ -29,6 +29,8 @@ export type ChapterFormMode = "create" | "continue" | "edit";
 type DraftObjective = { key: string; id?: string; description: string; keywords: string[] };
 type CpBlock = { key: string; cpId: string; objectives: DraftObjective[]; text: string; copyOpen: boolean };
 type DraftSubchapter = { key: string; id?: string; name: string };
+
+const TAKEN_MESSAGE = "TP ini sudah ada di Bab ini.";
 
 let nextKey = 0;
 const newKey = () => `k${(nextKey += 1)}`;
@@ -113,14 +115,37 @@ function ChapterForm({
   const [removing, setRemoving] = useState<{ blockKey: string; objectiveKey: string } | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string>();
+  // A message under one CP block's TP input, e.g. a TP that is already in the Bab (UAT KUR-H03).
+  const [blockErrors, setBlockErrors] = useState<Record<string, string>>({});
   const [pending, startTransition] = useTransition();
 
   const updateBlock = (key: string, change: (block: CpBlock) => CpBlock) =>
     setBlocks((current) => current.map((block) => (block.key === key ? change(block) : block)));
 
+  const setBlockError = (key: string, text?: string) =>
+    setBlockErrors((current) => {
+      const next = { ...current };
+      if (text) next[key] = text;
+      else delete next[key];
+      return next;
+    });
+
+  // A TP text may appear once in the whole Bab, under any of its CPs; letter case and spaces around it do not count.
+  const isTaken = (text: string, exceptKey?: string) => {
+    const wanted = text.trim().toLowerCase();
+    return blocks.some((block) =>
+      block.objectives.some((objective) => objective.key !== exceptKey && objective.description.trim().toLowerCase() === wanted),
+    );
+  };
+
   function addObjective(block: CpBlock, text = block.text) {
     const description = text.trim();
     if (!description) return;
+    if (isTaken(description)) {
+      setBlockError(block.key, TAKEN_MESSAGE);
+      return;
+    }
+    setBlockError(block.key);
     updateBlock(block.key, (current) => ({
       ...current,
       text: text === current.text ? "" : current.text,
@@ -152,11 +177,29 @@ function ChapterForm({
     };
   }
 
+  // The blocks holding a TP that already appeared earlier in the Bab, e.g. from an older save.
+  function duplicateBlocks(): Record<string, string> {
+    const seen = new Set<string>();
+    const found: Record<string, string> = {};
+    for (const block of blocks.filter((entry) => entry.cpId)) {
+      for (const objective of block.objectives) {
+        const text = objective.description.trim().toLowerCase();
+        if (seen.has(text)) found[block.key] ??= `TP "${objective.description.trim()}" sudah ada di Bab ini.`;
+        seen.add(text);
+      }
+    }
+    return found;
+  }
+
   function check(status: "draft" | "final") {
     const found = validateChapter(input(status), takenNumbers);
+    // The duplicate message goes under the CP block that holds the repeated TP, not under the last block.
+    const duplicates = found.learningObjectives === DUPLICATE_OBJECTIVE_MESSAGE ? duplicateBlocks() : {};
+    if (Object.keys(duplicates).length > 0) delete found.learningObjectives;
     setErrors(found);
+    setBlockErrors(duplicates);
     setMessage(undefined);
-    return Object.keys(found).length === 0;
+    return Object.keys(found).length === 0 && Object.keys(duplicates).length === 0;
   }
 
   function save(status: "draft" | "final") {
@@ -246,8 +289,7 @@ function ChapterForm({
               other.learningObjectives
                 .filter(
                   (objective) =>
-                    objective.cpId === block.cpId &&
-                    !block.objectives.some((own) => own.description.trim() === objective.description.trim()),
+                    objective.cpId === block.cpId && !isTaken(objective.description),
                 )
                 .map((objective) => ({ ...objective, chapterLabel: `Bab ${other.number}` })),
             )
@@ -305,7 +347,10 @@ function ChapterForm({
                   disabled={!block.cpId}
                   id={`${formId}-tp-${block.key}`}
                   maxLength={2000}
-                  onChange={(event) => updateBlock(block.key, (current) => ({ ...current, text: event.target.value }))}
+                  onChange={(event) => {
+                    setBlockError(block.key);
+                    updateBlock(block.key, (current) => ({ ...current, text: event.target.value }));
+                  }}
                   onKeyDown={onEnter}
                   placeholder={block.cpId ? "Masukkan TP..." : "Pilih CP terlebih dahulu"}
                   value={block.text}
@@ -320,6 +365,11 @@ function ChapterForm({
                   <Image alt="" height={24} src="/curriculum/add-small.svg" width={24} />
                 </button>
               </div>
+              {blockErrors[block.key] && (
+                <p className="text-xs font-semibold text-[#dc2626]" role="alert">
+                  {blockErrors[block.key]}
+                </p>
+              )}
               <p className="text-base leading-normal text-[#75777d]">*Urutan pemasukan TP akan menjadi nomor urut TP.</p>
             </div>
 
@@ -338,7 +388,10 @@ function ChapterForm({
                             className="min-w-0 flex-1 rounded-md bg-white px-2 py-1 text-base text-[#1b1b1d] outline-none ring-2 ring-[#0058be]/30"
                             onBlur={() => {
                               const text = editing.text.trim();
-                              if (text) {
+                              if (text && isTaken(text, objective.key)) {
+                                setBlockError(block.key, TAKEN_MESSAGE);
+                              } else if (text) {
+                                setBlockError(block.key);
                                 updateBlock(block.key, (current) => ({
                                   ...current,
                                   objectives: current.objectives.map((entry) =>

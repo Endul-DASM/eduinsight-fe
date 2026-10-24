@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
 import type { CurrentUser } from "@/lib/api/types";
 import { SUPPORT_EMAIL } from "@/lib/help";
-import { dashboardPathOf } from "@/lib/landing";
+import { continueLabelOf, homePathOf } from "@/lib/landing";
 import { LandingMobileMenu } from "./landing-mobile-menu";
 
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
@@ -39,14 +39,14 @@ function Background() {
   );
 }
 
-// Top bar of Home and About (Figma New Design 13:135). Signed in, Login and Sign Up become "Ke Dashboard".
+// Top bar of Home and About (Figma New Design 13:135). Signed in, Login and Sign Up become "Lanjut sebagai …".
 function LandingHeader({ page, user }: { page: "home" | "about"; user: CurrentUser | null }) {
   const links: LandingNavLink[] = [
     { label: "Home", href: "/", active: page === "home" },
     { label: "About", href: "/about", active: page === "about" },
   ];
   const actions: LandingNavLink[] = user
-    ? [{ label: "Ke Dashboard", href: dashboardPathOf(user), primary: true }]
+    ? [{ label: continueLabelOf(user), href: homePathOf(user), primary: true }]
     : [
         { label: "Login", href: "/login" },
         { label: "Sign Up", href: "/#mulai", primary: true },
@@ -78,7 +78,8 @@ function LandingHeader({ page, user }: { page: "home" | "about"; user: CurrentUs
           {actions.map((action) => (
             <Link
               className={cn(
-                "rounded-xl px-4 py-1.5 text-sm font-semibold leading-normal drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors",
+                // A long name is cut off rather than pushing the bar wider.
+                "max-w-[260px] truncate rounded-xl px-4 py-1.5 text-sm font-semibold leading-normal drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors",
                 action.primary
                   ? "bg-[#0058be] text-[#f5f3f4] hover:bg-[#004695]"
                   : "border-2 border-[#0058be] bg-[#f5f3f4] py-1 text-[#0058be] hover:bg-[#e6eff9]",

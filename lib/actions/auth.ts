@@ -357,3 +357,9 @@ export async function logout() {
   await clearSessionToken();
   redirect("/login");
 }
+
+// "Bukan Anda? Keluar" on Home: signs out and stays there, now with the sign-up options.
+export async function logoutToHome() {
+  await clearSessionToken();
+  redirect("/#mulai");
+}

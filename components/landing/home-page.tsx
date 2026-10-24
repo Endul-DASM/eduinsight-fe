@@ -2,6 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
+import { logoutToHome } from "@/lib/actions/auth";
+import type { CurrentUser } from "@/lib/api/types";
+import { authRoleOf, authRoles } from "@/lib/auth/roles";
+import { continueLabelOf, homePathOf } from "@/lib/landing";
 
 // Home (Figma New Design 1:1318, mobile 19:1684). The hero statistics of the design are left out: the backend has
 // no public figures to back them.
@@ -68,7 +72,8 @@ function HeroIllustration() {
   );
 }
 
-function Hero() {
+// Signed in, the main button goes where signing in would, instead of to the sign-up options.
+function Hero({ user }: { user: CurrentUser | null }) {
   return (
     <section className="mx-auto grid max-w-[1440px] items-center gap-8 px-4 pb-12 pt-8 sm:px-8 lg:min-h-[791px] lg:grid-cols-2 lg:gap-3 lg:px-16 lg:py-0">
       <div className="flex flex-col gap-8">
@@ -87,9 +92,9 @@ function Hero() {
           <HeroIllustration />
         </div>
         <div className="flex flex-col gap-4 sm:flex-row">
-          <Link className={cn(primaryButton, "sm:flex-1")} href="/#mulai">
-            Coba Sekarang
-            <Image alt="" height={24} src="/landing/arrow-right.svg" width={24} />
+          <Link className={cn(primaryButton, "min-w-0 sm:flex-1")} href={user ? homePathOf(user) : "/#mulai"}>
+            <span className="truncate">{user ? continueLabelOf(user) : "Coba Sekarang"}</span>
+            <Image alt="" className="shrink-0" height={24} src="/landing/arrow-right.svg" width={24} />
           </Link>
           <Link className={cn(softButton, "sm:flex-1")} href="/about">
             Jelajahi Fitur
@@ -152,46 +157,76 @@ function RoleCard({
   );
 }
 
-function GetStarted() {
+// Shown in place of the two sign-up cards while a teacher or student is signed in (UAT AUTH-H06).
+function SignedInCard({ user }: { user: CurrentUser }) {
+  const role = authRoleOf(user.role);
+  return (
+    <div className="mx-auto flex w-full max-w-[560px] flex-col items-center gap-6 rounded-3xl border border-[rgba(197,198,205,0.5)] bg-white p-6 text-center sm:p-[33px]">
+      <div className="flex flex-col gap-2">
+        <p className="text-base text-[#45474c]">Anda sudah masuk sebagai {role ? authRoles[role].label : "pengguna"}</p>
+        <p className="text-2xl font-semibold leading-normal text-[#1b1b1d]">{user.name}</p>
+        <p className="text-sm text-[#75777d]">{user.email}</p>
+      </div>
+      <Link className={cn(primaryButton, "w-full min-w-0")} href={homePathOf(user)}>
+        <span className="truncate">{continueLabelOf(user)}</span>
+        <Image alt="" className="shrink-0" height={24} src="/landing/arrow-right.svg" width={24} />
+      </Link>
+      <form action={logoutToHome} className="text-sm text-[#45474c]">
+        Bukan Anda?{" "}
+        <button className="font-semibold text-[#0058be] underline hover:text-[#004695]" type="submit">
+          Keluar
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function GetStarted({ user }: { user: CurrentUser | null }) {
   return (
     <section className="scroll-mt-20 bg-[rgba(246,243,245,0.5)] py-16 lg:py-24" id="mulai">
       <div className="mx-auto flex max-w-[1280px] flex-col gap-12 px-4 sm:px-10 lg:gap-16">
         <div className="flex flex-col items-center gap-4 text-center">
           <h2 className="text-[32px] font-bold leading-tight tracking-[-0.96px] text-black lg:text-5xl lg:leading-[56px]">
-            Siap untuk Memulai?
+            {user ? "Lanjutkan Belajar Mengajar" : "Siap untuk Memulai?"}
           </h2>
           <p className="max-w-[672px] text-sm leading-6 text-[#45474c] lg:text-base">
-            Pilih profil Anda untuk menyesuaikan pengalaman belajar mengajar yang lebih cerdas dengan teknologi AI terintegrasi.
+            {user
+              ? "Mata pelajaran Anda menunggu. Lanjutkan dari tempat Anda berhenti."
+              : "Pilih profil Anda untuk menyesuaikan pengalaman belajar mengajar yang lebih cerdas dengan teknologi AI terintegrasi."}
           </p>
         </div>
-        <div className="flex flex-col gap-6 lg:flex-row">
-          <RoleCard
-            cta="Daftar sebagai Guru"
-            deco={{ src: "/landing/teacher-deco.svg", width: 174, height: 154 }}
-            href="/register/teacher"
-            icon="/landing/teacher-icon.svg"
-            iconTone="bg-[#d8e2ff]"
-            items={[
-              { title: "AI Assessment Builder", body: "Buat soal evaluasi cerdas hanya dalam hitungan detik." },
-              { title: "Automated Diagnosis", body: "Identifikasi area kelemahan siswa secara instan." },
-              { title: "Remedial Planning", body: "Rencana tindak lanjut otomatis yang disesuaikan per siswa." },
-            ]}
-            title="Untuk Guru"
-          />
-          <RoleCard
-            cta="Daftar sebagai Siswa"
-            deco={{ src: "/landing/student-deco.svg", width: 144, height: 144 }}
-            href="/register/student"
-            icon="/landing/student-icon.svg"
-            iconTone="bg-[#f9dfb8]"
-            items={[
-              { title: "Personalized Paths", body: "Belajar sesuai kecepatan dan gaya belajarmu sendiri." },
-              { title: "Instant Feedback", body: "Koreksi langsung dan penjelasan mendalam untuk setiap jawaban." },
-              { title: "Gamified Remedial", body: "Selesaikan tantangan belajar dengan sistem poin dan lencana." },
-            ]}
-            title="Untuk Siswa"
-          />
-        </div>
+        {user ? (
+          <SignedInCard user={user} />
+        ) : (
+          <div className="flex flex-col gap-6 lg:flex-row">
+            <RoleCard
+              cta="Daftar sebagai Guru"
+              deco={{ src: "/landing/teacher-deco.svg", width: 174, height: 154 }}
+              href="/register/teacher"
+              icon="/landing/teacher-icon.svg"
+              iconTone="bg-[#d8e2ff]"
+              items={[
+                { title: "AI Assessment Builder", body: "Buat soal evaluasi cerdas hanya dalam hitungan detik." },
+                { title: "Automated Diagnosis", body: "Identifikasi area kelemahan siswa secara instan." },
+                { title: "Remedial Planning", body: "Rencana tindak lanjut otomatis yang disesuaikan per siswa." },
+              ]}
+              title="Untuk Guru"
+            />
+            <RoleCard
+              cta="Daftar sebagai Siswa"
+              deco={{ src: "/landing/student-deco.svg", width: 144, height: 144 }}
+              href="/register/student"
+              icon="/landing/student-icon.svg"
+              iconTone="bg-[#f9dfb8]"
+              items={[
+                { title: "Personalized Paths", body: "Belajar sesuai kecepatan dan gaya belajarmu sendiri." },
+                { title: "Instant Feedback", body: "Koreksi langsung dan penjelasan mendalam untuk setiap jawaban." },
+                { title: "Gamified Remedial", body: "Selesaikan tantangan belajar dengan sistem poin dan lencana." },
+              ]}
+              title="Untuk Siswa"
+            />
+          </div>
+        )}
       </div>
     </section>
   );
@@ -265,11 +300,11 @@ function CallToAction() {
   );
 }
 
-export function HomePage() {
+export function HomePage({ user }: { user: CurrentUser | null }) {
   return (
     <>
-      <Hero />
-      <GetStarted />
+      <Hero user={user} />
+      <GetStarted user={user} />
       <Features />
       <CallToAction />
     </>

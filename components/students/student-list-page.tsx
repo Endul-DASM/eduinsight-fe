@@ -10,12 +10,24 @@ import { removeStudentAction } from "@/lib/actions/subjects";
 import type { EnrolledStudent } from "@/lib/api/subjects";
 import type { Subject } from "@/lib/api/types";
 import { initialsOf } from "@/lib/diagnosis";
+import type { StudentRecommendation } from "@/lib/remedial";
 import { semesterOf } from "@/lib/student-assessment";
+import { StudentMaterialsModal } from "./student-materials-modal";
 
-// Daftar Siswa (UAT MAPEL-H04, MAPEL-U04; Figma New Design 265:8593): the students who joined, a search, Lihat
-// Diagnosis per student, and taking a student out of the subject.
-export function StudentListPage({ subject, students }: { subject: Subject; students: EnrolledStudent[] }) {
+// Daftar Siswa (UAT MAPEL-H04, MAPEL-U04, SIS-H04; Figma New Design 265:8593): the students who joined, a search,
+// Lihat Materi and Lihat Diagnosis per student, and taking a student out of the subject.
+export function StudentListPage({
+  subject,
+  students,
+  recommendations,
+}: {
+  subject: Subject;
+  students: EnrolledStudent[];
+  // Each student's recommended materials, by student id.
+  recommendations: Record<string, StudentRecommendation[]>;
+}) {
   const [query, setQuery] = useState("");
+  const [viewing, setViewing] = useState<EnrolledStudent | null>(null);
   const [removing, setRemoving] = useState<EnrolledStudent | null>(null);
   const [removeError, setRemoveError] = useState<string>();
   const [toast, setToast] = useState<string>();
@@ -88,7 +100,7 @@ export function StudentListPage({ subject, students }: { subject: Subject; stude
         ) : (
           <ul className="flex flex-col">
             {shown.map((student) => (
-              <li className="flex items-center gap-3 border-b border-[#c5c6cd] py-3 last:border-b-0 sm:gap-4" key={student.id}>
+              <li className="flex flex-wrap items-center gap-3 border-b border-[#c5c6cd] py-3 last:border-b-0 sm:flex-nowrap sm:gap-4" key={student.id}>
                 <span className="grid size-[55px] shrink-0 place-items-center rounded-full bg-[#e6eff9] text-base font-bold text-[#004695]">
                   {initialsOf(student.name)}
                 </span>
@@ -99,12 +111,21 @@ export function StudentListPage({ subject, students }: { subject: Subject; stude
                     {student.nis ? `, NIS ${student.nis}` : ""}
                   </p>
                 </div>
-                <Link
-                  className="shrink-0 rounded-xl px-3 py-2 text-sm font-semibold text-[#0058be] hover:bg-[#e6eff9]"
-                  href={`/${subject.slug}/analysis?tab=diagnosis&view=siswa&student=${encodeURIComponent(student.id)}`}
-                >
-                  Lihat Diagnosis
-                </Link>
+                <div className="ml-auto flex shrink-0 items-center gap-1 max-sm:order-last max-sm:w-full max-sm:justify-end">
+                  <button
+                    className="rounded-xl px-3 py-2 text-sm font-semibold text-[#0058be] hover:bg-[#e6eff9]"
+                    onClick={() => setViewing(student)}
+                    type="button"
+                  >
+                    Lihat Materi{recommendations[student.id]?.length ? ` (${recommendations[student.id].length})` : ""}
+                  </button>
+                  <Link
+                    className="rounded-xl px-3 py-2 text-sm font-semibold text-[#0058be] hover:bg-[#e6eff9]"
+                    href={`/${subject.slug}/analysis?tab=diagnosis&view=siswa&student=${encodeURIComponent(student.id)}`}
+                  >
+                    Lihat Diagnosis
+                  </Link>
+                </div>
                 <button
                   aria-label={`Keluarkan ${student.name} dari kelas`}
                   className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-[#fee2e2]"
@@ -119,6 +140,12 @@ export function StudentListPage({ subject, students }: { subject: Subject; stude
           </ul>
         )}
       </section>
+
+      <StudentMaterialsModal
+        materials={viewing ? (recommendations[viewing.id] ?? []) : []}
+        onClose={() => setViewing(null)}
+        student={viewing}
+      />
 
       <ConfirmModal
         cancelLabel="Batal"

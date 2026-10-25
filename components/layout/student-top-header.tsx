@@ -21,6 +21,8 @@ function useCrumbs(slug: string, subjectLabel: string): Crumb[] {
   const [, , , section = "dashboard", assessmentId, step] = pathname.split("/");
   // Figma New Design 175:33279.
   if (section === "diagnosis") return [{ label: "Diagnosis Belajar" }, { label: subjectLabel }];
+  // Figma New Design 256:8213.
+  if (section === "materials") return [{ label: "Materi" }, { label: subjectLabel }];
   if (section === "assessment" || section === "remedial") {
     const title = section === "assessment" ? "Asesmen" : "Remedial";
     const list = `/student/${slug}/${section}`;

@@ -9,6 +9,8 @@ const studentNavItems: NavItem[] = [
   { label: "Diagnosis", href: "/diagnosis", icon: "/dashboard/nav-remedial.svg" },
   { label: "Asesmen", href: "/assessment", icon: "/dashboard/nav-asesmen.svg" },
   { label: "Remedial", href: "/remedial", icon: "/dashboard/nav-remedial.svg" },
+  // UAT MAT-H08 (Figma New Design 256:8213).
+  { label: "Materi", href: "/materials", icon: "/dashboard/nav-materi.svg" },
 ];
 
 // FAQ and Pusat Bantuan (SRS FR-X-030).

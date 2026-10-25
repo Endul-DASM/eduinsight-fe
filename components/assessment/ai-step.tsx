@@ -9,7 +9,7 @@ import { greyButtonClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import { useAiJob } from "@/lib/ai-job";
 import { generateQuestionsAction, refreshAssessmentAction } from "@/lib/actions/assessments";
-import type { AssessmentDetail, BloomLevel } from "@/lib/api/types";
+import type { AssessmentDetail, BloomLevel, LearningObjectiveRef } from "@/lib/api/types";
 import {
   bloomLevels,
   type BuilderMethod,
@@ -28,11 +28,15 @@ export function AiStep({
   slug,
   method,
   assessment,
+  uncoveredObjectives = [],
 }: {
   slug: string;
   method: BuilderMethod;
   assessment: AssessmentDetail;
+  // TPs with no extracted material in their Bab or mapped to them: the AI cannot write questions for them (SOAL-H01).
+  uncoveredObjectives?: LearningObjectiveRef[];
 }) {
+  const blocked = uncoveredObjectives.length > 0;
   const id = useId();
   const [types, setTypes] = useState<Set<CreatableQuestionType>>(new Set(["pg"]));
   const [counts, setCounts] = useState<Record<CreatableQuestionType, string>>({ pg: "", benar_salah: "" });
@@ -173,13 +177,24 @@ export function AiStep({
         </div>
       </fieldset>
 
+      {blocked && (
+        <FormMessage>
+          Soal AI hanya bisa dibuat dari materi yang sesuai dengan TP.{" "}
+          {uncoveredObjectives.map((objective) => `TP ${objective.number}`).join(", ")} belum punya materi. Unggah materi
+          lalu petakan ke TP di{" "}
+          <Link className="font-semibold underline" href={`/${slug}/curriculum?tab=materi`}>
+            Kurikulum › Upload Materi
+          </Link>
+          , atau ketik soal sendiri.
+        </FormMessage>
+      )}
       {message && <FormMessage>{message}</FormMessage>}
 
       <div className="flex flex-wrap justify-end gap-3">
         <Link className={greyButtonClassName} href={`/${slug}/assessment?tab=daftar`}>
           Simpan Draft
         </Link>
-        <button className={cn(primaryButtonClassName, "gap-3")} disabled={pending} onClick={preview} type="button">
+        <button className={cn(primaryButtonClassName, "gap-3")} disabled={pending || blocked} onClick={preview} type="button">
           <Image alt="" height={24} src="/assessment/sparkle-light.svg" width={24} />
           {pending ? "Membuat soal..." : "Pratinjau Soal"}
         </button>

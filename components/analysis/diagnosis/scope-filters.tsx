@@ -7,8 +7,9 @@ import type { Assessment, CurriculumChapter } from "@/lib/api/types";
 import { assessmentTypeLabels } from "@/lib/assessment-form";
 import { diagnosisHref, type DiagnosisParams } from "./links";
 
-// Cakupan diagnosis (FR-G-081: filter semester and Bab; the class and subject are the workspace). Without an
-// assessment the backend takes every published post-test, ulangan harian, UTS and UAS.
+// Cakupan diagnosis (FR-G-081: filter by assessment and Bab; the class and subject are the workspace). The semester
+// filter was taken out at UAT. Without an assessment the backend takes every published post-test, ulangan harian, UTS
+// and UAS.
 export function ScopeFilters({
   slug,
   params,
@@ -27,18 +28,7 @@ export function ScopeFilters({
     router.replace(diagnosisHref(slug, params, { ...change, tp: undefined, item: undefined }), { scroll: false });
 
   return (
-    <section className="grid gap-4 rounded-3xl bg-[#fafbfd] p-5 shadow-[0_4px_10px_rgba(0,0,0,0.1)] md:grid-cols-3">
-      <Field htmlFor={`${id}-semester`} label="Semester">
-        <SelectInput
-          id={`${id}-semester`}
-          onChange={(event) => go({ semester: (event.target.value || undefined) as DiagnosisParams["semester"] })}
-          value={params.semester ?? ""}
-        >
-          <option value="">Semua semester</option>
-          <option value="ganjil">Ganjil</option>
-          <option value="genap">Genap</option>
-        </SelectInput>
-      </Field>
+    <section className="grid gap-4 rounded-3xl bg-[#fafbfd] p-5 shadow-[0_4px_10px_rgba(0,0,0,0.1)] md:grid-cols-2">
       <Field htmlFor={`${id}-assessment`} label="Asesmen">
         <SelectInput id={`${id}-assessment`} onChange={(event) => go({ assessment: event.target.value || undefined })} value={params.assessment ?? ""}>
           <option value="">Semua post-test, UH, UTS, UAS</option>

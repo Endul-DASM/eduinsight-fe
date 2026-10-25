@@ -20,7 +20,7 @@ const diagnosedTypes: AssessmentType[] = ["post_test", "ulangan_harian", "uts", 
 
 async function diagnosisTab(slug: string, subject: Subject, query: Query) {
   const params = diagnosisParamsOf(query);
-  const filters: DiagnosisFilters = { assessmentId: params.assessment, semester: params.semester, chapterId: params.chapter };
+  const filters: DiagnosisFilters = { assessmentId: params.assessment, chapterId: params.chapter };
 
   const [assessments, curriculum, diagnosis] = await Promise.all([
     getAssessments(subject.id),

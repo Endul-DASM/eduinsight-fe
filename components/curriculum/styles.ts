@@ -28,4 +28,4 @@ export const addButtonClassName =
 export const fieldLabelClassName = "text-xs font-semibold leading-normal text-[#1b1b1d]";
 
 export const inputBoxClassName =
-  "w-full rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] px-[13px] text-base leading-normal text-[#1b1b1d] outline-none placeholder:text-[#75777d] focus:border-[#0058be] focus:ring-2 focus:ring-[rgba(0,88,190,0.15)]";
+  "w-full rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] px-[13px] text-base leading-normal text-[#1b1b1d] outline-none placeholder:text-[#75777d]/60 focus:border-[#0058be] focus:ring-2 focus:ring-[rgba(0,88,190,0.15)]";

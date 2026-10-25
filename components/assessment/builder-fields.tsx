@@ -11,6 +11,7 @@ export function Field({
   htmlFor,
   error,
   hint,
+  required,
   children,
   className,
 }: {
@@ -18,6 +19,8 @@ export function Field({
   htmlFor?: string;
   error?: string;
   hint?: string;
+  // Shows a red * after the label (UAT ASM-H01).
+  required?: boolean;
   children: ReactNode;
   className?: string;
 }) {
@@ -25,6 +28,11 @@ export function Field({
     <div className={cn("flex min-w-0 flex-col gap-2", className)}>
       <label className={fieldLabelClassName} htmlFor={htmlFor}>
         {label}
+        {required && (
+          <span aria-hidden className="text-[#dc2626]">
+            {" "}*
+          </span>
+        )}
       </label>
       {children}
       {error ? (

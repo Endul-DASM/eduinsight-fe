@@ -76,12 +76,13 @@ export function ObjectivePicker({
       <button
         aria-controls={listId}
         aria-expanded={open}
+        data-invalid={invalid || undefined}
         disabled={disabled}
         id={id}
         className={cn(
           inputBoxClassName,
           "flex h-[50px] items-center justify-between text-left",
-          chosen.length === 0 && "text-[#75777d]",
+          chosen.length === 0 && "text-[#75777d]/70",
           invalid && "border-[#dc2626]",
         )}
         onClick={() => setOpen((current) => !current)}

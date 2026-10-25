@@ -164,7 +164,7 @@ export function SelectMenu({
         className={cn(
           "flex h-[50px] w-full items-center gap-3 rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] pl-[13px] pr-12 text-left text-base leading-normal text-[#1b1b1d] outline-none focus-visible:border-[#0058be] focus-visible:ring-2 focus-visible:ring-[rgba(0,88,190,0.15)] disabled:cursor-not-allowed disabled:bg-[#f0edef] disabled:text-[#45474c]",
           open && "border-[#0058be] ring-2 ring-[rgba(0,88,190,0.15)]",
-          !current && "text-[#75777d]",
+          !current && "text-[#75777d]/70",
           invalid && "border-[#dc2626]",
           className,
         )}

@@ -31,23 +31,32 @@ export function formatSize(bytes: number) {
   return bytes >= 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
 }
 
-// One row of the material tables (Figma New Design 54:6193): file, TP, class, date, actions.
+// One row of the material tables (Figma New Design 54:6193; the student's Materi, 256:8213): file, TP, class, date,
+// actions.
 export function MaterialRow({
   material,
   objectives,
   classLabel,
   tone = "normal",
   leading,
+  badge,
+  href = `/api/materials/${material.id}/file`,
   actions,
 }: {
-  material: Material;
+  // The student's materials have a title but no file name.
+  material: Pick<Material, "id" | "title" | "createdAt"> & { originalFilename?: string };
   // TP numbers, e.g. "TP 1.1, 1.2".
   objectives: string;
   classLabel: string;
   tone?: "normal" | "processing" | "failed";
   leading?: ReactNode;
+  // After the name, e.g. "Direkomendasikan".
+  badge?: ReactNode;
+  // Opens the file; the teacher's by default.
+  href?: string;
   actions: ReactNode;
 }) {
+  const name = material.originalFilename ?? material.title;
   return (
     <div
       className={cn(
@@ -68,12 +77,12 @@ export function MaterialRow({
         {tone === "normal" ? (
           <a
             className="min-w-0 truncate font-medium text-[#1b1b1d] hover:text-[#0058be] hover:underline"
-            href={`/api/materials/${material.id}/file`}
+            href={href}
             rel="noopener"
             target="_blank"
             title={material.title}
           >
-            {material.originalFilename}
+            {name}
           </a>
         ) : (
           <p
@@ -82,9 +91,10 @@ export function MaterialRow({
               tone === "failed" ? "text-[#bf2626] line-through" : "text-[#1b1b1d] opacity-60",
             )}
           >
-            {material.originalFilename}
+            {name}
           </p>
         )}
+        {badge}
       </div>
       <p className={cn("w-[160px] truncate text-[#45474c]", tone === "processing" && "opacity-60")} title={objectives}>
         {objectives || "-"}

@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { SUPPORT_EMAIL } from "@/lib/help";
 
 const footerLinks = [
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms of Service", href: "#" },
-  { label: "Contact Support", href: "#" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+  { label: "Contact Support", href: `mailto:${SUPPORT_EMAIL}` },
 ];
 
 // The footer of the pages outside a subject (Figma New Design 22:3060).

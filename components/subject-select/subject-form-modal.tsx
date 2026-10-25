@@ -4,6 +4,7 @@ import { type FormEvent, useActionState, useEffect, useState } from "react";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { TextField } from "@/components/auth/text-field";
 import { Modal } from "@/components/ui/modal";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { createSubjectAction, updateSubjectAction } from "@/lib/actions/subjects";
 import type { Subject } from "@/lib/api/types";
@@ -76,6 +77,11 @@ function SubjectForm({
   }, [state, onClose, onNotice]);
 
   const failed = state?.status === "error" ? state : undefined;
+
+  // The server's field errors come back after the submit.
+  useEffect(() => {
+    if (failed?.fields) focusFirstError();
+  }, [failed]);
   const values = failed?.values ?? {
     name: subject?.name ?? "",
     className: subject?.class.name ?? "",
@@ -86,7 +92,10 @@ function SubjectForm({
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     const errors = validateSubjectForm(valuesOf(event.currentTarget));
     setClientErrors(errors);
-    if (Object.keys(errors).length > 0) event.preventDefault();
+    if (Object.keys(errors).length > 0) {
+      event.preventDefault();
+      focusFirstError();
+    }
   }
 
   return (

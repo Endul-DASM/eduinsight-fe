@@ -19,10 +19,10 @@ export function JoinCodeCopy({ code }: { code: string | null }) {
   }
 
   return (
-    <div className="flex min-w-[161px] flex-col gap-1.5 rounded-3xl bg-[rgba(245,243,244,0.6)] p-6 text-[#003264]">
+    <div className="flex min-w-0 flex-col justify-center gap-1.5 rounded-3xl bg-[rgba(245,243,244,0.6)] p-4 text-[#003264] sm:p-6 lg:min-w-[161px]">
       <p className="text-base leading-normal">Kode</p>
       <div className="flex items-center gap-1.5">
-        <span className="text-2xl font-bold leading-normal">{code ?? "—"}</span>
+        <span className="text-xl font-bold leading-normal sm:text-2xl">{code ?? "—"}</span>
         {code && (
           <button
             aria-label="Salin kode kelas"

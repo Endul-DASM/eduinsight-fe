@@ -35,10 +35,11 @@ function Hero({ subject, teacherName }: { subject: Subject; teacherName: string 
             Semangat mengajarnya hari ini! Semoga pemimpin yang hebat kelak datang dari anak didik Anda.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-5">
-          <div className="flex min-w-[230px] flex-col gap-1.5 rounded-3xl bg-[rgba(245,243,244,0.6)] p-6 text-[#003264]">
-            <p className="text-2xl font-bold leading-normal">{subject.name}</p>
-            <p className="whitespace-pre-wrap text-base leading-normal">
+        {/* Side by side with the same height, also on phones; in a row next to the greeting on large screens. */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:flex lg:items-stretch lg:gap-5">
+          <div className="flex min-w-0 flex-col justify-center gap-1.5 rounded-3xl bg-[rgba(245,243,244,0.6)] p-4 text-[#003264] sm:p-6 lg:min-w-[230px]">
+            <p className="break-words text-xl font-bold leading-normal sm:text-2xl">{subject.name}</p>
+            <p className="whitespace-pre-wrap text-sm leading-normal sm:text-base">
               {subject.class.name}
               {"  |  "}
               {subject.class.academicYear}
@@ -67,9 +68,10 @@ function StatCard({
   note: ReactNode;
 }) {
   return (
-    <div className="flex flex-1 items-center gap-5 rounded-3xl bg-[#fafbfd] p-3 drop-shadow-[0_8px_12px_rgba(0,0,0,0.08)] sm:justify-center">
-      <span className={`grid size-[86px] shrink-0 place-items-center rounded-[14px] ${chipClassName}`}>
-        <Image alt="" height={iconSize} src={icon} width={iconSize} />
+    // Stacked on small screens: left-aligned with a smaller icon. Centred only in the three-column row.
+    <div className="flex flex-1 items-center gap-4 rounded-3xl bg-[#fafbfd] p-3 drop-shadow-[0_8px_12px_rgba(0,0,0,0.08)] md:justify-center md:gap-5">
+      <span className={`grid size-16 shrink-0 place-items-center rounded-[14px] md:size-[86px] ${chipClassName}`}>
+        <Image alt="" className="max-md:scale-75" height={iconSize} src={icon} width={iconSize} />
       </span>
       <div className="min-w-0 leading-normal text-[#45474c]">
         <p className="text-base">{label}</p>
@@ -98,7 +100,7 @@ function StatCards({ data, diagnosisHref }: { data: DashboardData; diagnosisHref
         iconSize={48}
         label="Rata-rata nilai"
         note={average ? (average.trend ? trendNotes[average.trend] : "Belum ada data 30 hari sebelumnya") : "Belum ada nilai siswa"}
-        value={<span className="text-[32px]">{average ? Math.round(average.value) : "—"}</span>}
+        value={<span className="text-[26px] md:text-[32px]">{average ? Math.round(average.value) : "—"}</span>}
       />
       <StatCard
         chipClassName="bg-[rgba(254,202,202,0.6)]"
@@ -116,7 +118,7 @@ function StatCards({ data, diagnosisHref }: { data: DashboardData; diagnosisHref
         }
         value={
           <span className="flex items-baseline gap-1">
-            <span className="text-[32px]">{remedial ? remedial.count : "—"}</span>
+            <span className="text-[26px] md:text-[32px]">{remedial ? remedial.count : "—"}</span>
             {remedial && <span className="text-base">Siswa</span>}
           </span>
         }

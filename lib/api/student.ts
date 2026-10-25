@@ -35,6 +35,8 @@ export type StudentAssessment = {
   openAttemptId: string | null;
   bestScore: number | null;
   canStart: boolean;
+  // FR-S-014: only for a post-test scored below its threshold. Pending until the teacher approves the package.
+  recommendation?: { status: "pending" | "ready"; materials: { id: string; title: string }[] } | null;
 };
 
 export type MyMaterial = {
@@ -47,7 +49,34 @@ export type MyMaterial = {
   recommended: boolean;
   // The student's weak TPs the material covers.
   recommendedFor: LearningObjectiveRef[];
+  // The TPs the teacher confirmed for the material (FR-G-032), by number. Missing on an older backend.
+  learningObjectives?: LearningObjectiveRef[];
 };
+
+// Menu Materi (FR-S-030): the materials the teacher shows, per Bab and Subbab.
+export type MyMaterialsRead = {
+  chapters: {
+    chapterId: string;
+    number: number;
+    name: string;
+    // Linked to the Bab but no Subbab.
+    materials: MyMaterial[];
+    subchapters: { id: string; name: string; materials: MyMaterial[] }[];
+  }[];
+  // Not linked to a Bab.
+  unlinked: MyMaterial[];
+};
+
+// GET /subjects/:id/my-materials — Menu Materi, with Direkomendasikan (FR-S-030, 032).
+export const getMyMaterials = cache(async (subjectId: string): Promise<MyMaterialsRead | null> => {
+  if (isMockMode) return null;
+  try {
+    return await apiFetch<MyMaterialsRead>(`/subjects/${encodeURIComponent(subjectId)}/my-materials`);
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 403 || error.status === 404)) return null;
+    throw error;
+  }
+});
 
 export type ActivityStatus = "menunggu_nilai" | "tuntas" | "belum_tuntas";
 

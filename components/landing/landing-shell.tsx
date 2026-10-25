@@ -8,18 +8,19 @@ import { SUPPORT_EMAIL } from "@/lib/help";
 import { continueLabelOf, homePathOf } from "@/lib/landing";
 import { LandingMobileMenu } from "./landing-mobile-menu";
 
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
+export const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
 export type LandingNavLink = { label: string; href: string; active?: boolean; primary?: boolean };
 
 const footerLinks = [
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms of Service", href: "#" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
   { label: "Contact Support", href: `mailto:${SUPPORT_EMAIL}` },
 ];
 
-// The two wide ellipses behind the page (Figma New Design 1:1318, 187:9563), at their design size.
-function Background() {
+// The two wide ellipses behind the page (Figma New Design 1:1318, 187:9563; also the 404 page, 265:9433), at their
+// design size.
+export function LandingBackground() {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       <Image
@@ -40,7 +41,9 @@ function Background() {
 }
 
 // Top bar of Home and About (Figma New Design 13:135). Signed in, Login and Sign Up become "Lanjut sebagai …".
-function LandingHeader({ page, user }: { page: "home" | "about"; user: CurrentUser | null }) {
+export type LandingPage = "home" | "about" | "terms" | "privacy";
+
+function LandingHeader({ page, user }: { page: LandingPage; user: CurrentUser | null }) {
   const links: LandingNavLink[] = [
     { label: "Home", href: "/", active: page === "home" },
     { label: "About", href: "/about", active: page === "about" },
@@ -97,7 +100,7 @@ function LandingHeader({ page, user }: { page: "home" | "about"; user: CurrentUs
   );
 }
 
-function LandingFooter() {
+export function LandingFooter() {
   return (
     <footer className="relative z-10 bg-[rgba(245,243,244,0.6)] shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-xs">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-16">
@@ -121,10 +124,10 @@ function LandingFooter() {
 }
 
 // The frame of the public pages: background, top bar, content and footer.
-export function LandingShell({ page, user, children }: { page: "home" | "about"; user: CurrentUser | null; children: ReactNode }) {
+export function LandingShell({ page, user, children }: { page: LandingPage; user: CurrentUser | null; children: ReactNode }) {
   return (
     <div className={cn(poppins.className, "relative flex min-h-screen flex-col overflow-x-clip bg-[#fafbfd] text-[#1b1b1d]")}>
-      <Background />
+      <LandingBackground />
       <LandingHeader page={page} user={user} />
       <main className="relative flex-1">{children}</main>
       <LandingFooter />

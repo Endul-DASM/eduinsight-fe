@@ -4,9 +4,11 @@ import type { ReactNode } from "react";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import { MaskIcon } from "@/components/ui/mask-icon";
-import type { MyDashboard, StudentChapter } from "@/lib/api/student";
+import type { MyDashboard, MyRemedial, StudentChapter } from "@/lib/api/student";
 import type { Subject } from "@/lib/api/types";
 import { assessmentTypeLabels, formatLongSchedule } from "@/lib/assessment-form";
+import { isDone, shortDate } from "@/lib/student-assessment";
+import { nextAssessment, remedialStatusLabels, waitingReason } from "@/lib/student-remedial";
 import {
   activityStatusLabels,
   activityTime,
@@ -199,9 +201,10 @@ function RecommendationCard({ dashboard }: { dashboard: MyDashboard }) {
   );
 }
 
-// Upcoming Test (FR-S-002): scheduled or ongoing assessments.
+// Upcoming Test (FR-S-002): scheduled or ongoing assessments the student has not done yet. Remedial assessments have
+// their own section, Remedial Aktif (UAT SIS-H01).
 function UpcomingTests({ slug, dashboard }: { slug: string; dashboard: MyDashboard }) {
-  const tests = dashboard.upcoming;
+  const tests = dashboard.upcoming.filter((test) => test.type !== "remedial" && !isDone(test));
   return (
     <section className="flex flex-col gap-4">
       {/* Inset like the card titles, so the heading lines up with "Level Penguasaan Materi" and "Aktivitas Terbaru". */}
@@ -210,7 +213,7 @@ function UpcomingTests({ slug, dashboard }: { slug: string; dashboard: MyDashboa
         <span className="text-xs text-[#0058be]">{tests.length} asesmen</span>
       </div>
       {tests.length === 0 ? (
-        <p className={cn(card, "text-sm text-[#45474c]")}>Belum ada asesmen terjadwal.</p>
+        <p className={cn(card, "text-sm text-[#45474c]")}>Belum ada test mendatang.</p>
       ) : (
         <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {tests.map((test) => (
@@ -223,10 +226,55 @@ function UpcomingTests({ slug, dashboard }: { slug: string; dashboard: MyDashboa
                   `, TP fokus: ${test.learningObjectives.map((objective) => objective.number).join(", ")}`}
               </p>
               <Link className={cn(outlineButtonClassName, "mt-auto w-full py-2 text-sm")} href={`/student/${slug}/assessment/${test.id}`}>
-                Lihat Detail
+                {test.openAttemptId ? "Lanjutkan" : "Lihat Detail"}
               </Link>
             </li>
           ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// Remedial Aktif (UAT SIS-H01): the remedials not tuntas yet, with the next remedial assessment or what they wait for.
+function ActiveRemedials({ slug, remedials }: { slug: string; remedials: MyRemedial[] }) {
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-2 px-6">
+        <h2 className="text-2xl font-semibold leading-normal text-[#1b1b1d]">Remedial Aktif</h2>
+        <span className="text-xs text-[#0058be]">{remedials.length} remedial</span>
+      </div>
+      {remedials.length === 0 ? (
+        <p className={cn(card, "text-sm text-[#45474c]")}>Tidak ada remedial aktif.</p>
+      ) : (
+        <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {remedials.map((remedial) => {
+            const next = nextAssessment(remedial);
+            const startable = next !== null && (next.openAttemptId !== null || next.canStart);
+            const status = remedialStatusLabels[remedial.status];
+            // The next remedial's schedule, or what the student waits for when the chip does not say it already.
+            let schedule = waitingReason(remedial) === status.label ? "Belum ada jadwal remedial" : waitingReason(remedial);
+            if (next) schedule = next.status === "scheduled" ? `Dibuka: ${shortDate(next.opensAt)}` : `Batas waktu: ${shortDate(next.closesAt)}`;
+            return (
+              <li className={cn(card, "flex flex-col gap-3 p-5")} key={remedial.sourceAssessment.id}>
+                <span className={cn(chip, "self-start", status.className)}>{status.label}</span>
+                <p className="text-base font-semibold leading-normal text-[#1b1b1d]">{remedial.sourceAssessment.title}</p>
+                <p className="text-xs text-[#45474c]">{schedule}</p>
+                <p className="text-xs leading-normal text-[#0058be]">
+                  Skor {formatPoints(remedial.sourceScore)}/100, KKM {remedial.sourceAssessment.kkm}
+                </p>
+                {next && startable ? (
+                  <Link className={cn(primaryButtonClassName, "mt-auto w-full py-2 text-sm")} href={`/student/${slug}/remedial/${next.id}`}>
+                    {next.openAttemptId ? "Lanjutkan" : "Kerjakan"}
+                  </Link>
+                ) : (
+                  <Link className={cn(outlineButtonClassName, "mt-auto w-full py-2 text-sm")} href={`/student/${slug}/remedial`}>
+                    Lihat Remedial
+                  </Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
@@ -301,11 +349,14 @@ export function StudentDashboardPage({
   subject,
   studentName,
   dashboard,
+  activeRemedials,
 }: {
   slug: string;
   subject: Subject;
   studentName: string;
   dashboard: MyDashboard | null;
+  // The subject's remedials not tuntas yet (my-remedials).
+  activeRemedials: MyRemedial[];
 }) {
   if (!dashboard) {
     return (
@@ -335,7 +386,7 @@ export function StudentDashboardPage({
           icon="/dashboard/stat-alert.svg"
           label="Remedial Aktif (Perlu Remedial)"
           tone="bg-[rgba(254,202,202,0.6)] text-[#dc2626]"
-          value={dashboard.activeRemedials}
+          value={activeRemedials.length}
         />
       </div>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
@@ -343,6 +394,7 @@ export function StudentDashboardPage({
         <RecommendationCard dashboard={dashboard} />
       </div>
       <UpcomingTests dashboard={dashboard} slug={slug} />
+      <ActiveRemedials remedials={activeRemedials} slug={slug} />
       <RecentActivity dashboard={dashboard} slug={slug} />
     </div>
   );

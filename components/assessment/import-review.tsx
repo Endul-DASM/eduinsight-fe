@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName } from "@/components/curriculum/styles";
@@ -8,7 +9,9 @@ import { saveImportAction } from "@/lib/actions/assessments";
 import type { QuestionImport } from "@/lib/api/questions";
 import type { AssessmentDetail } from "@/lib/api/types";
 import type { BuilderMethod } from "@/lib/assessment-form";
-import { FormMessage } from "./builder-fields";
+import { focusFirstError } from "@/components/ui/focus-first-error";
+import { builderPath } from "@/lib/assessment-form";
+import { Field, FormMessage, InfoMessage, SelectInput } from "./builder-fields";
 import { QuestionCard } from "./question-card";
 
 // FR-G-063 / FR-G-064: what came out of a template (or, later, a scan): rows that could not be read, and the draft
@@ -25,6 +28,11 @@ export function ImportReview({
   result: QuestionImport;
 }) {
   const [kept, setKept] = useState<Set<string>>(() => new Set(result.drafts.map((draft) => draft.id)));
+  // SOAL-H06: the TP of each question, picked from the platform's TPs instead of typed in the file. Starts on the TP
+  // read from the file, if any.
+  const [objectiveOf, setObjectiveOf] = useState<Record<string, string>>(() =>
+    Object.fromEntries(result.drafts.map((draft) => [draft.id, draft.learningObjectives[0]?.id ?? ""])),
+  );
   const [message, setMessage] = useState<string>();
   const [pending, startTransition] = useTransition();
 
@@ -41,6 +49,16 @@ export function ImportReview({
     setMessage(undefined);
     const keptIds = result.drafts.filter((draft) => kept.has(draft.id)).map((draft) => draft.id);
     const droppedIds = result.drafts.filter((draft) => !kept.has(draft.id)).map((draft) => draft.id);
+    // Only the TPs the teacher changed are saved again.
+    const objectiveChanges = Object.fromEntries(
+      result.drafts
+        .filter((draft) => {
+          const picked = objectiveOf[draft.id];
+          const current = draft.learningObjectives.map((objective) => objective.id);
+          return kept.has(draft.id) && picked && (current.length !== 1 || current[0] !== picked);
+        })
+        .map((draft) => [draft.id, [objectiveOf[draft.id]]]),
+    );
     startTransition(async () => {
       const outcome = await saveImportAction(
         slug,
@@ -51,12 +69,27 @@ export function ImportReview({
         droppedIds,
         assessment.questions.map((question) => question.id),
         next,
+        objectiveChanges,
       );
-      if (outcome.status === "error") setMessage(outcome.message);
+      if (outcome.status === "error") {
+        setMessage(outcome.message);
+        focusFirstError();
+      }
     });
   }
 
-  const untagged = result.drafts.filter((draft) => kept.has(draft.id) && draft.learningObjectives.length === 0).length;
+  const untagged = result.drafts.filter((draft) => kept.has(draft.id) && !objectiveOf[draft.id]).length;
+  // The assessment's TPs, plus any TP read from the file that the assessment does not target.
+  const objectiveOptions = [
+    ...assessment.learningObjectives,
+    ...result.drafts
+      .flatMap((draft) => draft.learningObjectives)
+      .filter(
+        (objective, index, all) =>
+          !assessment.learningObjectives.some((known) => known.id === objective.id) &&
+          all.findIndex((other) => other.id === objective.id) === index,
+      ),
+  ];
 
   // A template counts rows; a document read by AI (AI-07/08) counts questions.
   const unit = /\.(xlsx|csv)$/i.test(result.filename) ? "baris" : "soal";
@@ -96,8 +129,19 @@ export function ImportReview({
         </div>
       )}
 
+      {objectiveOptions.length === 0 && (
+        <InfoMessage>
+          Asesmen ini belum punya TP.{" "}
+          <Link className="font-semibold underline" href={builderPath(slug, assessment.id, method, "spesifikasi")}>
+            Pilih TP di Spesifikasi Soal
+          </Link>{" "}
+          agar setiap soal bisa diberi TP.
+        </InfoMessage>
+      )}
+
       {result.drafts.map((draft, index) => {
         const chosen = kept.has(draft.id);
+        const picked = objectiveOf[draft.id];
         return (
           <QuestionCard
             actions={
@@ -114,7 +158,7 @@ export function ImportReview({
             answer={draft.answerKey}
             badge={
               <>
-                {draft.learningObjectives.length === 0 && (
+                {!picked && (
                   <span className="rounded-3xl bg-[rgba(254,215,170,0.6)] px-2 py-0.5 text-[10px] font-semibold text-[#c2410c]">
                     Belum ada TP
                   </span>
@@ -129,8 +173,25 @@ export function ImportReview({
                 )}
               </>
             }
-            chips={draft.learningObjectives.map((objective) => `TP ${objective.number}`)}
             className={cn(!chosen && "opacity-50")}
+            footer={
+              <Field htmlFor={`tp-${draft.id}`} label="TP soal ini" required>
+                <SelectInput
+                  disabled={!chosen}
+                  id={`tp-${draft.id}`}
+                  invalid={chosen && !picked}
+                  onChange={(event) => setObjectiveOf((current) => ({ ...current, [draft.id]: event.target.value }))}
+                  value={picked}
+                >
+                  <option value="">Pilih TP...</option>
+                  {objectiveOptions.map((objective) => (
+                    <option key={objective.id} value={objective.id}>
+                      TP {objective.number}: {objective.description}
+                    </option>
+                  ))}
+                </SelectInput>
+              </Field>
+            }
             key={draft.id}
             options={draft.options}
             stem={draft.stem}
@@ -141,8 +202,8 @@ export function ImportReview({
 
       {untagged > 0 && (
         <p className="text-xs leading-normal text-[#c2410c]">
-          {untagged} soal belum punya TP (kolom &quot;tp&quot; kosong). Soal tanpa TP menghalangi publikasi; perbaiki
-          di template lalu unggah ulang.
+          {untagged} soal belum punya TP. Soal tanpa TP menghalangi publikasi; pilih TP di setiap soal sebelum
+          menyimpan.
         </p>
       )}
       {message && <FormMessage>{message}</FormMessage>}

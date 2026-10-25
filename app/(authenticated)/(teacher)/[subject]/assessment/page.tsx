@@ -11,13 +11,13 @@ import { isAssessmentStatus, isAssessmentType } from "@/lib/assessment-form";
 import { getAssessmentCards } from "@/lib/assessment-list";
 import { firstName } from "@/lib/display-name";
 
-// Hasil Asesmen: the published assessments for the picker, and the results of the chosen one (?assessment=,
-// otherwise the most recently opened one).
+// Hasil Asesmen: the published assessments for the picker, and the results of the chosen one (?assessment=). Nothing
+// is chosen until the teacher picks one (UAT ASM-U06).
 async function hasilTab(slug: string, subjectId: string, assessmentParam: unknown, viewParam: unknown) {
   const published = (await getAssessments(subjectId))
     .filter((assessment) => assessment.status !== "draft")
     .sort((a, b) => (b.opensAt ?? "").localeCompare(a.opensAt ?? ""));
-  const selectedId = published.find((assessment) => assessment.id === assessmentParam)?.id ?? published[0]?.id ?? null;
+  const selectedId = published.find((assessment) => assessment.id === assessmentParam)?.id ?? null;
   const results = selectedId ? await getAssessmentResults(selectedId) : null;
   return (
     <ResultsPage assessments={published} results={results} selectedId={selectedId} slug={slug} view={resultsViewOf(viewParam)} />

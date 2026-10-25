@@ -26,6 +26,8 @@ function useCrumbs(slug: string, subjectLabel: string): Crumb[] {
     const list = `/student/${slug}/${section}`;
     // Figma New Design 175:32308 (Daftar Asesmen), 175:33620 (Daftar Remedial), 181:8150, 175:32740, 175:33141.
     if (!assessmentId) return [{ label: `Daftar ${title}` }, { label: subjectLabel }];
+    // UAT REM-H05: /remedial/latihan/{source}.
+    if (section === "remedial" && assessmentId === "latihan") return [{ label: title, href: list }, { label: "Soal Latihan" }];
     if (step === "kerjakan") return [{ label: `Pengerjaan ${title}` }, { label: subjectLabel }];
     if (step === "selesai") return [{ label: `${title} Selesai` }, { label: subjectLabel }];
     return [{ label: title, href: list }, { label: `Persiapan ${title}` }];

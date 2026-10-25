@@ -8,6 +8,7 @@ import { ConfirmModal } from "@/components/curriculum/confirm-modal";
 import { StatusFilter, type StatusFilterOption } from "@/components/curriculum/status-filter";
 import { addButtonClassName, sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
+import { SelectMenu } from "@/components/ui/select-menu";
 import {
   deleteMaterialAction,
   getMaterialAction,
@@ -78,6 +79,9 @@ export function MaterialsBoard({
   const [removeError, setRemoveError] = useState<string>();
   const [message, setMessage] = useState<string>();
   const [pending, startTransition] = useTransition();
+  // UAT MAT-H09: search by title and pick one Bab ("all", a Bab id, or "none" for Tanpa Bab).
+  const [query, setQuery] = useState("");
+  const [chapterFilter, setChapterFilter] = useState("all");
 
   const sortedChapters = [...chapters].sort((a, b) => a.number - b.number);
   const finalChapters = sortedChapters.filter((chapter) => chapter.status === "final");
@@ -88,6 +92,17 @@ export function MaterialsBoard({
   const drafts = done.filter((material) => !material.mappingConfirmedAt);
   const confirmed = done.filter((material) => material.mappingConfirmedAt);
   const unassigned = confirmed.filter((material) => !material.chapterId || !chapterById.has(material.chapterId));
+
+  const needle = query.trim().toLowerCase();
+  const narrowed = Boolean(needle) || chapterFilter !== "all";
+  const inChapter = (material: Material) => {
+    if (chapterFilter === "all") return true;
+    const known = Boolean(material.chapterId && chapterById.has(material.chapterId));
+    return chapterFilter === "none" ? !known : material.chapterId === chapterFilter;
+  };
+  const matches = (material: Material) =>
+    inChapter(material) && (!needle || `${material.title} ${material.originalFilename}`.toLowerCase().includes(needle));
+  const shownDrafts = drafts.filter(matches);
 
   // Babs with materials start open; the teacher's own clicks win.
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
@@ -210,10 +225,20 @@ export function MaterialsBoard({
       id: chapter.id,
       label: `BAB ${chapter.number}: ${chapter.name}`,
       chapterId: chapter.id as string | null,
-      items: confirmed.filter((material) => material.chapterId === chapter.id),
+      items: confirmed.filter((material) => material.chapterId === chapter.id).filter(matches),
     })),
-    ...(unassigned.length > 0 ? [{ id: "none", label: "Tanpa Bab", chapterId: null, items: unassigned }] : []),
-  ];
+    ...(unassigned.length > 0 ? [{ id: "none", label: "Tanpa Bab", chapterId: null, items: unassigned.filter(matches) }] : []),
+  ].filter((group) => {
+    if (chapterFilter !== "all") return group.id === chapterFilter;
+    // While searching, only the Babs with a match.
+    return !needle || group.items.length > 0;
+  });
+  // Counted within the status chip; a Draft chip with no drafts at all has its own message.
+  const nothingMatches =
+    narrowed &&
+    !(filter === "draft" && drafts.length === 0) &&
+    (filter === "uploaded" || shownDrafts.length === 0) &&
+    (filter === "draft" || groups.every((group) => group.items.length === 0));
 
   const sending = uploads.filter((entry) => !entry.error);
   const refused = uploads.filter((entry) => entry.error);
@@ -337,6 +362,31 @@ export function MaterialsBoard({
         <CardTitle icon="/materials/book.svg">Daftar Materi Diunggah</CardTitle>
         <StatusFilter label="Saring materi" onChange={setFilter} options={materialFilters} value={filter} />
 
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <label className="flex h-[50px] min-w-0 flex-1 items-center gap-3 rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] px-3 focus-within:border-[#0058be]">
+            <input
+              aria-label="Cari judul materi"
+              className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-[#75777d]"
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Cari judul materi..."
+              type="search"
+              value={query}
+            />
+            <Image alt="" height={24} src="/assessment/search.svg" width={24} />
+          </label>
+          <div className="sm:w-[280px]">
+            <SelectMenu aria-label="Saring per Bab" onChange={(event) => setChapterFilter(event.target.value)} value={chapterFilter}>
+              <option value="all">Semua Bab</option>
+              {sortedChapters.map((chapter) => (
+                <option key={chapter.id} value={chapter.id}>
+                  Bab {chapter.number}: {chapter.name}
+                </option>
+              ))}
+              <option value="none">Tanpa Bab</option>
+            </SelectMenu>
+          </div>
+        </div>
+
         {message && (
           <p className="rounded-lg bg-[#ffdad6] px-4 py-3 text-sm leading-5 text-[#93000a]" role="alert">
             {message}
@@ -347,9 +397,9 @@ export function MaterialsBoard({
           <p className="py-6 text-center text-sm leading-normal text-[#45474c]">Belum ada materi berstatus Draft.</p>
         )}
 
-        {filter !== "uploaded" && drafts.length > 0 && (
+        {filter !== "uploaded" && shownDrafts.length > 0 && (
           <div className="flex flex-col rounded-xl border border-[rgba(254,215,170,0.9)] bg-[rgba(255,247,237,0.6)]">
-            {drafts.map((material) => (
+            {shownDrafts.map((material) => (
               <MaterialRow
                 actions={
                   <>
@@ -372,14 +422,16 @@ export function MaterialsBoard({
           </div>
         )}
 
-        {filter === "all" && groups.length === 0 && drafts.length === 0 && (
+        {filter === "all" && !narrowed && groups.length === 0 && drafts.length === 0 && (
           <p className="py-6 text-center text-sm leading-normal text-[#45474c]">
             Belum ada materi. Unggah materi di atas, lalu petakan ke Bab dan TP.
           </p>
         )}
 
+        {nothingMatches && <p className="py-6 text-center text-sm leading-normal text-[#45474c]">Tidak ada materi yang cocok.</p>}
+
         <div className="flex flex-col">
-          {filter !== "draft" && groups.map((group) => {
+          {filter !== "draft" && !nothingMatches && groups.map((group) => {
             const open = toggled[group.id] ?? group.items.length > 0;
             return (
               <div className="border-b border-[#c5c6cd]" key={group.id}>

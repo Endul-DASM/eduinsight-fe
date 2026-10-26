@@ -37,9 +37,9 @@ export function StudentSubjectGrid({ subjects, initialJoinCode }: { subjects: Su
     setPrefilledCode("");
   }, []);
   const handleJoined = useCallback(
-    (subjectName: string) => {
+    (subjectName: string, alreadyJoined: boolean) => {
       closeJoin();
-      setToast(`Berhasil bergabung ke ${subjectName}.`);
+      setToast(alreadyJoined ? `Kamu sudah tergabung di ${subjectName}.` : `Berhasil bergabung ke ${subjectName}.`);
     },
     [closeJoin],
   );

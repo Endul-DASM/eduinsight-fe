@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { unstable_rethrow } from "next/navigation";
 import { ApiError, isMockMode } from "@/lib/api/client";
-import { joinSubject } from "@/lib/api/subjects";
+import { getSubjects, joinSubject } from "@/lib/api/subjects";
 import { validateJoinCode } from "@/lib/join-code";
 
 const MOCK_MODE_MESSAGE = "Mode demo: sambungkan backend (API_BASE_URL) untuk bergabung ke kelas.";
@@ -12,9 +12,10 @@ const SERVER_UNREACHABLE_MESSAGE = "Tidak dapat terhubung ke server. Coba lagi b
 const REQUEST_FAILED_MESSAGE = "Permintaan belum dapat diproses oleh server. Coba lagi beberapa saat lagi.";
 
 // "joined" carries a timestamp so the modal can tell two successful joins apart and close each time.
+// alreadyJoined: the student was in the subject before, which the backend also answers with success (UAT MAPEL-U03).
 export type JoinSubjectState =
   | { status: "error"; message?: string; codeError?: string; joinCode: string }
-  | { status: "joined"; subjectName: string; joinedAt: number }
+  | { status: "joined"; subjectName: string; alreadyJoined: boolean; joinedAt: number }
   | undefined;
 
 export async function joinSubjectAction(_previous: JoinSubjectState, formData: FormData): Promise<JoinSubjectState> {
@@ -26,9 +27,15 @@ export async function joinSubjectAction(_previous: JoinSubjectState, formData: F
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE, joinCode };
 
   try {
+    const before = await getSubjects();
     const subject = await joinSubject(joinCode);
     revalidatePath("/student");
-    return { status: "joined", subjectName: subject.name, joinedAt: Date.now() };
+    return {
+      status: "joined",
+      subjectName: subject.name,
+      alreadyJoined: before.some((entry) => entry.id === subject.id),
+      joinedAt: Date.now(),
+    };
   } catch (error) {
     // An expired session makes apiFetch redirect to sign in, which works by throwing; let it through.
     unstable_rethrow(error);

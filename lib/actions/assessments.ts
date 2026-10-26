@@ -32,7 +32,7 @@ import {
   saveQuestionImport,
   updateQuestion,
 } from "@/lib/api/questions";
-import type { AssessmentMode, AssessmentType } from "@/lib/api/types";
+import type { AssessmentType } from "@/lib/api/types";
 import { type RemedialScheduleValues, validateRemedialSchedule } from "@/lib/remedial-figures";
 import {
   type BuilderMethod,
@@ -112,7 +112,8 @@ export async function saveSpecificationAction(
     closesAt: values.closesAt ? wibInputToIso(values.closesAt) : null,
     durationMinutes: durationOf(values.hours, values.minutes),
     maxAttempts: Number(values.maxAttempts),
-    ...(values.mode ? { mode: values.mode as AssessmentMode } : {}),
+    // No Daring/Luring choice in the form any more (UAT): every assessment saved here is daring.
+    mode: "daring",
   };
 
   let id = assessmentId;

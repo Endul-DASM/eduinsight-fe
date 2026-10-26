@@ -9,7 +9,6 @@ import { cn } from "@/components/ui/cn";
 import { saveSpecificationAction } from "@/lib/actions/assessments";
 import type { AssessmentDetail, CurriculumChapter } from "@/lib/api/types";
 import {
-  assessmentModeLabels,
   assessmentTypeLabels,
   assessmentTypes,
   type BuilderMethod,
@@ -33,8 +32,8 @@ function initialValues(assessment: AssessmentDetail | null, initialType: string)
     objectiveIds: assessment?.learningObjectives.map((objective) => objective.id) ?? [],
     hours: duration.hours,
     minutes: duration.minutes,
-    // A new draft has no mode yet; the backend's default (daring) is only applied once it is saved.
-    mode: assessment?.mode ?? "",
+    // Assessments are taken in the app: the Daring/Luring choice was removed (UAT), so every save sends daring.
+    mode: "daring",
     opensAt: isoToWibInput(assessment?.opensAt ?? null),
     closesAt: isoToWibInput(assessment?.closesAt ?? null),
     kkm: assessment ? String(assessment.kkm) : "",
@@ -249,21 +248,6 @@ export function SpecificationStep({
             />
             <span className="text-sm text-[#45474c]">menit</span>
           </div>
-        </Field>
-        <Field error={errors.mode} htmlFor={field("mode")} label="Mode (Daring/Luring)">
-          <SelectInput
-            id={field("mode")}
-            invalid={Boolean(errors.mode)}
-            onChange={(event) => set("mode", event.target.value)}
-            value={values.mode}
-          >
-            <option value="">Pilih Mode...</option>
-            {Object.entries(assessmentModeLabels).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </SelectInput>
         </Field>
         <Field
           hint="Menampilkan ringkasan kisi-kisi (jumlah soal, estimasi durasi, TP, dan level kognitif) di langkah Review."

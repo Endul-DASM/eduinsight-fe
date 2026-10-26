@@ -8,6 +8,7 @@ import { SelectMenu } from "@/components/ui/select-menu";
 import { createSubjectAction, updateSubjectAction } from "@/lib/actions/subjects";
 import type { Subject } from "@/lib/api/types";
 import { type SubjectFormErrors, type SubjectFormValues, validateSubjectForm } from "@/lib/subject-form";
+import { AcademicYearInput } from "./academic-year-input";
 import { subjectModalClassName } from "./styles";
 
 function valuesOf(form: HTMLFormElement): SubjectFormValues {
@@ -120,15 +121,7 @@ function SubjectForm({
           name="className"
           placeholder="Masukkan Kelas"
         />
-        <TextField
-          defaultValue={values.academicYear}
-          error={errorOf("academicYear")}
-          inputMode="numeric"
-          label="Tahun Ajaran"
-          maxLength={11}
-          name="academicYear"
-          placeholder="____ / ____"
-        />
+        <AcademicYearInput defaultValue={values.academicYear} error={errorOf("academicYear")} />
         <CopyCurriculumField sources={subjects.filter((source) => source.id !== subject?.id)} />
       </div>
       {failed?.message && (

@@ -6,13 +6,12 @@ import { useId, useState, useTransition } from "react";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName, iconButtonClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { saveSingleQuestionAction, saveTypedQuestionsAction } from "@/lib/actions/assessments";
 import type { AssessmentDetail, LearningObjectiveRef, Question } from "@/lib/api/types";
 import {
-  bloomLevels,
   type BuilderMethod,
   builderPath,
-  difficultyLabels,
   isEditable,
   OPTION_KEYS,
   questionTypeLabels,
@@ -21,7 +20,7 @@ import {
   type TypedQuestion,
   validateTypedQuestion,
 } from "@/lib/assessment-form";
-import { Field, FormMessage, InfoMessage, SelectInput } from "./builder-fields";
+import { FormMessage, InfoMessage, SelectInput } from "./builder-fields";
 
 let nextKey = 0;
 const newKey = () => `q${(nextKey += 1)}`;
@@ -74,7 +73,6 @@ function QuestionEditor({
   onRemove?: () => void;
 }) {
   const id = useId();
-  const [detailsOpen, setDetailsOpen] = useState(Boolean(question.bloomLevel || question.difficulty));
 
   function setOption(index: number, text: string) {
     onChange({ options: question.options.map((option, current) => (current === index ? text : option)) });
@@ -291,39 +289,6 @@ function QuestionEditor({
         )}
       </div>
 
-      {detailsOpen && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field htmlFor={`${id}-bloom`} label="Level Bloom">
-            <SelectInput
-              id={`${id}-bloom`}
-              onChange={(event) => onChange({ bloomLevel: event.target.value as TypedQuestion["bloomLevel"] })}
-              value={question.bloomLevel}
-            >
-              <option value="">Belum ditentukan</option>
-              {bloomLevels.map((level) => (
-                <option key={level.value} value={level.value}>
-                  {level.value}: {level.label}
-                </option>
-              ))}
-            </SelectInput>
-          </Field>
-          <Field htmlFor={`${id}-difficulty`} label="Tingkat Kesulitan">
-            <SelectInput
-              id={`${id}-difficulty`}
-              onChange={(event) => onChange({ difficulty: event.target.value as TypedQuestion["difficulty"] })}
-              value={question.difficulty}
-            >
-              <option value="">Belum ditentukan</option>
-              {Object.entries(difficultyLabels).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </SelectInput>
-          </Field>
-        </div>
-      )}
-
       {error && (
         <p className="text-xs font-semibold leading-normal text-[#dc2626]" role="alert">
           {error}
@@ -336,16 +301,6 @@ function QuestionEditor({
             <Image alt="" height={24} src="/assessment/trash.svg" width={24} />
           </button>
         )}
-        <button
-          aria-expanded={detailsOpen}
-          aria-label="Level Bloom dan kesulitan"
-          className={iconButtonClassName}
-          onClick={() => setDetailsOpen((open) => !open)}
-          title="Level Bloom dan kesulitan"
-          type="button"
-        >
-          <Image alt="" height={24} src="/assessment/ellipsis-vertical.svg" width={24} />
-        </button>
       </div>
     </article>
   );
@@ -427,7 +382,10 @@ export function TypedQuestionsStep({
     );
     setErrors(found);
     setMessage(undefined);
-    if (Object.keys(found).length > 0) return setMessage("Periksa lagi soal yang ditandai.");
+    if (Object.keys(found).length > 0) {
+      setMessage("Periksa lagi soal yang ditandai.");
+      return focusFirstError();
+    }
     if (next && questions.length === 0) return setMessage("Tambahkan minimal satu soal.");
 
     if (questionId) {
@@ -449,6 +407,7 @@ export function TypedQuestionsStep({
       }
       setErrors(result.fields ?? {});
       setMessage(result.message);
+      focusFirstError();
     });
   }
 
@@ -537,7 +496,7 @@ function AllQuestionsFooter({
 
       <div className="flex flex-wrap justify-end gap-3">
         <button className={greyButtonClassName} disabled={pending} onClick={() => onSave(false)} type="button">
-          {published ? "Simpan" : "Simpan Draft"}
+          {published ? "Simpan Perubahan" : "Simpan Draft"}
         </button>
         <button className={primaryButtonClassName} disabled={pending} onClick={() => onSave(true)} type="button">
           {pending ? "Menyimpan..." : "Selanjutnya"}

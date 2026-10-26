@@ -6,6 +6,7 @@ import { primaryButtonClassName } from "@/components/auth/styles";
 import { ObjectivePicker, objectivesOf } from "@/components/curriculum/objective-picker";
 import { greyButtonClassName, iconButtonClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { saveSpecificationAction } from "@/lib/actions/assessments";
 import type { AssessmentDetail, CurriculumChapter } from "@/lib/api/types";
 import {
@@ -14,6 +15,7 @@ import {
   type BuilderMethod,
   builderPath,
   durationParts,
+  formatLongSchedule,
   isEditable,
   isoToWibInput,
   type SpecificationErrors,
@@ -68,7 +70,8 @@ export function SpecificationStep({
   const objectives = objectivesOf(chapters);
   const objectiveById = new Map(objectives.map((objective) => [objective.id, objective]));
   const locked = Boolean(assessment && !isEditable(assessment.status));
-  const published = assessment?.status === "scheduled";
+  // A scheduled assessment stays published while it is edited, so it must stay complete (UAT ASM-H01).
+  const scheduled = assessment?.status === "scheduled";
 
   const [values, setValues] = useState(() => initialValues(assessment, initialType));
   const [savedOpensAt] = useState(values.opensAt);
@@ -104,15 +107,16 @@ export function SpecificationStep({
   }
 
   function save(next: boolean) {
-    const found = validateSpecification(values, next, savedOpensAt);
+    const found = validateSpecification(values, next || scheduled, savedOpensAt);
     setErrors(found);
     setMessage(undefined);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) return focusFirstError();
     startTransition(async () => {
       const result = await saveSpecificationAction(slug, subjectId, assessment?.id ?? null, method, values, next);
       if (result.status === "saved") return setSaved(true);
       setErrors((result.fields ?? {}) as SpecificationErrors);
       setMessage(result.fields ? undefined : result.message);
+      focusFirstError();
     });
   }
 
@@ -138,21 +142,24 @@ export function SpecificationStep({
           </Link>
         </InfoMessage>
       )}
-      {published && (
-        <InfoMessage>Asesmen ini sudah dipublikasikan. Perubahan masih bisa disimpan sampai jadwal buka.</InfoMessage>
+      {scheduled && (
+        <InfoMessage>
+          Asesmen ini sudah dipublikasikan dan dibuka {formatLongSchedule(assessment!.opensAt)}. Perubahan langsung
+          berlaku setelah disimpan, jadi semua isian wajib tetap lengkap.
+        </InfoMessage>
       )}
       <fieldset className="flex min-w-0 flex-col gap-4" disabled={locked || pending}>
-        <Field error={errors.title} htmlFor={field("title")} label="Judul Asesmen">
+        <Field error={errors.title} htmlFor={field("title")} label="Judul Asesmen" required>
           <TextInput
             id={field("title")}
             invalid={Boolean(errors.title)}
             maxLength={200}
             onChange={(event) => set("title", event.target.value)}
-            placeholder="Masukkan Judul Asesmen"
+            placeholder="Contoh: Post-test Bab 1 Eksponen"
             value={values.title}
           />
         </Field>
-        <Field error={errors.type} htmlFor={field("type")} label="Jenis Asesmen">
+        <Field error={errors.type} htmlFor={field("type")} label="Jenis Asesmen" required>
           <SelectInput
             id={field("type")}
             invalid={Boolean(errors.type)}
@@ -184,6 +191,7 @@ export function SpecificationStep({
           hint="*Bisa pilih lebih dari 1"
           htmlFor={field("objectiveIds")}
           label="Tujuan Pembelajaran (TP)"
+          required
         >
           <ObjectivePicker
             chapterId={chapterId}
@@ -193,7 +201,7 @@ export function SpecificationStep({
             invalid={Boolean(errors.objectiveIds)}
             objectives={objectives}
             onToggle={toggleObjective}
-            placeholder="Pilih TP yang ingin diuji..."
+            placeholder="Cari dan pilih TP yang diuji..."
           />
         </Field>
         {chosenObjectives.length > 0 && (
@@ -220,7 +228,7 @@ export function SpecificationStep({
             ))}
           </ul>
         )}
-        <Field error={errors.hours ?? errors.minutes} label="Durasi Pengerjaan">
+        <Field error={errors.hours ?? errors.minutes} label="Durasi Pengerjaan" required>
           <div
             className={cn(
               "flex h-[50px] items-center gap-2 rounded-xl border bg-[#fbf8fa] px-[13px] focus-within:border-[#0058be] focus-within:ring-2 focus-within:ring-[rgba(0,88,190,0.15)]",
@@ -228,22 +236,23 @@ export function SpecificationStep({
             )}
           >
             <input
+              aria-invalid={Boolean(errors.hours ?? errors.minutes) || undefined}
               aria-label="Jam"
-              className="w-12 bg-transparent text-center text-base outline-none placeholder:text-[#75777d]"
+              className="w-12 bg-transparent text-center text-base outline-none placeholder:text-[#75777d]/60"
               inputMode="numeric"
               maxLength={2}
               onChange={(event) => set("hours", event.target.value.replace(/\D/g, ""))}
-              placeholder="_"
+              placeholder="0"
               value={values.hours}
             />
             <span className="text-sm text-[#45474c]">jam :</span>
             <input
               aria-label="Menit"
-              className="w-12 bg-transparent text-center text-base outline-none placeholder:text-[#75777d]"
+              className="w-12 bg-transparent text-center text-base outline-none placeholder:text-[#75777d]/60"
               inputMode="numeric"
               maxLength={2}
               onChange={(event) => set("minutes", event.target.value.replace(/\D/g, ""))}
-              placeholder="_"
+              placeholder="00"
               value={values.minutes}
             />
             <span className="text-sm text-[#45474c]">menit</span>
@@ -264,7 +273,13 @@ export function SpecificationStep({
           </SelectInput>
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field error={errors.opensAt} hint="Waktu Indonesia Barat (WIB)" htmlFor={field("opensAt")} label="Jadwal Buka">
+          <Field
+            error={errors.opensAt}
+            hint="Waktu Indonesia Barat (WIB)"
+            htmlFor={field("opensAt")}
+            label="Jadwal Buka"
+            required
+          >
             <TextInput
               id={field("opensAt")}
               invalid={Boolean(errors.opensAt)}
@@ -274,7 +289,13 @@ export function SpecificationStep({
               value={values.opensAt}
             />
           </Field>
-          <Field error={errors.closesAt} hint="Waktu Indonesia Barat (WIB)" htmlFor={field("closesAt")} label="Jadwal Tutup">
+          <Field
+            error={errors.closesAt}
+            hint="Waktu Indonesia Barat (WIB)"
+            htmlFor={field("closesAt")}
+            label="Jadwal Tutup"
+            required
+          >
             <TextInput
               id={field("closesAt")}
               invalid={Boolean(errors.closesAt)}
@@ -292,11 +313,11 @@ export function SpecificationStep({
               inputMode="numeric"
               invalid={Boolean(errors.kkm)}
               onChange={(event) => set("kkm", event.target.value.replace(/\D/g, ""))}
-              placeholder={String(kkmDefault)}
+              placeholder={`Contoh: ${kkmDefault}`}
               value={values.kkm}
             />
           </Field>
-          <Field error={errors.maxAttempts} htmlFor={field("maxAttempts")} label="Jumlah Percobaan">
+          <Field error={errors.maxAttempts} htmlFor={field("maxAttempts")} label="Jumlah Percobaan" required>
             <TextInput
               id={field("maxAttempts")}
               inputMode="numeric"
@@ -316,7 +337,7 @@ export function SpecificationStep({
               inputMode="numeric"
               invalid={Boolean(errors.remedialThreshold)}
               onChange={(event) => set("remedialThreshold", event.target.value.replace(/\D/g, ""))}
-              placeholder="KKM"
+              placeholder="Contoh: 60"
               value={values.remedialThreshold}
             />
           </Field>
@@ -324,12 +345,12 @@ export function SpecificationStep({
       </fieldset>
 
       {message && <FormMessage>{message}</FormMessage>}
-      {saved && <InfoMessage>{published ? "Perubahan tersimpan." : "Draf tersimpan."}</InfoMessage>}
+      {saved && <InfoMessage>{scheduled ? "Perubahan tersimpan." : "Draf tersimpan."}</InfoMessage>}
 
       {!locked && (
         <div className="flex flex-wrap justify-end gap-3">
           <button className={greyButtonClassName} disabled={pending} onClick={() => save(false)} type="button">
-            {published ? "Simpan" : "Simpan Draft"}
+            {scheduled ? "Simpan Perubahan" : "Simpan Draft"}
           </button>
           <button className={primaryButtonClassName} disabled={pending} type="submit">
             {pending ? "Menyimpan..." : "Selanjutnya"}

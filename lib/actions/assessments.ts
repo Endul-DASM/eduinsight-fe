@@ -294,12 +294,17 @@ export async function saveImportAction(
   droppedIds: string[],
   currentQuestionIds: string[],
   next: boolean,
+  // SOAL-H06: the TP the teacher picked for a kept draft, when it differs from the one read from the file.
+  objectiveChanges: Record<string, string[]> = {},
 ): Promise<BuilderResult> {
   if (keptIds.length === 0 && currentQuestionIds.length === 0) {
     return { status: "error", message: "Pilih minimal satu soal hasil impor." };
   }
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
   try {
+    for (const [questionId, learningObjectiveIds] of Object.entries(objectiveChanges)) {
+      if (keptIds.includes(questionId)) await updateQuestion(questionId, { learningObjectiveIds });
+    }
     if (keptIds.length > 0) await saveQuestionImport(importId, keptIds);
     await deleteUnused(droppedIds);
     await replaceAssessmentQuestions(assessmentId, [...new Set([...currentQuestionIds, ...keptIds])]);

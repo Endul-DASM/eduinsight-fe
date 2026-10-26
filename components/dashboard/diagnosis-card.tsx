@@ -54,7 +54,7 @@ function CountButton({
     <button
       aria-label={`${students.length} siswa ${diagnosisLabelNames[label]} di ${title}`}
       className={cn(
-        "rounded-xl p-2.5 text-center text-base font-semibold leading-normal transition-[filter] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0058be] enabled:hover:brightness-95 disabled:cursor-default",
+        "rounded-xl px-1 py-2.5 text-center text-base font-semibold leading-normal transition-[filter] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0058be] enabled:hover:brightness-95 disabled:cursor-default",
         cellClassName(label, students.length, total),
         className,
       )}
@@ -113,7 +113,7 @@ export function DiagnosisCard({
   const [list, setList] = useState<StudentList | null>(null);
 
   return (
-    <section className="flex w-full flex-col gap-5 rounded-3xl bg-[#fafbfd] p-6 shadow-[0_4px_10px_rgba(0,0,0,0.1)]">
+    <section className="flex w-full flex-col gap-5 rounded-3xl bg-[#fafbfd] p-4 shadow-[0_4px_10px_rgba(0,0,0,0.1)] sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3 py-1">
         <h2 className="flex items-center gap-3 text-xl font-semibold leading-normal text-[#1b1b1d]">
           <Image alt="" height={24} src="/dashboard/diagnosis-grid.svg" width={24} />
@@ -137,10 +137,11 @@ export function DiagnosisCard({
             </p>
           )}
           <div className="overflow-x-auto">
-            <div className="grid min-w-[480px] grid-cols-5 gap-x-3 gap-y-4">
+            {/* Fits a phone without scrolling: a narrower Bab column and smaller headings below 640 px. */}
+            <div className="grid min-w-[320px] grid-cols-[minmax(56px,1fr)_repeat(4,minmax(0,1fr))] gap-x-2 gap-y-3 sm:grid-cols-5 sm:gap-x-3 sm:gap-y-4">
               <span />
               {diagnosisLabels.map((label) => (
-                <span className="text-center text-base leading-normal text-[#1b1b1d]" key={label}>
+                <span className="self-end text-center text-xs leading-tight text-[#1b1b1d] sm:text-base sm:leading-normal" key={label}>
                   {diagnosisLabelNames[label]}
                 </span>
               ))}
@@ -151,7 +152,7 @@ export function DiagnosisCard({
                     <Link
                       aria-current={selected ? "page" : undefined}
                       className={cn(
-                        "flex items-center justify-center rounded-xl bg-[#0058be] px-3 py-3 text-base font-semibold leading-normal text-[#f5f3f4] drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors hover:bg-[#004695]",
+                        "flex items-center justify-center rounded-xl bg-[#0058be] px-2 py-3 text-sm font-semibold leading-normal text-[#f5f3f4] sm:px-3 sm:text-base drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors hover:bg-[#004695]",
                         selected && "bg-[#003264] ring-2 ring-[#99bce5] ring-offset-2",
                       )}
                       href={`${baseHref}?bab=${chapter.number}`}

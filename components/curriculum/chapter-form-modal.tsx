@@ -6,6 +6,7 @@ import { outlineButtonClassName, primaryButtonClassName } from "@/components/aut
 import { TextField } from "@/components/auth/text-field";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { SelectMenu as SelectInput } from "@/components/ui/select-menu";
 import { saveChapterAction } from "@/lib/actions/curriculum";
 import type { ChapterInput } from "@/lib/api/curriculum";
@@ -205,7 +206,7 @@ function ChapterForm({
   function save(status: "draft" | "final") {
     if (!check(status)) {
       setStep("detail");
-      return;
+      return focusFirstError();
     }
     startTransition(async () => {
       const result = await saveChapterAction(slug, subjectId, chapter?.id ?? null, input(status), takenNumbers);
@@ -221,6 +222,7 @@ function ChapterForm({
             .map(([, text]) => text)[0],
       );
       setStep("detail");
+      focusFirstError();
     });
   }
 

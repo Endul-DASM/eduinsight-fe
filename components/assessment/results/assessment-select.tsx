@@ -30,7 +30,7 @@ export function AssessmentSelect({
         }
         value={selectedId ?? ""}
       >
-        {!selectedId && <option value="">Pilih Asesmen...</option>}
+        {!selectedId && <option value="">Pilih asesmen...</option>}
         {assessments.map((assessment) => (
           <option key={assessment.id} value={assessment.id}>
             {assessment.title} ({assessmentTypeLabels[assessment.type]}, {cardStatus[assessment.status].label})

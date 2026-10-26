@@ -9,6 +9,7 @@ import { TypedQuestionsStep } from "@/components/assessment/typed-questions-step
 import { ApiError } from "@/lib/api/client";
 import { getAssessment } from "@/lib/api/assessments";
 import { getCurriculum } from "@/lib/api/curriculum";
+import { getMaterialsForObjective } from "@/lib/api/materials";
 import { getQuestionImport, type QuestionImport } from "@/lib/api/questions";
 import { getSubject } from "@/lib/api/subjects";
 import { builderMethodOf, builderStepOf, isEditable } from "@/lib/assessment-form";
@@ -20,11 +21,13 @@ export default async function AssessmentBuilderRoute({ params, searchParams }: P
   const { subject: slug, id } = await params;
   const query = await searchParams;
   const questionId = typeof query.question === "string" ? query.question : undefined;
-  const method = questionId ? "ketik" : builderMethodOf(query.method);
 
   const [subject, assessment] = await Promise.all([getSubject(slug), getAssessment(id)]);
   // An assessment of another subject is not shown under this one's URL.
   if (!subject || !assessment || assessment.subjectId !== subject.id) notFound();
+  // A scheduled assessment is edited with the typed-question editor: AI, Template and Scan make drafts that need
+  // review, which only a draft assessment may hold (UAT ASM-H01). Editing one question also uses it.
+  const method = questionId || assessment.status === "scheduled" ? "ketik" : builderMethodOf(query.method);
 
   const step = query.step ? builderStepOf(query.step) : isEditable(assessment.status) ? "spesifikasi" : "review";
 
@@ -39,6 +42,20 @@ export default async function AssessmentBuilderRoute({ params, searchParams }: P
       if (!(error instanceof ApiError && error.status < 500)) throw error;
     }
   }
+
+  // SOAL-H01: AI questions are written from material that fits the TP (its Bab or Subbab, or mapped to it), the same
+  // rule the backend uses. TPs without any extracted material are named before the AI is asked.
+  const uncoveredObjectives =
+    step === "soal" && method === "ai"
+      ? (
+          await Promise.all(
+            assessment.learningObjectives.map(async (objective) => {
+              const materials = await getMaterialsForObjective(subject.id, objective.id);
+              return materials.some((material) => material.extractionStatus === "done") ? null : objective;
+            }),
+          )
+        ).filter((objective) => objective !== null)
+      : [];
 
   const common = { slug, method, assessment };
 
@@ -57,7 +74,7 @@ export default async function AssessmentBuilderRoute({ params, searchParams }: P
       )}
       {step === "soal" && method === "template" && <TemplateStep {...common} result={result} subjectId={subject.id} />}
       {step === "soal" && method === "ocr" && <OcrStep {...common} result={result} subjectId={subject.id} />}
-      {step === "soal" && method === "ai" && <AiStep {...common} />}
+      {step === "soal" && method === "ai" && <AiStep {...common} uncoveredObjectives={uncoveredObjectives} />}
       {step === "review" && <ReviewStep {...common} />}
       {step === "selesai" && <PublishDone slug={slug} />}
     </BuilderShell>

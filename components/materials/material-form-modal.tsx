@@ -13,6 +13,7 @@ import {
 } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { getMaterialAction, saveMaterialAction } from "@/lib/actions/materials";
 import type { Material, MaterialDetail } from "@/lib/api/materials";
@@ -110,8 +111,11 @@ function MaterialForm({
 
   function save(confirm: boolean) {
     // A draft only needs its title; confirming also needs at least one TP.
-    if (confirm && !validate()) return;
-    if (!confirm && !title.trim()) return setErrors({ title: "Judul materi wajib diisi." });
+    if (confirm && !validate()) return focusFirstError();
+    if (!confirm && !title.trim()) {
+      setErrors({ title: "Judul materi wajib diisi." });
+      return focusFirstError();
+    }
     setMessage(undefined);
     startTransition(async () => {
       const result = await saveMaterialAction(slug, detail.id, {

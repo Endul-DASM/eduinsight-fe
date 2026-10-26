@@ -5,6 +5,7 @@ import { outlineButtonClassName, primaryButtonClassName } from "@/components/aut
 import { TextField } from "@/components/auth/text-field";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { SelectMenu } from "@/components/ui/select-menu";
 import { subjectModalClassName } from "@/components/subject-select/styles";
 import { saveCpAction } from "@/lib/actions/curriculum";
@@ -40,12 +41,13 @@ function CpForm({
     const found = validateCp(input);
     setErrors(found);
     setMessage(undefined);
-    if (Object.keys(found).length > 0) return;
+    if (Object.keys(found).length > 0) return focusFirstError();
     startTransition(async () => {
       const result = await saveCpAction(slug, subjectId, cp?.id ?? null, input);
       if (result.status === "saved") return onClose();
       setErrors(result.fields ?? {});
       setMessage(result.message);
+      focusFirstError();
     });
   }
 

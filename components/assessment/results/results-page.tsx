@@ -60,12 +60,36 @@ export function ResultsPage({
   }
 
   const href = (id: ResultsView) => `/${slug}/assessment?tab=hasil&assessment=${selectedId}&view=${id}`;
+  const selected = assessments.find((assessment) => assessment.id === selectedId);
+
+  // The picker in its own card, apart from the result tabs (UAT ASM-U06).
+  const picker = (
+    <section className={sectionClassName}>
+      <div className="flex flex-col gap-1 leading-normal">
+        <h3 className="text-xl font-semibold text-[#1b1b1d]">Pilih Asesmen</h3>
+        <p className="text-sm text-[#45474c]">Hanya asesmen yang sudah dipublikasikan yang memiliki hasil.</p>
+      </div>
+      <AssessmentSelect assessments={assessments} selectedId={selectedId} slug={slug} view={view} />
+    </section>
+  );
+
+  if (!selected) {
+    return (
+      <div className="flex flex-col gap-6">
+        {picker}
+        <Empty title="Pilih asesmen untuk melihat hasilnya.">
+          Performa kelas, siswa, TP, dan soal tampil setelah asesmen dipilih.
+        </Empty>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
-      <AssessmentSelect assessments={assessments} selectedId={selectedId} slug={slug} view={view} />
+      {picker}
 
-      <nav aria-label="Bagian Hasil Asesmen" className="flex flex-wrap gap-3">
+      <h3 className="text-xl font-semibold leading-normal text-[#1b1b1d]">Hasil {selected.title}</h3>
+      <nav aria-label="Bagian Hasil Asesmen" className="-mt-3 flex flex-wrap gap-3">
         {views.map((item) => {
           const active = item.id === view;
           return (

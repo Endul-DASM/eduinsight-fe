@@ -22,7 +22,7 @@ import {
   variationAction,
 } from "@/lib/actions/assessments";
 import type { AssessmentDetail, BloomLevel, Question } from "@/lib/api/types";
-import { assessmentStatusLabels, type BuilderMethod, builderPath, isEditable } from "@/lib/assessment-form";
+import { assessmentStatusLabels, type BuilderMethod, builderPath, formatLongSchedule, isEditable } from "@/lib/assessment-form";
 import { claimPendingSummaryPreference, useSummaryPreference } from "@/lib/summary-preference";
 import { AssessmentSummary } from "./assessment-summary";
 import { FormMessage, InfoMessage } from "./builder-fields";
@@ -169,11 +169,23 @@ export function ReviewStep({
 
   return (
     <div className="flex flex-col gap-6">
-      {!draft && (
+      {assessment.status === "scheduled" && (
         <InfoMessage>
-          {editable
-            ? "Asesmen ini sudah dipublikasikan. Soal dan spesifikasinya masih bisa diubah sampai jadwal buka."
-            : `Asesmen ini sudah dipublikasikan (${assessmentStatusLabels[assessment.status]}) sehingga tidak dapat diubah.`}
+          Asesmen ini sudah dipublikasikan dan masih bisa diubah sampai jadwal buka (
+          {formatLongSchedule(assessment.opensAt)}).{" "}
+          <Link className="font-semibold underline" href={builderPath(slug, assessment.id, method, "spesifikasi")}>
+            Edit Spesifikasi
+          </Link>{" "}
+          atau{" "}
+          <Link className="font-semibold underline" href={editHref}>
+            Edit Soal
+          </Link>
+          .
+        </InfoMessage>
+      )}
+      {!editable && (
+        <InfoMessage>
+          Asesmen ini sudah dibuka ({assessmentStatusLabels[assessment.status]}) sehingga tidak dapat diubah.
         </InfoMessage>
       )}
 

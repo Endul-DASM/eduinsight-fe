@@ -9,6 +9,7 @@ import { outlineButtonClassName, primaryButtonClassName } from "@/components/aut
 import { greyButtonClassName, sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import { Modal } from "@/components/ui/modal";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { deletePhotoAction, type ProfileActionResult, saveProfileAction, uploadPhotoAction } from "@/lib/actions/profile";
 import type { CurrentUser } from "@/lib/api/types";
 import {
@@ -177,13 +178,13 @@ export function ProfileForm({ user }: { user: CurrentUser }) {
     setErrors(found);
     setNotice(null);
     setFailure(null);
-    if (Object.keys(found).length) return;
+    if (Object.keys(found).length) return focusFirstError();
     startTransition(async () => {
       const result = await saveProfileAction(values);
       if (result.status === "error") {
         setErrors(result.fields ?? {});
         setFailure(result.message);
-        return;
+        return focusFirstError();
       }
       setEditing(false);
       setNotice("Profil tersimpan.");

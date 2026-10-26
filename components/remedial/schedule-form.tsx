@@ -7,6 +7,7 @@ import { useId, useState, useTransition } from "react";
 import { outlineButtonClassName, primaryButtonClassName } from "@/components/auth/styles";
 import { Field, FormMessage, InfoMessage, SelectInput, TextInput } from "@/components/assessment/builder-fields";
 import { cn } from "@/components/ui/cn";
+import { focusFirstError } from "@/components/ui/focus-first-error";
 import { type PublishState, scheduleRemedialAction } from "@/lib/actions/assessments";
 import type { Assessment } from "@/lib/api/types";
 import { cardStatus, isoToWibInput, todayWibInput } from "@/lib/assessment-form";
@@ -70,6 +71,7 @@ export function ScheduleForm({
       if (result?.status === "error") {
         setErrors((result.fields ?? {}) as RemedialScheduleErrors);
         setState(result);
+        focusFirstError();
       } else {
         setSaved(true);
         router.refresh();

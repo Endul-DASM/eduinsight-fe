@@ -4,6 +4,7 @@ import { primaryButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import type { AssessmentResults } from "@/lib/api/results";
 import { finalStudents, followUp, formatPercent, formatScore, scoreRanges } from "@/lib/assessment-results";
+import { REMEDIAL_SOURCE_TYPES } from "@/lib/remedial-figures";
 
 const cardClassName = "flex flex-col gap-1 rounded-3xl bg-[#fafbfd] p-6 shadow-[0_4px_10px_rgba(0,0,0,0.1)]";
 
@@ -15,6 +16,36 @@ function StatCard({ label, value, note, tone }: { label: string; value: string; 
       <p className="text-xs leading-normal text-[#45474c]">{note}</p>
     </div>
   );
+}
+
+// What to do after the results (UAT REM-U02). BR-07: only post-tests, ulangan harian, UTS and UAS have remedial; a
+// pre-test maps what students know before the Bab, so its weak TPs call for material instead.
+function NextStep({ slug, assessment }: { slug: string; assessment: AssessmentResults["assessment"] }) {
+  if (REMEDIAL_SOURCE_TYPES.includes(assessment.type)) {
+    return (
+      <Link
+        className={cn(primaryButtonClassName, "mt-auto gap-3 self-end")}
+        href={`/${slug}/remedial?source=${encodeURIComponent(assessment.id)}`}
+      >
+        Menuju Remedial
+        <Image alt="" height={24} src="/assessment/arrow-right.svg" width={24} />
+      </Link>
+    );
+  }
+  if (assessment.type === "pre_test") {
+    return (
+      <>
+        <p className="mt-auto text-xs text-[#45474c]">
+          Pre-test memetakan kemampuan awal, jadi tidak ada remedial. Siapkan materi untuk TP yang masih lemah.
+        </p>
+        <Link className={cn(primaryButtonClassName, "gap-3 self-end")} href={`/${slug}/curriculum?tab=materi`}>
+          Menuju Materi
+          <Image alt="" height={24} src="/assessment/arrow-right.svg" width={24} />
+        </Link>
+      </>
+    );
+  }
+  return <p className="mt-auto text-xs text-[#45474c]">Remedial hanya untuk post-test, ulangan harian, UTS, dan UAS.</p>;
 }
 
 // Performa Kelas (FR-G-070; Figma New Design 65:13118). Averages and mastery count final scores only.
@@ -110,10 +141,7 @@ export function ClassPerformanceView({ slug, results }: { slug: string; results:
             Rata-rata dan ketuntasan dihitung dari {finals} siswa dengan nilai final; skor tiap TP = persentase skor
             butir ber-tag TP itu.
           </p>
-          <Link className={cn(primaryButtonClassName, "mt-auto gap-3 self-end")} href={`/${slug}/remedial`}>
-            Menuju Remedial
-            <Image alt="" height={24} src="/assessment/arrow-right.svg" width={24} />
-          </Link>
+          <NextStep assessment={assessment} slug={slug} />
         </section>
       </div>
     </div>

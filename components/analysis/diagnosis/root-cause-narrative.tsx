@@ -9,7 +9,8 @@ import { useAiJob } from "@/lib/ai-job";
 import { refreshAnalysisAction, rootCauseAction } from "@/lib/actions/diagnosis";
 import type { DiagnosisFilters, RootCauseNarrative as Narrative } from "@/lib/api/diagnosis";
 
-// The AI reading of the top misconception pattern on the Akar Masalah card (AI-10, FR-G-083). The backend writes it
+// The AI reading of a misconception pattern (AI-10, FR-G-083): the top one on the Akar Masalah card, and any untagged
+// one below it (UAT). The backend writes it
 // from aggregates only (no student names), checks that every number in it comes from the data, and keeps it for the
 // same scope and data. The pattern itself and its ranking stay rule-based (BR-06).
 export function RootCauseNarrative({
@@ -17,11 +18,13 @@ export function RootCauseNarrative({
   subjectId,
   filters,
   narrative,
+  rank = 1,
 }: {
   slug: string;
   subjectId: string;
   filters: DiagnosisFilters;
   narrative: Narrative | null;
+  rank?: number;
 }) {
   const router = useRouter();
   const [jobId, setJobId] = useState<string | null>(null);
@@ -43,7 +46,7 @@ export function RootCauseNarrative({
   function request() {
     setMessage(undefined);
     startTransition(async () => {
-      const result = await rootCauseAction(slug, subjectId, filters);
+      const result = await rootCauseAction(slug, subjectId, filters, rank);
       if (result.status === "queued") setJobId(result.jobId);
       else if (result.status === "ready") router.refresh();
       else setMessage(result.message);

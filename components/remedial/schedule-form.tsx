@@ -9,7 +9,7 @@ import { Field, FormMessage, InfoMessage, SelectInput, TextInput } from "@/compo
 import { cn } from "@/components/ui/cn";
 import { type PublishState, scheduleRemedialAction } from "@/lib/actions/assessments";
 import type { Assessment } from "@/lib/api/types";
-import { cardStatus, isoToWibInput } from "@/lib/assessment-form";
+import { cardStatus, isoToWibInput, todayWibInput } from "@/lib/assessment-form";
 import type { RemedialScheduleErrors, RemedialScheduleValues } from "@/lib/remedial-figures";
 
 function initialValues(remedial: Assessment): RemedialScheduleValues {
@@ -43,6 +43,8 @@ export function ScheduleForm({
   const id = useId();
   const locked = remedial.status !== "draft";
   const [values, setValues] = useState(() => initialValues(remedial));
+  const [savedDate] = useState(values.date);
+  const today = todayWibInput().slice(0, 10);
   const [errors, setErrors] = useState<RemedialScheduleErrors>({});
   const [state, setState] = useState<PublishState>();
   const [saved, setSaved] = useState(false);
@@ -118,6 +120,8 @@ export function ScheduleForm({
             disabled={locked}
             id={field("date")}
             invalid={Boolean(errors.date)}
+            // From today on (UAT); an older saved date stays selectable until it is changed.
+            min={savedDate && savedDate < today ? savedDate : today}
             onChange={(event) => set("date", event.target.value)}
             type="date"
             value={values.date}

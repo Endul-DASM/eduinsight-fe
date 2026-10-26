@@ -11,20 +11,22 @@ import { getAssessment } from "@/lib/api/assessments";
 import { getCurriculum } from "@/lib/api/curriculum";
 import { getQuestionImport, type QuestionImport } from "@/lib/api/questions";
 import { getSubject } from "@/lib/api/subjects";
-import { builderMethodOf, builderStepOf } from "@/lib/assessment-form";
+import { builderMethodOf, builderStepOf, isEditable } from "@/lib/assessment-form";
 
 // /{slug}/assessment/{id}?method=…&step=spesifikasi|soal|review|selesai — the Buat Asesmen steps of one draft.
-// Without a step, a draft opens at Spesifikasi and a published assessment at Review.
+// Without a step, an assessment that can still be changed opens at Spesifikasi and any other at Review.
+// &question={id} on the soal step edits only that question, in the typed-question editor.
 export default async function AssessmentBuilderRoute({ params, searchParams }: PageProps<"/[subject]/assessment/[id]">) {
   const { subject: slug, id } = await params;
   const query = await searchParams;
-  const method = builderMethodOf(query.method);
+  const questionId = typeof query.question === "string" ? query.question : undefined;
+  const method = questionId ? "ketik" : builderMethodOf(query.method);
 
   const [subject, assessment] = await Promise.all([getSubject(slug), getAssessment(id)]);
   // An assessment of another subject is not shown under this one's URL.
   if (!subject || !assessment || assessment.subjectId !== subject.id) notFound();
 
-  const step = query.step ? builderStepOf(query.step) : assessment.status === "draft" ? "spesifikasi" : "review";
+  const step = query.step ? builderStepOf(query.step) : isEditable(assessment.status) ? "spesifikasi" : "review";
 
   // Each step only loads what it shows.
   const tree = step === "spesifikasi" ? await getCurriculum(subject.id) : null;
@@ -50,7 +52,9 @@ export default async function AssessmentBuilderRoute({ params, searchParams }: P
           subjectId={subject.id}
         />
       )}
-      {step === "soal" && method === "ketik" && <TypedQuestionsStep {...common} subjectId={subject.id} />}
+      {step === "soal" && method === "ketik" && (
+        <TypedQuestionsStep {...common} key={questionId ?? "all"} questionId={questionId} subjectId={subject.id} />
+      )}
       {step === "soal" && method === "template" && <TemplateStep {...common} result={result} subjectId={subject.id} />}
       {step === "soal" && method === "ocr" && <OcrStep {...common} result={result} subjectId={subject.id} />}
       {step === "soal" && method === "ai" && <AiStep {...common} />}

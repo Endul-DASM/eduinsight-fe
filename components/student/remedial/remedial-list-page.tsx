@@ -60,7 +60,7 @@ function ActiveCard({ slug, remedial }: { slug: string; remedial: MyRemedial }) 
           <p className="text-2xl font-bold text-[#1b1b1d]">{remedial.sourceAssessment.title}</p>
           <p className="text-base text-[#45474c]">Topik: {topicOf(remedial)}</p>
           <p className="text-xs text-[#45474c]">
-            Skor terakhir: {formatPoints(remedial.sourceScore)}/100, KKM {remedial.sourceAssessment.kkm}
+            Skor tertinggi: {formatPoints(remedial.sourceScore)}/100, KKM {remedial.sourceAssessment.kkm}
             {remedial.cycle > 1 && `, siklus ${remedial.cycle}`}
           </p>
         </div>

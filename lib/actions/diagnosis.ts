@@ -10,12 +10,17 @@ const SERVER_UNREACHABLE_MESSAGE = "Tidak dapat terhubung ke server. Coba lagi b
 
 export type RootCauseActionResult = { status: "ready" } | { status: "queued"; jobId: string } | { status: "error"; message: string };
 
-// Akar Masalah narrative (AI-10, FR-G-083) for the scope on screen. Asked for explicitly, so opening the page never
+// Akar Masalah narrative (AI-10, FR-G-083) of the pattern with this rank, for the scope on screen. Asked for explicitly, so opening the page never
 // spends the teacher's AI quota; a narrative already written for the same data comes back at once.
-export async function rootCauseAction(slug: string, subjectId: string, filters: DiagnosisFilters): Promise<RootCauseActionResult> {
+export async function rootCauseAction(
+  slug: string,
+  subjectId: string,
+  filters: DiagnosisFilters,
+  rank = 1,
+): Promise<RootCauseActionResult> {
   if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
   try {
-    const result = await requestRootCause(subjectId, filters);
+    const result = await requestRootCause(subjectId, filters, rank);
     if (result.status === "queued") return { status: "queued", jobId: result.jobId };
   } catch (error) {
     unstable_rethrow(error);

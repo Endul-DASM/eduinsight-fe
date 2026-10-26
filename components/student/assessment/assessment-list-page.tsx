@@ -111,7 +111,10 @@ function DoneCard({
         <p className="text-2xl font-bold text-[#1b1b1d]">{assessment.title}</p>
         <p className="text-base text-[#45474c]">Topik: {topicOf(assessment)}</p>
         <p className="text-xs text-[#45474c]">
-          {assessment.bestScore === null ? "Menunggu penilaian guru" : `Skor terakhir: ${formatPoints(assessment.bestScore)}/100`}
+          {/* The best attempt counts (UAT). */}
+          {assessment.bestScore === null
+            ? "Menunggu penilaian guru"
+            : `${assessment.maxAttempts > 1 ? "Skor tertinggi" : "Skor"}: ${formatPoints(assessment.bestScore)}/100`}
           {`, ${assessment.attemptsUsed} dari ${assessment.maxAttempts} percobaan`}
         </p>
       </div>
@@ -203,6 +206,9 @@ export function StudentAssessmentListPage({
                     {state === "perlu_remedial" ? "Perlu remedial" : state === "lulus" ? "Asesmen tuntas" : "Sudah dinilai"}
                   </p>
                   <p className="text-[28px] font-bold text-[#003264]">{formatPoints(assessment.bestScore!)}/100</p>
+                  {assessment.attemptsUsed > 1 && (
+                    <p className="text-xs text-[#45474c]">Skor tertinggi dari {assessment.attemptsUsed} percobaan</p>
+                  )}
                 </li>
               );
             })}

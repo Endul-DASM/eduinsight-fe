@@ -113,29 +113,6 @@ const steps = [
   },
 ];
 
-const principles = [
-  {
-    icon: "/landing/user-check.svg",
-    title: "Guru sebagai pengambil keputusan akhir",
-    body: "Soal, pengelompokan, dan rekomendasi dari AI berstatus Menunggu ACC dan baru tampil ke siswa setelah disetujui guru.",
-  },
-  {
-    icon: "/landing/book-search-sm.svg",
-    title: "Hasil dapat ditelusuri",
-    body: "Setiap label diagnosis dapat ditelusuri hingga ke Tujuan Pembelajaran dan butir soal sumbernya.",
-  },
-  {
-    icon: "/landing/eye-off.svg",
-    title: "Privasi data siswa",
-    body: "Nama dan identitas siswa tidak dikirim ke layanan AI. Data hanya dapat diakses sesuai peran pengguna.",
-  },
-  {
-    icon: "/landing/clipboard-pen-line.svg",
-    title: "Tetap berfungsi tanpa AI",
-    body: "Input soal manual, hasil asesmen, dan materi tetap dapat digunakan ketika layanan AI tidak tersedia.",
-  },
-];
-
 const missions = [
   "Menyediakan diagnosis ketercapaian TP dan miskonsepsi yang akurat serta mudah dipahami.",
   "Membantu guru menyusun remedial yang sesuai dengan kebutuhan setiap kelompok siswa.",
@@ -188,21 +165,7 @@ export function AboutPage() {
         </ol>
       </Section>
 
-      <Section lead="Teknologi AI di EduInsight dirancang untuk mendukung keputusan guru, bukan menggantikannya." title="Prinsip Pengembangan" tone="grey">
-        <div className="grid gap-6 md:grid-cols-2">
-          {principles.map((item) => (
-            <div className={cn(cardClassName, "flex-row items-start gap-4")} key={item.title}>
-              <IconBubble src={item.icon} />
-              <div className="flex flex-col gap-2 leading-normal">
-                <h3 className="text-lg font-semibold text-[#1b1b1d] lg:text-xl">{item.title}</h3>
-                <p className="text-sm text-[#45474c] lg:text-base">{item.body}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Visi dan Misi">
+      <Section title="Visi dan Misi" tone="grey">
         <div className="grid gap-6 md:grid-cols-2">
           <div className="flex flex-col gap-4 rounded-3xl bg-[#0058be] p-6 text-white lg:p-8">
             <p className="text-base font-semibold">Visi</p>

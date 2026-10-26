@@ -290,7 +290,7 @@ export function ClassView({
                 {pattern.tag === null && (
                   <div className="basis-full">
                     <RootCauseNarrative
-                      filters={{ assessmentId: params.assessment, semester: params.semester, chapterId: params.chapter }}
+                      filters={{ assessmentId: params.assessment, chapterId: params.chapter }}
                       narrative={pattern.narrative ?? null}
                       rank={pattern.rank}
                       slug={slug}

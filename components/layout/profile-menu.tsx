@@ -23,6 +23,14 @@ function UserIcon() {
   );
 }
 
+function BookIcon() {
+  return (
+    <svg aria-hidden className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24">
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+    </svg>
+  );
+}
+
 function LogoutIcon() {
   return (
     <svg aria-hidden className="size-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} viewBox="0 0 24 24">
@@ -34,13 +42,16 @@ function LogoutIcon() {
 }
 
 // Account menu of the top bars (Figma New Design 22:4162, 22:3475, popup 187:10090): the name with the role under it,
-// then Profile and Logout. Inside a subject the popup also names the subject.
+// then Profile and Logout. Inside a subject the popup also names the subject. On the landing pages it also leads to
+// Pilih Mata Pelajaran (homeHref).
 export function ProfileMenu({
   profileHref,
+  homeHref,
   subjectLabel,
   user,
 }: {
   profileHref: string;
+  homeHref?: string;
   subjectLabel?: string;
   user: CurrentUser;
 }) {
@@ -115,6 +126,12 @@ export function ProfileMenu({
         >
           {subjectLabel && (
             <p className="truncate border-b border-[#eae7e9] px-3 pb-2 pt-1 text-xs leading-normal text-[#45474c]">{subjectLabel}</p>
+          )}
+          {homeHref && (
+            <Link className={itemClassName} href={homeHref} role="menuitem">
+              <BookIcon />
+              Pilih Mata Pelajaran
+            </Link>
           )}
           <Link className={itemClassName} href={profileHref} role="menuitem">
             <UserIcon />

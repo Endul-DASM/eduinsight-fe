@@ -19,8 +19,8 @@ import { APP_ZOOM, WORKSPACE_ZOOM, zoomStyle } from "@/lib/zoom";
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
 const footerLinks = [
-  { label: "Kebijakan Privasi", href: "#" },
-  { label: "Ketentuan Layanan", href: "#" },
+  { label: "Kebijakan Privasi", href: "/privacy" },
+  { label: "Ketentuan Layanan", href: "/terms" },
   { label: "Hubungi Bantuan", href: `mailto:${SUPPORT_EMAIL}` },
 ];
 

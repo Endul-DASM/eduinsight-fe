@@ -77,8 +77,8 @@ export function DiagnosisPage({
         <Empty title="Diagnosis belum tersedia.">Server belum menyediakan diagnosis untuk mapel ini. Pastikan backend sudah versi terbaru.</Empty>
       ) : diagnosis.analyzedStudents === 0 ? (
         <Empty title="Belum ada data diagnosis dalam cakupan ini.">
-          Diagnosis dihitung dari post-test, ulangan harian, UTS dan UAS yang sudah dikerjakan siswa. Ubah filter semester, asesmen, atau
-          Bab, atau tunggu siswa menyerahkan asesmen.
+          Diagnosis dihitung dari post-test, ulangan harian, UTS dan UAS yang sudah dikerjakan siswa. Ubah filter asesmen atau Bab, atau
+          tunggu siswa menyerahkan asesmen.
         </Empty>
       ) : params.view === "tp" ? (
         <ObjectiveView diagnosis={diagnosis} params={params} questionObjectives={questionObjectives} slug={slug} />

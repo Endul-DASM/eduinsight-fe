@@ -5,8 +5,8 @@ import { BrandLogo } from "@/components/ui/brand-logo";
 export type FooterLink = { label: string; href: string };
 
 const teacherLinks: FooterLink[] = [
-  { label: "Privacy Policy", href: "#" },
-  { label: "Terms of Service", href: "#" },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
   { label: "Contact Support", href: `mailto:${SUPPORT_EMAIL}` },
 ];
 

@@ -237,7 +237,7 @@ export function ClassView({
               </div>
             </div>
             <RootCauseNarrative
-              filters={{ assessmentId: params.assessment, semester: params.semester, chapterId: params.chapter }}
+              filters={{ assessmentId: params.assessment, chapterId: params.chapter }}
               narrative={top.narrative ?? null}
               slug={slug}
               subjectId={subjectId}

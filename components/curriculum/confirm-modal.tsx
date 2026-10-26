@@ -11,6 +11,9 @@ export function ConfirmModal({
   description,
   error,
   pending,
+  confirmLabel = "Ya",
+  pendingLabel = "Menghapus...",
+  cancelLabel = "Tidak",
   onConfirm,
   onClose,
 }: {
@@ -19,6 +22,10 @@ export function ConfirmModal({
   description: string;
   error?: string;
   pending?: boolean;
+  // Button texts; the defaults are the Hapus confirmation of the curriculum.
+  confirmLabel?: string;
+  pendingLabel?: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   onClose: () => void;
 }) {
@@ -38,10 +45,10 @@ export function ConfirmModal({
         )}
         <div className="grid grid-cols-2 gap-3">
           <button className={cn(ghostButtonClassName, "w-full")} disabled={pending} onClick={onClose} type="button">
-            Tidak
+            {cancelLabel}
           </button>
           <button className={cn(redButtonClassName, "w-full")} disabled={pending} onClick={onConfirm} type="button">
-            {pending ? "Menghapus..." : "Ya"}
+            {pending ? pendingLabel : confirmLabel}
           </button>
         </div>
       </div>

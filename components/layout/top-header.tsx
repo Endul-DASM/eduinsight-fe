@@ -14,6 +14,7 @@ const sectionTitles: Record<string, string> = {
   assessment: "Asesmen",
   remedial: "Remedial",
   analysis: "Analisis",
+  students: "Daftar Siswa",
   diagnosis: "Diagnosis",
   profile: "Edit Profile",
   help: "Bantuan",

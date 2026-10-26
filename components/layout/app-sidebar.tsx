@@ -23,6 +23,8 @@ const teacherNavItems: NavItem[] = [
   { label: "Asesmen", href: "/assessment", icon: "/dashboard/nav-asesmen.svg" },
   { label: "Remedial", href: "/remedial", icon: "/dashboard/nav-remedial.svg" },
   { label: "Analisis", href: "/analysis", icon: "/dashboard/nav-analisis.svg" },
+  // UAT MAPEL-H04 (Figma New Design 265:8593).
+  { label: "Daftar Siswa", href: "/students", icon: "/dashboard/nav-students.svg" },
 ];
 
 // Bantuan: FAQ and Pusat Bantuan (SRS FR-X-030), at the bottom of the sidebar.

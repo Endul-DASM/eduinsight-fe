@@ -5,7 +5,7 @@ import { unstable_rethrow } from "next/navigation";
 import { createClass, getClasses } from "@/lib/api/classes";
 import { ApiError, isMockMode } from "@/lib/api/client";
 import { copyCurriculum } from "@/lib/api/curriculum";
-import { createSubject, deleteSubject, updateSubject } from "@/lib/api/subjects";
+import { createSubject, deleteSubject, removeSubjectStudent, updateSubject } from "@/lib/api/subjects";
 import type { SchoolClass } from "@/lib/api/types";
 import {
   inferSchoolLevel,
@@ -163,4 +163,19 @@ export async function deleteSubjectAction(
     return { status: "error", message: messageOf(error) };
   }
   return saved();
+}
+
+export type RemoveStudentState = { status: "error"; message: string } | { status: "removed" };
+
+// Daftar Siswa: takes a student out of the subject (UAT MAPEL-U04).
+export async function removeStudentAction(slug: string, subjectId: string, studentId: string): Promise<RemoveStudentState> {
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+  try {
+    await removeSubjectStudent(subjectId, studentId);
+  } catch (error) {
+    unstable_rethrow(error);
+    return { status: "error", message: messageOf(error) };
+  }
+  revalidatePath(`/${slug}/students`);
+  return { status: "removed" };
 }

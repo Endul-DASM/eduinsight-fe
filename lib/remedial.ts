@@ -2,6 +2,7 @@ import { getAssessments } from "@/lib/api/assessments";
 import { getCurriculum } from "@/lib/api/curriculum";
 import { getAssessmentAttempts } from "@/lib/api/dashboard";
 import { getMaterial, getMaterialsForObjective } from "@/lib/api/materials";
+import { getRemedialGroups } from "@/lib/api/remedial";
 import { type AssessmentResults, getAssessmentResults } from "@/lib/api/results";
 import type { Assessment, CurriculumTree, Subject } from "@/lib/api/types";
 import { improvementOf, REMEDIAL_SOURCE_TYPES, type TargetRow, targetRows, weakObjectives } from "@/lib/remedial-figures";
@@ -129,5 +130,58 @@ export async function getRemedialHistory(sourceResults: AssessmentResults | null
           : { averageChange: null, compared: 0, mastered: 0, finals: 0 };
       return { assessment, ...figures };
     }),
+  );
+}
+
+// A material of a student's approved remedial package (FR-S-032), as the teacher sees it in Daftar Siswa (UAT SIS-H04).
+export type StudentRecommendation = {
+  material: { id: string; title: string };
+  // The source assessments whose package holds it.
+  sources: { id: string; title: string }[];
+  // The weak TPs of the student's groups, e.g. ["1.1", "1.2"].
+  objectiveNumbers: string[];
+  approvedAt: string | null;
+};
+
+const byNumber = (a: string, b: string) => a.localeCompare(b, undefined, { numeric: true });
+
+// The recommended materials of every student of the subject, by student id: the materials of the approved groups
+// (current cycle) of every remedial source. A source whose groups cannot be loaded is skipped.
+export async function getRecommendedMaterialsByStudent(subjectId: string): Promise<Record<string, StudentRecommendation[]>> {
+  const sources = (await getAssessments(subjectId)).filter(
+    (assessment) => REMEDIAL_SOURCE_TYPES.includes(assessment.type) && assessment.status !== "draft",
+  );
+  const groupsBySource = await Promise.all(sources.map((source) => getRemedialGroups(source.id).catch(() => null)));
+
+  const byStudent = new Map<string, Map<string, StudentRecommendation>>();
+  sources.forEach((source, index) => {
+    for (const group of groupsBySource[index]?.groups ?? []) {
+      if (group.approvalStatus !== "approved") continue;
+      const numbers = group.weakObjectives.map((weak) => weak.learningObjective.number);
+      for (const item of group.items) {
+        if (item.kind !== "materi") continue;
+        for (const student of group.students) {
+          const materials = byStudent.get(student.id) ?? new Map<string, StudentRecommendation>();
+          byStudent.set(student.id, materials);
+          const found = materials.get(item.material.id) ?? {
+            material: { id: item.material.id, title: item.material.title },
+            sources: [],
+            objectiveNumbers: [],
+            approvedAt: null,
+          };
+          if (!found.sources.some((known) => known.id === source.id)) found.sources.push({ id: source.id, title: source.title });
+          found.objectiveNumbers = [...new Set([...found.objectiveNumbers, ...numbers])].sort(byNumber);
+          if (group.approvedAt && (!found.approvedAt || group.approvedAt > found.approvedAt)) found.approvedAt = group.approvedAt;
+          materials.set(item.material.id, found);
+        }
+      }
+    }
+  });
+
+  return Object.fromEntries(
+    [...byStudent].map(([studentId, materials]) => [
+      studentId,
+      [...materials.values()].sort((a, b) => (b.approvedAt ?? "").localeCompare(a.approvedAt ?? "")),
+    ]),
   );
 }

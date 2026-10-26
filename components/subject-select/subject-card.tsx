@@ -17,15 +17,18 @@ type SubjectCardActions = {
   onCopyLink: () => void;
 };
 
-// Teachers see the actions (Figma New Design 22:3475); students do not. The cover and title open the subject.
+// Teachers see the actions (Figma New Design 22:3475); students get only "Keluar dari kelas" (Figma 181:8656, UAT
+// MAPEL-H05). The cover and title open the subject.
 export function SubjectCard({
   subject,
   href,
   actions,
+  onLeave,
 }: {
   subject: Subject;
   href: string;
   actions?: SubjectCardActions;
+  onLeave?: () => void;
 }) {
   return (
     <article className={cn(glassCardClassName, "gap-[21px]")}>
@@ -73,6 +76,19 @@ export function SubjectCard({
               <Image alt="" height={20} src="/subjects/link.svg" width={20} />
             </button>
           </div>
+        </div>
+      )}
+      {onLeave && (
+        <div className="flex justify-end py-2">
+          <button
+            aria-label={`Keluar dari ${subject.name}`}
+            className={cn(actionButtonClassName, "hover:bg-[#fee2e2]")}
+            onClick={onLeave}
+            title="Keluar dari kelas"
+            type="button"
+          >
+            <Image alt="" height={24} src="/subjects/leave.svg" width={24} />
+          </button>
         </div>
       )}
     </article>

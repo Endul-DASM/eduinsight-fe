@@ -1,13 +1,15 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import { ConfirmModal } from "@/components/curriculum/confirm-modal";
 import {
   AddSubjectCard,
   SubjectCard,
   subjectGridClassName,
   subjectGridOuterClassName,
 } from "@/components/subject-select/subject-card";
+import { leaveSubjectAction } from "@/lib/actions/student-subjects";
 import type { Subject } from "@/lib/api/types";
 import { JoinSubjectModal } from "./join-subject-modal";
 
@@ -19,6 +21,27 @@ export function StudentSubjectGrid({ subjects, initialJoinCode }: { subjects: Su
   // Kept in state because the prop disappears once ?join= is removed from the URL below.
   const [prefilledCode, setPrefilledCode] = useState(initialJoinCode ?? "");
   const [toast, setToast] = useState<string>();
+  // Keluar dari kelas (UAT MAPEL-H05, MAPEL-U02).
+  const [leaving, setLeaving] = useState<Subject | null>(null);
+  const [leaveError, setLeaveError] = useState<string>();
+  const [pending, startTransition] = useTransition();
+
+  function closeLeave() {
+    setLeaving(null);
+    setLeaveError(undefined);
+  }
+
+  function confirmLeave() {
+    if (!leaving) return;
+    const subject = leaving;
+    startTransition(async () => {
+      const result = await leaveSubjectAction(subject.id);
+      if (result.status === "error") return setLeaveError(result.message);
+      closeLeave();
+      setToast(`Kamu sudah keluar dari ${subject.name}.`);
+      router.refresh();
+    });
+  }
 
   // Drop ?join= from the URL so a refresh does not reopen the modal.
   useEffect(() => {
@@ -52,11 +75,33 @@ export function StudentSubjectGrid({ subjects, initialJoinCode }: { subjects: Su
       <div className={subjectGridOuterClassName}>
         <div className={subjectGridClassName}>
           {subjects.map((subject) => (
-            <SubjectCard href={`/student/${subject.slug}/dashboard`} key={subject.id} subject={subject} />
+            <SubjectCard
+              href={`/student/${subject.slug}/dashboard`}
+              key={subject.id}
+              onLeave={() => setLeaving(subject)}
+              subject={subject}
+            />
           ))}
           <AddSubjectCard label="Ikut Kelas Baru" onClick={() => setJoinOpen(true)} />
         </div>
       </div>
+
+      <ConfirmModal
+        cancelLabel="Batal"
+        confirmLabel="Keluar dari Kelas"
+        description={
+          leaving
+            ? `Kamu akan keluar dari ${leaving.name} ${leaving.class.name}. Nilai dan hasil asesmenmu tetap tersimpan, dan kamu bisa bergabung lagi dengan kode kelas dari gurumu.`
+            : ""
+        }
+        error={leaveError}
+        onClose={closeLeave}
+        onConfirm={confirmLeave}
+        open={Boolean(leaving)}
+        pending={pending}
+        pendingLabel="Memproses..."
+        title="Keluar dari kelas ini?"
+      />
 
       <JoinSubjectModal
         initialCode={prefilledCode}

@@ -1,6 +1,6 @@
 // Shared by the subject modals (client) and their Server Functions.
 
-import type { SchoolLevel } from "@/lib/api/types";
+import type { Fase, SchoolLevel } from "@/lib/api/types";
 
 export type SubjectFormValues = {
   name: string;
@@ -16,20 +16,36 @@ export const CLASS_LEVEL_MESSAGE = "Awali nama kelas dengan tingkat, mis. 4A, VI
 
 // Grade at the start of the class name: a number that may be followed by a letter ("4A", "10 IPA"), or a Roman
 // numeral that may not ("VII B", "X-1 MIPA", but not "IPA"). Longer numerals come first so "XII" is not read as "X".
-const GRADE_PATTERN = /^(?:(1[0-2]|[1-9])(?!\d)|(XII|XI|X|IX|VIII|VII|VI|IV|V|III|II|I)(?![A-Z]))/i;
+// Grade XIII is the fourth year of a 4-year SMK/MAK program.
+const GRADE_PATTERN = /^(?:(1[0-3]|[1-9])(?!\d)|(XIII|XII|XI|X|IX|VIII|VII|VI|IV|V|III|II|I)(?![A-Z]))/i;
 
 const ROMAN_GRADES: Record<string, number> = {
-  I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12,
+  I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8, IX: 9, X: 10, XI: 11, XII: 12, XIII: 13,
 };
 
-// The modals only ask for the class name; the backend also needs the school level, so it is read from the grade.
-export function inferSchoolLevel(className: string): SchoolLevel | null {
+function gradeOf(className: string): number | null {
   const match = className.trim().match(GRADE_PATTERN);
   if (!match) return null;
-  const grade = match[1] ? Number(match[1]) : ROMAN_GRADES[match[2].toUpperCase()];
+  return match[1] ? Number(match[1]) : ROMAN_GRADES[match[2].toUpperCase()];
+}
+
+// The modals only ask for the class name; the backend also needs the school level, so it is read from the grade.
+// SMK/MAK classes (up to XIII) count as SMA.
+export function inferSchoolLevel(className: string): SchoolLevel | null {
+  const grade = gradeOf(className);
+  if (grade === null) return null;
   if (grade <= 6) return "SD";
   if (grade <= 9) return "SMP";
   return "SMA";
+}
+
+// Fase of a grade (Kurikulum Merdeka): A = I–II, B = III–IV, C = V–VI (SD/MI), D = VII–IX (SMP/MTs), E = X,
+// F = XI–XII, and XIII for 4-year SMK/MAK. Same as the backend's suggest_fase, which does not know XIII yet.
+const FASE_OF_GRADE: Fase[] = ["A", "A", "B", "B", "C", "C", "D", "D", "D", "E", "F", "F", "F"];
+
+export function faseOfClass(className: string): Fase | null {
+  const grade = gradeOf(className);
+  return grade === null ? null : FASE_OF_GRADE[grade - 1];
 }
 
 export function validateSubjectForm(values: SubjectFormValues): SubjectFormErrors {

@@ -5,21 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { outlineButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import type { CurriculumCp, Fase } from "@/lib/api/types";
-import { fases } from "@/lib/curriculum-form";
+import { faseInfo, fases } from "@/lib/curriculum-form";
 import { addButtonClassName, ghostButtonClassName, iconButtonClassName, sectionClassName } from "./styles";
 
-// The Fase of each school level: SD, SMP, SMA.
-const FASES_BY_LEVEL: Fase[][] = [
-  ["A", "B", "C"],
-  ["D"],
-  ["E", "F"],
-];
-
-// Fase buttons offered for the import: the suggested one first, then the other Fase of the same school level.
-export function faseChoices(suggested: Fase | null): Fase[] {
-  const level = suggested && FASES_BY_LEVEL.find((group) => group.includes(suggested));
-  if (!suggested || !level) return fases.map((fase) => fase.value);
-  return [suggested, ...level.filter((fase) => fase !== suggested)];
+// Fase offered for the import: only the class's Fase (UAT KUR-H01), or every Fase when the class name has no grade.
+export function faseChoices(classFase: Fase | null): Fase[] {
+  return classFase ? [classFase] : fases.map((fase) => fase.value);
 }
 
 // An option of the + menu: icon chip, label and a short explanation.
@@ -87,6 +78,7 @@ export function CpSection({
 }: {
   subjectName: string;
   cps: CurriculumCp[];
+  // The Fase of the subject's class; null when the class name has no grade.
   suggestedFase: Fase | null;
   // False when the catalog has no CPs for this subject: only "Tambah CP Sendiri" is offered.
   officialCatalog: boolean;
@@ -112,6 +104,13 @@ export function CpSection({
       document.removeEventListener("mousedown", onClick);
     };
   }, [menuOpen]);
+  let emptyText = `Katalog CP resmi belum tersedia untuk ${subjectName}. Tambahkan CP sesuai kurikulum yang sedang berjalan.`;
+  if (officialCatalog && suggestedFase) {
+    const fase = faseInfo(suggestedFase);
+    emptyText = `Impor CP resmi ${subjectName} untuk ${fase.label} (${fase.grades}) sesuai kelas mata pelajaran ini, atau tambahkan CP sendiri.`;
+  } else if (officialCatalog) {
+    emptyText = "Sebelum mengimpor CP berdasarkan kurikulum yang sedang berjalan, fase apa yang sedang Bapak/Ibu ampu?";
+  }
   const byFase = fases
     .map((fase) => ({ ...fase, cps: cps.filter((cp) => cp.fase === fase.value) }))
     .filter((group) => group.cps.length > 0);
@@ -127,16 +126,14 @@ export function CpSection({
       {cps.length === 0 ? (
         <div className="flex flex-col items-center gap-6 py-10 text-center">
           <p className="max-w-[903px] text-base leading-normal text-[#1b1b1d]">
-            {officialCatalog
-              ? "Sebelum mengimpor CP berdasarkan kurikulum yang sedang berjalan, fase apa yang sedang Bapak/Ibu ampu?"
-              : `Katalog CP resmi belum tersedia untuk ${subjectName}. Tambahkan CP sesuai kurikulum yang sedang berjalan.`}
+            {emptyText}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             {officialCatalog && faseChoices(suggestedFase).map((value) => {
               const fase = fases.find((option) => option.value === value);
               return (
                 <button className={outlineButtonClassName} key={value} onClick={() => onImport(value)} type="button">
-                  {fase?.label} ({fase?.grades})
+                  {suggestedFase ? `Impor CP Resmi ${fase?.label}` : `${fase?.label} (${fase?.grades})`}
                 </button>
               );
             })}

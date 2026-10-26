@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { type DragEvent, useEffect, useRef, useState, useTransition } from "react";
 import { outlineButtonClassName } from "@/components/auth/styles";
 import { ConfirmModal } from "@/components/curriculum/confirm-modal";
+import { StatusFilter, type StatusFilterOption } from "@/components/curriculum/status-filter";
 import { addButtonClassName, sectionClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
 import {
@@ -26,6 +27,15 @@ const inProgress = (material: Material) =>
   material.extractionStatus === "pending" || material.extractionStatus === "processing";
 
 // A file being sent (before the backend answers) or one the browser or backend refused.
+type MaterialFilter = "all" | "uploaded" | "draft";
+
+// Daftar Materi Diunggah filters (UAT KUR-H04): every material, the ones with a confirmed mapping, or the drafts.
+const materialFilters: StatusFilterOption<MaterialFilter>[] = [
+  { value: "all", label: "Lihat Semua", tone: "neutral" },
+  { value: "uploaded", label: "Materi Ter-Upload", tone: "blue" },
+  { value: "draft", label: "Draft", tone: "orange" },
+];
+
 type LocalUpload = { key: string; name: string; chapterId: string | null; error?: string };
 
 let nextKey = 0;
@@ -81,6 +91,7 @@ export function MaterialsBoard({
 
   // Babs with materials start open; the teacher's own clicks win.
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
+  const [filter, setFilter] = useState<MaterialFilter>("all");
 
   // FR-G-031: extraction runs in the background; check on it until it is done or failed.
   const processingIds = processing.map((material) => material.id).join(",");
@@ -324,12 +335,7 @@ export function MaterialsBoard({
 
       <section className={sectionClassName}>
         <CardTitle icon="/materials/book.svg">Daftar Materi Diunggah</CardTitle>
-        <div className="flex flex-wrap gap-2 text-[10px] font-semibold leading-normal">
-          <span className="rounded-3xl border border-[#004695] bg-[rgba(153,188,229,0.6)] px-2 py-1 text-[#004695]">
-            Materi Ter-Upload
-          </span>
-          <span className="rounded-3xl border border-[#7c2d12] bg-[rgba(254,215,170,0.6)] px-2 py-1 text-[#c2410c]">Draft</span>
-        </div>
+        <StatusFilter label="Saring materi" onChange={setFilter} options={materialFilters} value={filter} />
 
         {message && (
           <p className="rounded-lg bg-[#ffdad6] px-4 py-3 text-sm leading-5 text-[#93000a]" role="alert">
@@ -337,7 +343,11 @@ export function MaterialsBoard({
           </p>
         )}
 
-        {drafts.length > 0 && (
+        {filter === "draft" && drafts.length === 0 && (
+          <p className="py-6 text-center text-sm leading-normal text-[#45474c]">Belum ada materi berstatus Draft.</p>
+        )}
+
+        {filter !== "uploaded" && drafts.length > 0 && (
           <div className="flex flex-col rounded-xl border border-[rgba(254,215,170,0.9)] bg-[rgba(255,247,237,0.6)]">
             {drafts.map((material) => (
               <MaterialRow
@@ -362,14 +372,14 @@ export function MaterialsBoard({
           </div>
         )}
 
-        {groups.length === 0 && drafts.length === 0 && (
+        {filter === "all" && groups.length === 0 && drafts.length === 0 && (
           <p className="py-6 text-center text-sm leading-normal text-[#45474c]">
             Belum ada materi. Unggah materi di atas, lalu petakan ke Bab dan TP.
           </p>
         )}
 
         <div className="flex flex-col">
-          {groups.map((group) => {
+          {filter !== "draft" && groups.map((group) => {
             const open = toggled[group.id] ?? group.items.length > 0;
             return (
               <div className="border-b border-[#c5c6cd]" key={group.id}>

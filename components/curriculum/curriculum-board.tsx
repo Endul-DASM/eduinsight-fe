@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteChapterAction, deleteCpAction } from "@/lib/actions/curriculum";
 import type { CurriculumChapter, CurriculumCp, CurriculumTree, Fase } from "@/lib/api/types";
+import { faseOfClass } from "@/lib/subject-form";
 import { ChapterDetail, ChapterSection } from "./chapter-section";
 import { ChapterFormModal, type ChapterFormMode } from "./chapter-form-modal";
 import { ConfirmModal } from "./confirm-modal";
@@ -19,6 +20,7 @@ export function CurriculumBoard({
   slug,
   subjectId,
   subjectName,
+  className,
   subtitle,
   tree,
   selectedChapterId,
@@ -26,6 +28,8 @@ export function CurriculumBoard({
   slug: string;
   subjectId: string;
   subjectName: string;
+  // The class name, e.g. "X IPA 1", which sets the Fase of the CPs.
+  className: string;
   // "Matematika | X-1 MIPA" on a Bab's detail.
   subtitle: string;
   tree: CurriculumTree;
@@ -36,8 +40,9 @@ export function CurriculumBoard({
   const cpById = new Map(tree.cps.map((cp) => [cp.id, cp]));
   const chapters = [...tree.chapters].sort((a, b) => a.number - b.number);
   const selected = chapters.find((chapter) => chapter.id === selectedChapterId) ?? null;
-  // Without a grade in the class name, the CP form starts at Fase E, as before Fase A – C existed.
-  const defaultFase: Fase = tree.suggestedFase ?? "E";
+  // CPs follow the Fase of the class (UAT KUR-H01). The backend does not know grade XIII yet, so the same mapping in
+  // the frontend fills in; null when the class name has no grade.
+  const classFase: Fase | null = tree.suggestedFase ?? faseOfClass(className);
 
   const [importFase, setImportFase] = useState<Fase | null>(null);
   const [cpForm, setCpForm] = useState<{ cp?: CurriculumCp } | null>(null);
@@ -80,7 +85,7 @@ export function CurriculumBoard({
         onImport={setImportFase}
         officialCatalog={tree.officialCatalog}
         subjectName={subjectName}
-        suggestedFase={tree.suggestedFase}
+        suggestedFase={classFase}
       />
       {selected ? (
         <ChapterDetail
@@ -105,7 +110,7 @@ export function CurriculumBoard({
       <CpImportModal fase={importFase} onClose={() => setImportFase(null)} slug={slug} subjectId={subjectId} />
       <CpFormModal
         cp={cpForm?.cp}
-        defaultFase={defaultFase}
+        classFase={classFase}
         onClose={() => setCpForm(null)}
         open={Boolean(cpForm)}
         slug={slug}

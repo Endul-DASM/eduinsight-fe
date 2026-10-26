@@ -81,6 +81,7 @@ export function CurriculumPage({
           selectedChapterId={selectedChapterId}
           slug={subject.slug}
           subjectId={subject.id}
+          className={subject.class.name}
           subjectName={subject.name}
           subtitle={`${subject.name}  |  ${subject.class.name}`}
           tree={tree}

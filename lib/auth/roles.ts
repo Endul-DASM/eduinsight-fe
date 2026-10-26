@@ -45,6 +45,9 @@ export function isAuthRole(value: unknown): value is AuthRole {
   return value === "student" || value === "teacher";
 }
 
+// "Guru", "Siswa" or "Admin", shown under the name in the account menu.
+export const roleLabels: Record<UserRole, string> = { guru: "Guru", siswa: "Siswa", admin: "Admin" };
+
 // The sign-in page for an account; null for roles without one, such as admin.
 export function authRoleOf(apiRole: UserRole): AuthRole | null {
   if (apiRole === "guru") return "teacher";

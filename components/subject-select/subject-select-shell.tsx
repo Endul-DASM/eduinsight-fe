@@ -1,27 +1,15 @@
 import { Poppins } from "next/font/google";
 import Image from "next/image";
 import type { ReactNode } from "react";
+import { ProfileMenu } from "@/components/layout/profile-menu";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { cn } from "@/components/ui/cn";
-import { logout } from "@/lib/actions/auth";
+import type { CurrentUser } from "@/lib/api/types";
 import { firstName } from "@/lib/display-name";
 
 // The design uses Poppins; it is scoped to these pages so the rest of the app keeps its font.
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
-
-function LogoutButton() {
-  return (
-    <form action={logout}>
-      <button
-        className="rounded-xl border-2 border-[#0058be] bg-[#f5f3f4] px-4 py-1 text-sm font-semibold leading-normal text-[#0058be] drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors hover:bg-[#e6eff9]"
-        type="submit"
-      >
-        Logout
-      </button>
-    </form>
-  );
-}
 
 // The blurred shapes and the wide ellipse behind the cards (Figma New Design 22:3475), at their design size.
 function Decorations() {
@@ -42,32 +30,45 @@ function Decorations() {
   );
 }
 
+// Where the account menu's Profile leads outside a subject.
+export const accountProfileHref = (user: CurrentUser) => (user.role === "siswa" ? "/student/profile" : "/profile");
+
+// The pages before a subject is chosen: Pilih Mapel and its Profile. The top bar has the logo and the account menu
+// (Figma New Design 22:3475).
+export function AccountShell({ user, children }: { user: CurrentUser; children: ReactNode }) {
+  return (
+    <div className={cn(poppins.className, "relative flex min-h-screen flex-col overflow-hidden bg-white")}>
+      <Decorations />
+      <SiteHeader action={<ProfileMenu profileHref={accountProfileHref(user)} user={user} />} className="bg-[#f5f3f4]" />
+      {children}
+      <SiteFooter />
+    </div>
+  );
+}
+
 // The page around the subject cards, shared by teachers and students (Figma New Design 22:3475).
 export function SubjectSelectShell({
-  userName,
+  user,
   subtitle,
   children,
 }: {
-  userName: string;
+  user: CurrentUser;
   subtitle: string;
   children: ReactNode;
 }) {
   return (
-    <div className={cn(poppins.className, "relative flex min-h-screen flex-col overflow-hidden bg-white")}>
-      <Decorations />
-      <SiteHeader action={<LogoutButton />} className="bg-[#f5f3f4]" />
+    <AccountShell user={user}>
       <main className="relative flex flex-1 items-center px-4 py-16 sm:px-6 md:py-24 lg:px-10">
         <div className="mx-auto flex w-full max-w-[1291px] flex-col items-center gap-12 md:gap-[76px]">
           <div className="flex flex-col items-center gap-3 text-center">
             <h1 className="text-[32px] font-bold leading-normal text-[#1b1b1d] sm:text-5xl">
-              Selamat Datang Kembali, {firstName(userName)}
+              Selamat Datang Kembali, {firstName(user.name)}
             </h1>
             <p className="text-base leading-normal text-[#75777d]">{subtitle}</p>
           </div>
           {children}
         </div>
       </main>
-      <SiteFooter />
-    </div>
+    </AccountShell>
   );
 }

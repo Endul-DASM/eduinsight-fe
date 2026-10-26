@@ -13,7 +13,7 @@ export function StudentSubjectSelectPage({
   initialJoinCode?: string;
 }) {
   return (
-    <SubjectSelectShell subtitle="Silakan pilih mata pelajaran" userName={user.name}>
+    <SubjectSelectShell subtitle="Silakan pilih mata pelajaran" user={user}>
       <StudentSubjectGrid initialJoinCode={initialJoinCode} subjects={subjects} />
     </SubjectSelectShell>
   );

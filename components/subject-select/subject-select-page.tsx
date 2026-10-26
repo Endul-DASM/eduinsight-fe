@@ -4,7 +4,7 @@ import { SubjectSelectShell } from "./subject-select-shell";
 
 export function SubjectSelectPage({ subjects, user }: { subjects: Subject[]; user: CurrentUser }) {
   return (
-    <SubjectSelectShell subtitle="Silakan pilih mata pelajaran" userName={user.name}>
+    <SubjectSelectShell subtitle="Silakan pilih mata pelajaran" user={user}>
       <SubjectGrid subjects={subjects} />
     </SubjectSelectShell>
   );

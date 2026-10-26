@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { SUPPORT_EMAIL } from "@/lib/help";
+import { BrandLogo } from "@/components/ui/brand-logo";
 
 export type FooterLink = { label: string; href: string };
 
@@ -23,8 +23,7 @@ export function WorkspaceFooter({
     <footer className="relative z-10 mt-auto flex flex-col gap-4 bg-[rgba(245,243,244,0.6)] px-4 py-6 shadow-[0_4px_20px_rgba(0,0,0,0.1)] backdrop-blur-xs sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-16">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2">
-          <Image alt="" className="size-10" height={40} src="/auth/logo.svg" width={40} />
-          <span className="text-xl font-semibold leading-normal text-[#1b1b1d]">EduInsight</span>
+          <BrandLogo />
         </div>
         <p className="text-xs leading-normal text-[#45474c]">© 2026 EduInsight AI. {tagline}</p>
       </div>

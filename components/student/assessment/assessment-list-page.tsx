@@ -92,6 +92,22 @@ function PendingCard({ slug, assessment }: { slug: string; assessment: StudentAs
   );
 }
 
+// FR-S-014: after a post-test below its threshold, the materials the teacher recommends, or that they are coming.
+function RecommendationNote({ slug, recommendation }: { slug: string; recommendation: StudentAssessment["recommendation"] }) {
+  if (!recommendation) return null;
+  if (recommendation.status === "pending" || recommendation.materials.length === 0) {
+    return <p className="text-xs text-[#45474c]">Rekomendasi materi sedang disiapkan guru.</p>;
+  }
+  return (
+    <p className="text-xs text-[#45474c]">
+      Materi rekomendasi untukmu: {recommendation.materials.map((material) => material.title).join(", ")}.{" "}
+      <Link className="font-semibold text-[#0058be] hover:underline" href={`/student/${slug}/materials?filter=rekomendasi`}>
+        Lihat Materi
+      </Link>
+    </p>
+  );
+}
+
 // Sudah Selesai: the result of the best attempt.
 function DoneCard({
   slug,
@@ -117,6 +133,7 @@ function DoneCard({
             : `${assessment.maxAttempts > 1 ? "Skor tertinggi" : "Skor"}: ${formatPoints(assessment.bestScore)}/100`}
           {`, ${assessment.attemptsUsed} dari ${assessment.maxAttempts} percobaan`}
         </p>
+        <RecommendationNote recommendation={assessment.recommendation} slug={slug} />
       </div>
       <Link className={softButtonClassName} href={`/student/${slug}/diagnosis`}>
         Lihat Diagnosis

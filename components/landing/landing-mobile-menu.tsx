@@ -68,21 +68,24 @@ export function LandingMobileMenu({ links, actions }: { links: LandingNavLink[];
               {link.label}
             </Link>
           ))}
-          <div className="mt-2 flex flex-col gap-2 border-t border-[#eae7e9] pt-3">
-            {actions.map((action) => (
-              <Link
-                className={cn(
-                  "truncate rounded-xl px-4 py-2.5 text-center text-base font-semibold",
-                  action.primary ? "bg-[#0058be] text-[#f5f3f4]" : "border-2 border-[#0058be] text-[#0058be]",
-                )}
-                href={action.href}
-                key={action.label}
-                onClick={() => setOpen(false)}
-              >
-                {action.label}
-              </Link>
-            ))}
-          </div>
+          {/* Signed in, the account menu sits next to the hamburger instead. */}
+          {actions.length > 0 && (
+            <div className="mt-2 flex flex-col gap-2 border-t border-[#eae7e9] pt-3">
+              {actions.map((action) => (
+                <Link
+                  className={cn(
+                    "truncate rounded-xl px-4 py-2.5 text-center text-base font-semibold",
+                    action.primary ? "bg-[#0058be] text-[#f5f3f4]" : "border-2 border-[#0058be] text-[#0058be]",
+                  )}
+                  href={action.href}
+                  key={action.label}
+                  onClick={() => setOpen(false)}
+                >
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>

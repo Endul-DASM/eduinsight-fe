@@ -5,8 +5,10 @@ import type { ReactNode } from "react";
 import { cn } from "@/components/ui/cn";
 import type { CurrentUser } from "@/lib/api/types";
 import { SUPPORT_EMAIL } from "@/lib/help";
-import { continueLabelOf, homePathOf } from "@/lib/landing";
+import { homePathOf } from "@/lib/landing";
 import { LandingMobileMenu } from "./landing-mobile-menu";
+import { ProfileMenu } from "@/components/layout/profile-menu";
+import { accountProfileHref } from "@/components/subject-select/subject-select-shell";
 import { BrandLogo } from "@/components/ui/brand-logo";
 
 export const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
@@ -41,7 +43,8 @@ export function LandingBackground() {
   );
 }
 
-// Top bar of Home and About (Figma New Design 13:135). Signed in, Login and Sign Up become "Lanjut sebagai …".
+// Top bar of Home and About (Figma New Design 13:135). Signed in, Login and Sign Up become the account menu of
+// Pilih Mata Pelajaran (22:3475).
 export type LandingPage = "home" | "about" | "terms" | "privacy";
 
 function LandingHeader({ page, user }: { page: LandingPage; user: CurrentUser | null }) {
@@ -50,7 +53,7 @@ function LandingHeader({ page, user }: { page: LandingPage; user: CurrentUser | 
     { label: "About", href: "/about", active: page === "about" },
   ];
   const actions: LandingNavLink[] = user
-    ? [{ label: continueLabelOf(user), href: homePathOf(user), primary: true }]
+    ? []
     : [
         { label: "Login", href: "/login" },
         { label: "Sign Up", href: "/#mulai", primary: true },
@@ -77,24 +80,29 @@ function LandingHeader({ page, user }: { page: LandingPage; user: CurrentUser | 
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-3 md:flex">
-          {actions.map((action) => (
-            <Link
-              className={cn(
-                // A long name is cut off rather than pushing the bar wider.
-                "max-w-[260px] truncate rounded-xl px-4 py-1.5 text-sm font-semibold leading-normal drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors",
-                action.primary
-                  ? "bg-[#0058be] text-[#f5f3f4] hover:bg-[#004695]"
-                  : "border-2 border-[#0058be] bg-[#f5f3f4] py-1 text-[#0058be] hover:bg-[#e6eff9]",
-              )}
-              href={action.href}
-              key={action.label}
-            >
-              {action.label}
-            </Link>
-          ))}
+        <div className="flex items-center gap-2">
+          {user ? (
+            <ProfileMenu homeHref={homePathOf(user)} profileHref={accountProfileHref(user)} user={user} />
+          ) : (
+            <div className="hidden items-center gap-3 md:flex">
+              {actions.map((action) => (
+                <Link
+                  className={cn(
+                    "rounded-xl px-4 py-1.5 text-sm font-semibold leading-normal drop-shadow-[0_4px_4px_rgba(0,0,0,0.15)] transition-colors",
+                    action.primary
+                      ? "bg-[#0058be] text-[#f5f3f4] hover:bg-[#004695]"
+                      : "border-2 border-[#0058be] bg-[#f5f3f4] py-1 text-[#0058be] hover:bg-[#e6eff9]",
+                  )}
+                  href={action.href}
+                  key={action.label}
+                >
+                  {action.label}
+                </Link>
+              ))}
+            </div>
+          )}
+          <LandingMobileMenu actions={actions} links={links} />
         </div>
-        <LandingMobileMenu actions={actions} links={links} />
       </div>
     </header>
   );

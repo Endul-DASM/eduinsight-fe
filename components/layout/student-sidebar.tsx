@@ -20,7 +20,8 @@ export function StudentSidebar({ initialCollapsed }: { initialCollapsed?: boolea
 
   // Persiapan, Pengerjaan and Selesai of Asesmen and Remedial are full-width, without the sidebar (Figma New Design
   // 181:8150).
-  if (/^\/student\/[^/]+\/(assessment|remedial)\/[^/]+/.test(pathname)) return null;
+  // Soal Latihan (/remedial/latihan/…) is a study page and keeps the sidebar (UAT REM-H05).
+  if (/^\/student\/[^/]+\/(assessment|remedial)\/(?!latihan\/)[^/]+/.test(pathname)) return null;
 
   return (
     <AppSidebar basePath={`/student/${subject}`} help={help} homeHref="/student" initialCollapsed={initialCollapsed} items={studentNavItems} />

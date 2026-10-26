@@ -1,7 +1,6 @@
 import { softButtonClassName } from "@/components/student/dashboard/student-dashboard-page";
 import type { MyRemedial } from "@/lib/api/student";
 import { formatPoints } from "@/lib/student-dashboard";
-import { PracticeQuestions } from "./practice-questions";
 
 const infoCard = "flex flex-col gap-1 rounded-2xl bg-[#e6eff9] p-4 shadow-[0_4px_12px_rgba(0,0,0,0.06)]";
 
@@ -35,7 +34,6 @@ export function RemedialPackage({ remedial }: { remedial: MyRemedial }) {
           </>
         )}
       </div>
-      {pack && <PracticeQuestions questions={pack.practice ?? []} />}
       <div className={infoCard}>
         <p className="text-base font-semibold text-[#45474c]">Asesmen Sumber</p>
         <p className="text-sm text-[#1b1b1d]">

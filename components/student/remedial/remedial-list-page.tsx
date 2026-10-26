@@ -64,15 +64,23 @@ function ActiveCard({ slug, remedial }: { slug: string; remedial: MyRemedial }) 
             {remedial.cycle > 1 && `, siklus ${remedial.cycle}`}
           </p>
         </div>
-        {next && startable ? (
-          <Link className={cn(primaryButtonClassName, "px-4 py-2.5")} href={`/student/${slug}/remedial/${next.id}`}>
-            {next.openAttemptId ? "Lanjutkan" : "Kerjakan Sekarang"}
-          </Link>
-        ) : (
-          <span aria-disabled className="cursor-not-allowed rounded-xl bg-[#c5c6cd] px-4 py-2.5 text-sm font-semibold text-[#45474c]">
-            {next ? "Belum dibuka" : waitingReason(remedial)}
-          </span>
-        )}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* UAT REM-H05: the practice questions of the approved package have their own page. */}
+          {(remedial.package?.practice.length ?? 0) > 0 && (
+            <Link className={softButtonClassName} href={`/student/${slug}/remedial/latihan/${remedial.sourceAssessment.id}`}>
+              Kerjakan Latihan
+            </Link>
+          )}
+          {next && startable ? (
+            <Link className={cn(primaryButtonClassName, "px-4 py-2.5")} href={`/student/${slug}/remedial/${next.id}`}>
+              {next.openAttemptId ? "Lanjutkan" : "Kerjakan Sekarang"}
+            </Link>
+          ) : (
+            <span aria-disabled className="cursor-not-allowed rounded-xl bg-[#c5c6cd] px-4 py-2.5 text-sm font-semibold text-[#45474c]">
+              {next ? "Belum dibuka" : waitingReason(remedial)}
+            </span>
+          )}
+        </div>
       </div>
       <p className="text-xs text-[#45474c]">
         Mulai dari materi yang belum kamu kuasai, lalu kerjakan evaluasi ulang untuk mencapai ketuntasan.

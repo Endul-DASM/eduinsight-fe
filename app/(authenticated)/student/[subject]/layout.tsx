@@ -28,11 +28,11 @@ const footerLinks = [
 // teacher's workspace.
 export default async function StudentSubjectLayout({ children, params }: LayoutProps<"/student/[subject]">) {
   const { subject: slug } = await params;
-  const user = isMockMode ? mockStudent : await getCurrentUser();
+  // Fetched together; the page reuses both (React cache).
+  const [user, subject] = await Promise.all([isMockMode ? mockStudent : getCurrentUser(), getSubject(slug)]);
   if (user.role !== "siswa") redirect("/choose-subject");
 
   // Null when the subject does not exist or the student has not joined it.
-  const subject = await getSubject(slug);
   if (!subject) notFound();
 
   return (

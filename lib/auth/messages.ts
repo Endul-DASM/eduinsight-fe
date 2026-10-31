@@ -30,6 +30,7 @@ const errorMessages: Record<string, string> = {
   google_email_unverified: "Email akun Google ini belum terverifikasi. Gunakan akun Google lain.",
   google_already_linked: "Akun ini sudah tertaut ke akun Google lain.",
   account_inactive: "Akun dinonaktifkan. Hubungi tim EduInsight.",
+  rate_limited: "Terlalu banyak percobaan masuk. Tunggu beberapa menit, lalu coba lagi.",
 };
 
 export function noticeForError(code: string | string[] | undefined, role: AuthRole): AuthNotice | undefined {

@@ -1,4 +1,5 @@
 import "server-only";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { SESSION_EXPIRED_PATH } from "@/lib/auth/session-expiry";
 import { getSessionToken } from "./session";
@@ -34,6 +35,10 @@ type ApiFetchInit = RequestInit & {
 
 export async function apiFetch<T>(path: string, { withSession = true, ...init }: ApiFetchInit = {}): Promise<T> {
   const token = withSession ? await getSessionToken() : undefined;
+  // Requests without a session are the sign-in and sign-up ones, which the backend limits per user IP. nginx sets
+  // X-Forwarded-For (Next.js fills it in when missing); uvicorn trusts it from 127.0.0.1 and takes the last address
+  // it does not trust, so an address the browser made up is ignored.
+  const forwardedFor = withSession ? null : (await headers()).get("x-forwarded-for");
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...init,
     headers: {
@@ -41,6 +46,7 @@ export async function apiFetch<T>(path: string, { withSession = true, ...init }:
       // JSON bodies are strings; FormData (file uploads) sets its own multipart boundary.
       ...(typeof init.body === "string" ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(forwardedFor ? { "X-Forwarded-For": forwardedFor } : {}),
       ...init.headers,
     },
   });

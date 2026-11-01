@@ -60,7 +60,13 @@ export async function GET(request: NextRequest) {
 }
 
 // Backend refusals the sign-in page explains (lib/auth/messages.ts); anything else is a plain failure.
-const explained = new Set(["google_not_allowed", "google_email_unverified", "google_already_linked", "account_inactive"]);
+const explained = new Set([
+  "google_not_allowed",
+  "google_email_unverified",
+  "google_already_linked",
+  "account_inactive",
+  "rate_limited",
+]);
 
 function errorCode(error: unknown): string {
   if (!(error instanceof ApiError) || !error.code) return "google_failed";

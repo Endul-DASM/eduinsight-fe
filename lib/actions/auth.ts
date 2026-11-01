@@ -116,6 +116,10 @@ export async function login(role: AuthRole, _previous: LoginState, formData: For
       // Thrown from the catch block, so nothing here catches it.
       redirect(authRoles[role].verifyEmailPath);
     }
+    // Too many attempts: the backend says how long to wait.
+    if (error instanceof ApiError && error.code === "rate_limited") {
+      return { message: error.message, identifier };
+    }
     // A 422 is a malformed request body; it reads the same as wrong credentials.
     if (error instanceof ApiError && (error.status === 401 || error.status === 422)) {
       return { message: INVALID_CREDENTIALS_MESSAGE, identifier };

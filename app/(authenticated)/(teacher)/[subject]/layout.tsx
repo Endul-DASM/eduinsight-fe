@@ -17,10 +17,9 @@ const poppins = Poppins({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
 export default async function TeacherLayout({ children, params }: LayoutProps<"/[subject]">) {
   const { subject: slug } = await params;
-  const user = await getCurrentUser();
+  // Fetched together; the pages reuse both (React cache).
+  const [user, subject] = await Promise.all([getCurrentUser(), getSubject(slug)]);
   if (user.role === "siswa") redirect("/student/dashboard");
-
-  const subject = await getSubject(slug);
 
   if (!subject) {
     notFound();

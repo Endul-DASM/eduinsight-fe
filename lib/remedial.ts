@@ -157,10 +157,17 @@ export async function getRecommendedMaterialsByStudent(subjectId: string): Promi
   sources.forEach((source, index) => {
     for (const group of groupsBySource[index]?.groups ?? []) {
       if (group.approvalStatus !== "approved") continue;
-      const numbers = group.weakObjectives.map((weak) => weak.learningObjective.number);
+      // Each student's own TPs in the group.
+      const numbersOf = new Map<string, string[]>();
+      for (const objective of group.objectives) {
+        for (const student of objective.students) {
+          numbersOf.set(student.id, [...(numbersOf.get(student.id) ?? []), objective.learningObjective.number]);
+        }
+      }
       for (const item of group.items) {
         if (item.kind !== "materi") continue;
         for (const student of group.students) {
+          const numbers = numbersOf.get(student.id) ?? [];
           const materials = byStudent.get(student.id) ?? new Map<string, StudentRecommendation>();
           byStudent.set(student.id, materials);
           const found = materials.get(item.material.id) ?? {

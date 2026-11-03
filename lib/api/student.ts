@@ -218,13 +218,14 @@ export const getMyDiagnosis = cache(async (subjectId: string): Promise<MyDiagnos
   }
 });
 
-// Remedial siswa (FR-S-050, 051, FR-G-105). The package (materials, weak TPs and practice) only appears once the teacher
-// approved it; `assessments` holds only the remedial assessments the student may take.
+// Remedial siswa (FR-S-050, 051, FR-G-105). A package (TPs, materials and practice) per group the student is in only
+// appears once the teacher approved it; `assessments` holds only the remedial assessments the student may take.
 export type RemedialStatus = "perlu_remedial" | "menunggu_materi" | "mengerjakan" | "reassessment" | "tuntas";
 
 export type MyRemedialPackage = {
-  level: "belum_paham" | "paham_sebagian" | "butuh_latihan";
-  weakObjectives: { learningObjective: LearningObjectiveRef; chapterNumber: number; chapterName: string; average: number }[];
+  level: "belum_paham" | "butuh_latihan" | "pengayaan";
+  // The student's TPs in the group with their own TP score, weakest first.
+  objectives: { learningObjective: LearningObjectiveRef; chapterNumber: number; chapterName: string; average: number | null }[];
   materials: {
     id: string;
     title: string;
@@ -253,7 +254,8 @@ export type MyRemedial = {
   status: RemedialStatus;
   cycle: number;
   finalScore: number;
-  package: MyRemedialPackage | null;
+  // One per approved group, lowest need first; empty before any ACC.
+  packages: MyRemedialPackage[];
   assessments: StudentAssessment[];
 };
 

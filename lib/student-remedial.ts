@@ -1,6 +1,6 @@
 // Remedial siswa (PRD S-REM-01, SRS FR-S-050, 051) on top of GET /my-remedials, per subject. Pure functions.
 import type { AssessmentType } from "./api/types";
-import type { MyRemedial, RemedialStatus, StudentAssessment } from "./api/student";
+import type { MyRemedial, MyRemedialPackage, RemedialStatus, StudentAssessment } from "./api/student";
 
 // Assessments that can send a student to remedial (BE REMEDIAL_SOURCE_TYPES).
 const sourceTypes: AssessmentType[] = ["post_test", "ulangan_harian", "uts", "uas"];
@@ -38,17 +38,28 @@ export function nextAssessment(remedial: MyRemedial): StudentAssessment | null {
   );
 }
 
+// The materials of every approved package, each once, in package order.
+export function packageMaterials(remedial: MyRemedial): MyRemedialPackage["materials"] {
+  const found = new Map<string, MyRemedialPackage["materials"][number]>();
+  for (const pack of remedial.packages) for (const material of pack.materials) if (!found.has(material.id)) found.set(material.id, material);
+  return [...found.values()];
+}
+
+export function practiceCount(remedial: MyRemedial): number {
+  return remedial.packages.reduce((total, pack) => total + pack.practice.length, 0);
+}
+
 // Why there is nothing to start, for the disabled button.
 export function waitingReason(remedial: MyRemedial): string {
   if (remedial.status === "reassessment") return "Menunggu reassessment";
-  if (!remedial.package) return "Menunggu materi dari guru";
+  if (remedial.packages.length === 0) return "Menunggu materi dari guru";
   return "Belum ada soal remedial";
 }
 
-// "TP 1.1, TP 1.2": the weak TPs of the approved package, or else the TPs of the remedial assessments.
+// "TP 1.1, TP 1.2": the TPs of the approved packages, or else the TPs of the remedial assessments.
 export function topicOf(remedial: MyRemedial): string {
-  const numbers = remedial.package
-    ? remedial.package.weakObjectives.map((objective) => objective.learningObjective.number)
+  const numbers = remedial.packages.length
+    ? remedial.packages.flatMap((pack) => pack.objectives.map((objective) => objective.learningObjective.number))
     : remedial.assessments.flatMap((assessment) => assessment.learningObjectives.map((objective) => objective.number));
   const unique = [...new Set(numbers)].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   return unique.length ? unique.map((number) => `TP ${number}`).join(", ") : "Belum ditentukan";

@@ -15,7 +15,7 @@ export default async function StudentPracticeRoute({ params }: PageProps<"/stude
     (entry) => entry.sourceAssessment.id === source,
   );
   // Practice questions reach the student with the package, once the teacher approved it.
-  if (!remedial?.package) notFound();
+  if (!remedial?.packages.length) notFound();
 
   return <PracticePage remedial={remedial} slug={slug} />;
 }

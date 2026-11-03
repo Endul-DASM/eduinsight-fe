@@ -135,8 +135,9 @@ export function RemedialAnalysisPage({
               </h3>
             </div>
             <p className="text-xs text-[#45474c]">
-              Siswa target dikelompokkan menjadi Belum Paham, Paham Sebagian, dan Butuh Latihan berdasarkan pola kesalahan per TP, bukan
-              skor akhir saja. Guru dapat memindahkan siswa, mengubah materi, dan menambah soal latihan AI sebelum ACC.
+              TP siswa target dikelompokkan menurut pola kesalahannya: Belum Paham untuk kesalahan konsep (miskonsepsi), Butuh Latihan
+              untuk kesalahan teknis, dan Pengayaan untuk TP yang sudah mencapai KKM. Satu siswa dapat berada di beberapa kelompok. Guru dapat memindahkan TP siswa, mengubah materi, dan menambah soal latihan AI
+              sebelum ACC.
             </p>
             <section className={card}>
               <p className="text-sm font-semibold text-[#1b1b1d]">TP yang belum tercapai siswa target</p>

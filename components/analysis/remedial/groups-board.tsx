@@ -15,10 +15,11 @@ import {
   refreshRemedialAction,
   rejectGroupAction,
   type RemedialActionResult,
+  setGroupEntriesAction,
   setGroupMaterialsAction,
-  setGroupStudentsAction,
 } from "@/lib/actions/remedial";
-import type { RemedialGroup, RemedialGroups } from "@/lib/api/remedial";
+import type { GroupEntry, RemedialGroup, RemedialGroups, RemedialStudent } from "@/lib/api/remedial";
+import { formatScore } from "@/lib/assessment-results";
 import type { MaterialReference } from "@/lib/remedial";
 import { levelLabels } from "@/lib/remedial-figures";
 
@@ -36,9 +37,18 @@ const approvalLabels = {
 
 type Run = (action: () => Promise<RemedialActionResult>) => void;
 
-// Kelompok belajar (FR-G-101, 102, 104; AI-12, AI-13): the backend groups the targets by their TP scores and
-// misconceptions and suggests the weak TPs' materials; the teacher moves students, edits the materials, asks AI for
-// practice questions and approves each group. Nothing reaches the students before the group's ACC.
+function entriesOf(group: RemedialGroup): GroupEntry[] {
+  return group.objectives.flatMap((objective) =>
+    objective.students.map((student) => ({ studentId: student.id, learningObjectiveId: objective.learningObjective.id })),
+  );
+}
+
+const entryKey = (studentId: string, objectiveId: string) => `${studentId}:${objectiveId}`;
+
+// Kelompok belajar (FR-G-101, 102, 104; AI-12, AI-13): the backend gives each target a need per TP (Belum Paham,
+// Butuh Latihan, Pengayaan) and makes one group per need holding those TPs, with their materials suggested; the
+// teacher moves a student's TP between groups, edits the materials, asks AI for practice questions and approves each
+// group. Nothing reaches the students before the group's ACC.
 export function GroupsBoard({
   slug,
   sourceId,
@@ -70,8 +80,9 @@ export function GroupsBoard({
       {groups.groups.length === 0 ? (
         <section className={cn(card, "items-start")}>
           <p className="text-xs leading-normal text-[#45474c]">
-            Belum ada kelompok. Siswa target dikelompokkan menjadi Belum Paham, Paham Sebagian, dan Butuh Latihan berdasarkan nilai per
-            TP dan pola miskonsepsinya, lalu tiap kelompok mendapat usulan materi dari TP yang belum tercapai.
+            Belum ada kelompok. Tiap TP siswa target diberi kebutuhan dari pola kesalahannya: Belum Paham (kesalahan konsep, yaitu
+            jawaban bermiskonsepsi), Butuh Latihan (kesalahan teknis), atau Pengayaan (nilai TP sudah KKM ke atas). TP dengan kebutuhan
+            yang sama dikelompokkan bersama, lalu tiap kelompok mendapat usulan materi dari TP-nya.
           </p>
           <button
             className={cn(primaryButtonClassName, "gap-2 px-4 py-2 text-sm")}
@@ -155,11 +166,28 @@ function GroupCard({
   ].filter((material) => !materialIds.includes(material.id));
   const others = groups.groups.filter((other) => other.id !== group.id && other.approvalStatus !== "approved");
   const disabled = busy || locked;
+  // Targets of the cycle that can get a TP here: anyone in a group or ungrouped, unless that TP of theirs is locked in
+  // an approved group.
+  const everyone = [
+    ...new Map([...groups.groups.flatMap((other) => other.students), ...groups.ungrouped].map((student) => [student.id, student])).values(),
+  ].sort((a, b) => a.name.localeCompare(b.name));
+  const approvedEntries = new Set(
+    groups.groups
+      .filter((other) => other.approvalStatus === "approved")
+      .flatMap(entriesOf)
+      .map((entry) => entryKey(entry.studentId, entry.learningObjectiveId)),
+  );
 
-  function moveTo(studentId: string, targetId: string) {
-    const target = groups.groups.find((other) => other.id === targetId);
-    if (!target) return;
-    run(() => setGroupStudentsAction(slug, target.id, [...target.students.map((student) => student.id), studentId]));
+  // Pindah ke / Tambah siswa: the target group's entries with this student's TP added; the backend takes it out of
+  // the group it was in.
+  function addTo(target: RemedialGroup, studentId: string, objectiveId: string) {
+    run(() => setGroupEntriesAction(slug, target.id, [...entriesOf(target), { studentId, learningObjectiveId: objectiveId }]));
+  }
+
+  function addableStudents(students: RemedialStudent[], objectiveId: string) {
+    return everyone.filter(
+      (student) => !students.some((member) => member.id === student.id) && !approvedEntries.has(entryKey(student.id, objectiveId)),
+    );
   }
 
   return (
@@ -167,7 +195,7 @@ function GroupCard({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h4 className="text-base font-semibold text-[#1b1b1d]">{levelLabels[group.level]}</h4>
         <div className="flex flex-wrap gap-2">
-          <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>{group.method === "kmeans" ? "K-Means" : "Aturan skor"}</span>
+          <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>{group.method === "kmeans" ? "K-Means + aturan" : "Aturan"}</span>
           {group.autoGenerated && <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>Otomatis</span>}
           <span className={cn(chip, approval.className)}>{approval.label}</span>
         </div>
@@ -176,64 +204,66 @@ function GroupCard({
         <p className="rounded-lg bg-[#ffdad6] px-3 py-2 text-xs text-[#93000a]">Catatan: {group.reviewNote}</p>
       )}
 
-      <div className="flex flex-col gap-2">
-        <p className={subhead}>Siswa ({group.students.length})</p>
-        {group.students.length === 0 ? (
-          <p className="text-xs text-[#75777d]">Belum ada siswa.</p>
-        ) : (
-          <ul className="flex flex-col gap-1.5">
-            {group.students.map((student) => (
-              <li className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#1b1b1d]" key={student.id}>
-                {student.name}
-                {!locked && others.length > 0 && (
-                  <select
-                    aria-label={`Pindahkan ${student.name}`}
-                    className={select}
-                    disabled={disabled}
-                    onChange={(event) => moveTo(student.id, event.target.value)}
-                    value=""
-                  >
-                    <option value="">Pindah ke…</option>
-                    {others.map((other) => (
-                      <option key={other.id} value={other.id}>
-                        {levelLabels[other.level]}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-        {!locked && groups.ungrouped.length > 0 && (
-          <select
-            aria-label={`Tambah siswa ke ${levelLabels[group.level]}`}
-            className={cn(select, "self-start")}
-            disabled={disabled}
-            onChange={(event) =>
-              event.target.value &&
-              run(() => setGroupStudentsAction(slug, group.id, [...group.students.map((student) => student.id), event.target.value]))
-            }
-            value=""
-          >
-            <option value="">+ Tambah siswa…</option>
-            {groups.ungrouped.map((student) => (
-              <option key={student.id} value={student.id}>
-                {student.name}
-              </option>
-            ))}
-          </select>
-        )}
+      <div className="flex flex-col gap-3">
+        <p className={subhead}>
+          TP ({group.objectives.length}) · {group.students.length} siswa
+        </p>
+        {group.objectives.length === 0 && <p className="text-xs text-[#75777d]">Belum ada TP.</p>}
+        {group.objectives.map((objective) => {
+          const objectiveId = objective.learningObjective.id;
+          const candidates = locked ? [] : addableStudents(objective.students, objectiveId);
+          return (
+            <div className="flex flex-col gap-1.5 rounded-xl bg-[#f5f3f4] p-3" key={objectiveId}>
+              <p className="text-xs font-semibold text-[#1b1b1d]" title={objective.learningObjective.description}>
+                TP {objective.learningObjective.number}
+                {objective.average !== null && <span className="font-normal text-[#45474c]"> · rata-rata {formatScore(objective.average)}</span>}
+              </p>
+              <ul className="flex flex-col gap-1.5">
+                {objective.students.map((student) => (
+                  <li className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#1b1b1d]" key={student.id}>
+                    {student.name}
+                    {!locked && others.length > 0 && (
+                      <select
+                        aria-label={`Pindahkan TP ${objective.learningObjective.number} ${student.name}`}
+                        className={select}
+                        disabled={disabled}
+                        onChange={(event) => {
+                          const target = others.find((other) => other.id === event.target.value);
+                          if (target) addTo(target, student.id, objectiveId);
+                        }}
+                        value=""
+                      >
+                        <option value="">Pindah ke…</option>
+                        {others.map((other) => (
+                          <option key={other.id} value={other.id}>
+                            {levelLabels[other.level]}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {candidates.length > 0 && (
+                <select
+                  aria-label={`Tambah siswa ke TP ${objective.learningObjective.number}`}
+                  className={cn(select, "self-start")}
+                  disabled={disabled}
+                  onChange={(event) => event.target.value && addTo(group, event.target.value, objectiveId)}
+                  value=""
+                >
+                  <option value="">+ Tambah siswa…</option>
+                  {candidates.map((student) => (
+                    <option key={student.id} value={student.id}>
+                      {student.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          );
+        })}
       </div>
-
-      {group.weakObjectives.length > 0 && (
-        <div className="flex flex-col gap-1">
-          <p className={subhead}>TP yang belum tercapai</p>
-          <p className="text-xs leading-normal text-[#45474c]">
-            {group.weakObjectives.map((weak) => `TP ${weak.learningObjective.number}`).join(", ")}
-          </p>
-        </div>
-      )}
 
       <div className="flex flex-col gap-2">
         <p className={subhead}>Materi ({materials.length})</p>
@@ -330,8 +360,8 @@ function GroupCard({
   );
 }
 
-// Soal latihan AI (AI-13, FR-G-102): drafts on the group's weak TPs aimed at its misconceptions, approved with the
-// group. Students answer them as self-check and see the key and the explanation.
+// Soal latihan AI (AI-13, FR-G-102): drafts on the group's TPs aimed at its misconceptions (harder ones for Pengayaan),
+// approved with the group. Students answer them as self-check and see the key and the explanation.
 function PracticeSection({
   slug,
   groupId,

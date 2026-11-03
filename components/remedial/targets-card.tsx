@@ -30,7 +30,8 @@ export function TargetsCard({
   remedialChosen: boolean;
   scheduleHref: string;
   // Student id → their group's level; empty before grouping (or in mock mode).
-  groupLevels: Record<string, RemedialLevel | null>;
+  // Each student's groups, one per need they have.
+  groupLevels: Record<string, RemedialLevel[]>;
   // Analisis › Remedial for this source, where the groups are approved.
   groupsHref: string;
 }) {
@@ -115,8 +116,14 @@ export function TargetsCard({
                 <td className={bodyCell}>{target.name}</td>
                 <td className={cn(bodyCell, "font-semibold text-[#dc2626]")}>{formatScore(target.initialScore)}</td>
                 <td className={bodyCell}>
-                  {groupLevels[target.studentId] ? (
-                    <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")}>{levelLabels[groupLevels[target.studentId]!]}</span>
+                  {groupLevels[target.studentId]?.length ? (
+                    <span className="flex flex-wrap gap-1">
+                      {groupLevels[target.studentId].map((level) => (
+                        <span className={cn(chip, "bg-[#e6eff9] text-[#0058be]")} key={level}>
+                          {levelLabels[level]}
+                        </span>
+                      ))}
+                    </span>
                   ) : (
                     <span className="text-[#9aa1ae]">—</span>
                   )}

@@ -3,16 +3,18 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandLogo } from "@/components/ui/brand-logo";
 import { cn } from "@/components/ui/cn";
+import { SUPPORT_EMAIL } from "@/lib/help";
 
+// The Bantuan page lives inside a subject, so before signing in Help goes to support, like the footer's Contact Support.
 function HelpLink() {
   return (
-    <Link
+    <a
       className="flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm font-semibold leading-6 text-[#1b1b1d] transition-colors hover:bg-[#eef2f7]"
-      href="#"
+      href={`mailto:${SUPPORT_EMAIL}`}
     >
       <Image alt="" height={20} src="/auth/help-circle.svg" width={20} />
       Help
-    </Link>
+    </a>
   );
 }
 

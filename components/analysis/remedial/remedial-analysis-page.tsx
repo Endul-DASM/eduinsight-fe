@@ -68,6 +68,10 @@ export function RemedialAnalysisPage({
   const materialCount = new Set(references.flatMap((reference) => reference.materials.map((material) => material.id))).size;
   const practiceCount = (groups?.groups ?? []).flatMap((group) => group.items.filter((item) => item.kind === "latihan")).length;
   const approvedGroups = (groups?.groups ?? []).filter((group) => group.approvalStatus === "approved").length;
+  // FR-G-103: the groups that can get their own official remedial questions.
+  const officialLevels = (groups?.groups ?? []).flatMap((group) =>
+    group.level === "pengayaan" ? [] : [group.level],
+  );
   const query = new URLSearchParams();
   if (source) query.set("source", source.id);
   if (pair.remedial) query.set("remedial", pair.remedial.id);
@@ -214,14 +218,16 @@ export function RemedialAnalysisPage({
                     </p>
                     <p className="text-xs leading-normal text-[#45474c]">
                       Khusus {pending} siswa berstatus Perlu Remedial pada {source?.title}. Siswa yang tuntas tidak akan melihat soal ini.
+                      Tiap siswa hanya mengerjakan soal untuk semua siswa target dan soal kelompoknya.
                     </p>
                   </>
                 ) : (
                   <p className="text-xs leading-normal text-[#45474c]">
-                    Belum ada draf remedial. Buat draf soal dari TP yang belum tercapai dengan AI, atau buat secara manual.
+                    Belum ada draf remedial. Buat draf soal per kelompok atau untuk semua siswa target dengan AI, atau buat secara
+                    manual lalu pilih kelompok tiap soal di langkah Review.
                   </p>
                 )}
-                {source && weak.length > 0 && groups && <OfficialDraft slug={slug} sourceId={source.id} />}
+                {source && (weak.length > 0 || officialLevels.length > 0) && groups && <OfficialDraft levels={officialLevels} slug={slug} sourceId={source.id} />}
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">
                   <span className="text-xs text-[#45474c]">Belum terlihat siswa</span>
                   <Link

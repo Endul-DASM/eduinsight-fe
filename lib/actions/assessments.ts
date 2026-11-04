@@ -10,6 +10,7 @@ import {
   publishAssessment,
   replaceAssessmentLearningObjectives,
   replaceAssessmentQuestions,
+  setAssessmentQuestionLevel,
   unpublishAssessment,
   updateAssessment,
 } from "@/lib/api/assessments";
@@ -32,7 +33,7 @@ import {
   saveQuestionImport,
   updateQuestion,
 } from "@/lib/api/questions";
-import type { AssessmentType } from "@/lib/api/types";
+import type { AssessmentType, OfficialRemedialLevel } from "@/lib/api/types";
 import { type RemedialScheduleValues, validateRemedialSchedule } from "@/lib/remedial-figures";
 import {
   type BuilderMethod,
@@ -238,6 +239,24 @@ export async function saveSingleQuestionAction(
 
   refresh(slug, assessmentId);
   redirect(builderPath(slug, assessmentId, method, "review"));
+}
+
+// "Untuk" on a question of an official remedial in Review (FR-G-103): which group's students get it.
+export async function setQuestionLevelAction(
+  slug: string,
+  assessmentId: string,
+  questionId: string,
+  level: OfficialRemedialLevel | null,
+): Promise<BuilderResult> {
+  if (isMockMode) return { status: "error", message: MOCK_MODE_MESSAGE };
+  try {
+    await setAssessmentQuestionLevel(assessmentId, questionId, level);
+  } catch (error) {
+    unstable_rethrow(error);
+    return errorResult(error);
+  }
+  refresh(slug, assessmentId);
+  return { status: "saved" };
 }
 
 // 🗑 on a question in Review: it leaves the assessment (and the Bank Soal when nothing else uses it).

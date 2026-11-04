@@ -7,15 +7,28 @@ import { outlineButtonClassName } from "@/components/auth/styles";
 import { cn } from "@/components/ui/cn";
 import { useAiJob } from "@/lib/ai-job";
 import { officialDraftAction, refreshRemedialAction } from "@/lib/actions/remedial";
-import type { BloomLevel } from "@/lib/api/types";
+import type { BloomLevel, OfficialRemedialLevel } from "@/lib/api/types";
 import { bloomLevels, builderPath } from "@/lib/assessment-form";
+import { levelLabels } from "@/lib/remedial-figures";
 
 const field = "h-[32px] rounded-lg border border-[#c5c6cd] bg-white px-2 text-xs text-[#1b1b1d]";
 
-// Draf remedial resmi dengan AI (AI-14, FR-G-103): AI questions on the source's weak TPs, written into its draft
-// official remedial (made if missing). Once done, the teacher reviews and approves them in the assessment's Review step.
-export function OfficialDraft({ slug, sourceId }: { slug: string; sourceId: string }) {
+// Draf remedial resmi dengan AI (AI-14, FR-G-103): AI questions written into the source's draft official remedial
+// (made if missing), on the weak TPs for every target or, per group, on the group's TPs and misconceptions for its
+// students only. A student in several groups takes one remedial with the questions of each of their groups. Once
+// done, the teacher reviews and approves them in the assessment's Review step.
+export function OfficialDraft({
+  slug,
+  sourceId,
+  levels,
+}: {
+  slug: string;
+  sourceId: string;
+  // The groups of the current cycle that can get their own questions.
+  levels: OfficialRemedialLevel[];
+}) {
   const router = useRouter();
+  const [level, setLevel] = useState<OfficialRemedialLevel | null>(levels[0] ?? null);
   const [pg, setPg] = useState(10);
   const [benarSalah, setBenarSalah] = useState(0);
   const [bloom, setBloom] = useState<BloomLevel>("C2");
@@ -40,7 +53,7 @@ export function OfficialDraft({ slug, sourceId }: { slug: string; sourceId: stri
   function request() {
     setMessage(undefined);
     startTransition(async () => {
-      const result = await officialDraftAction(sourceId, { pg, benarSalah }, bloom);
+      const result = await officialDraftAction(sourceId, { pg, benarSalah }, bloom, level);
       if (result.status === "queued" && result.assessmentId) setTarget({ jobId: result.jobId, assessmentId: result.assessmentId });
       else if (result.status === "error") setMessage(result.message);
     });
@@ -58,6 +71,19 @@ export function OfficialDraft({ slug, sourceId }: { slug: string; sourceId: stri
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap items-center gap-2 text-xs text-[#45474c]">
+        <select
+          aria-label="Soal untuk"
+          className={field}
+          onChange={(e) => setLevel((e.target.value || null) as OfficialRemedialLevel | null)}
+          value={level ?? ""}
+        >
+          {levels.map((option) => (
+            <option key={option} value={option}>
+              Kelompok {levelLabels[option]}
+            </option>
+          ))}
+          <option value="">Semua siswa target</option>
+        </select>
         <label className="flex items-center gap-1">
           PG
           <input className={cn(field, "w-14")} max={20} min={0} onChange={(e) => setPg(Number(e.target.value))} type="number" value={pg} />

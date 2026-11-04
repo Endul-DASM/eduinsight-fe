@@ -15,7 +15,7 @@ import {
   setGroupEntries,
   setGroupMaterials,
 } from "@/lib/api/remedial";
-import type { BloomLevel } from "@/lib/api/types";
+import type { BloomLevel, OfficialRemedialLevel } from "@/lib/api/types";
 import { MAX_AI_QUESTIONS } from "@/lib/assessment-form";
 
 const MOCK_MODE_MESSAGE = "Mode demo: sambungkan backend (API_BASE_URL) untuk mengelola remedial.";
@@ -95,11 +95,12 @@ export async function officialDraftAction(
   sourceId: string,
   counts: QuestionCounts,
   bloomLevel: BloomLevel,
+  level: OfficialRemedialLevel | null = null,
 ): Promise<RemedialAiResult> {
   const total = counts.pg + counts.benarSalah;
   if (total === 0) return { status: "error", message: "Isi jumlah soal minimal satu." };
   if (total > MAX_AI_QUESTIONS) return { status: "error", message: `Paling banyak ${MAX_AI_QUESTIONS} soal per permintaan.` };
-  return queue(() => requestOfficialDraft(sourceId, counts, bloomLevel));
+  return queue(() => requestOfficialDraft(sourceId, counts, bloomLevel, level));
 }
 
 // After a job: the groups (or the new draft) are read again.

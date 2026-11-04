@@ -227,4 +227,10 @@ export type AssessmentDetail = Assessment & {
   learningObjectives: LearningObjectiveRef[];
   questions: Question[];
   summary: AssessmentSummary;
+  // Official remedial: question id → the group whose students get it (FR-G-103); questions left out are for every
+  // target. Missing from older backends.
+  remedialLevels?: Record<string, OfficialRemedialLevel>;
 };
+
+// The remedial groups an official remedial's question can be meant for; Pengayaan TPs are already reached.
+export type OfficialRemedialLevel = "belum_paham" | "butuh_latihan";

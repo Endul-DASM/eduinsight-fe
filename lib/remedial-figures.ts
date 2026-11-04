@@ -18,11 +18,11 @@ export const progressLabels: Record<RemedialProgress, { label: string; className
   selesai: { label: "Selesai", className: "bg-[#dcfce7] text-[#16a34a]" },
 };
 
-// The groups of FR-G-101 (AI-12).
+// The learning needs per TP of FR-G-101 (AI-12), one group each.
 export const levelLabels: Record<RemedialLevel, string> = {
   belum_paham: "Belum Paham",
-  paham_sebagian: "Paham Sebagian",
   butuh_latihan: "Butuh Latihan",
+  pengayaan: "Pengayaan",
 };
 
 export const masteryLabels = {

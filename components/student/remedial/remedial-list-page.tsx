@@ -14,6 +14,8 @@ import {
   doneCards,
   isActive,
   nextAssessment,
+  packageMaterials,
+  practiceCount,
   remedialStatusLabels,
   topicOf,
   waitingReason,
@@ -42,7 +44,7 @@ function ActiveCard({ slug, remedial }: { slug: string; remedial: MyRemedial }) 
   const next = nextAssessment(remedial);
   const startable = next !== null && (next.openAttemptId !== null || next.canStart);
   const status = remedialStatusLabels[remedial.status];
-  const materials = remedial.package?.materials ?? [];
+  const materials = packageMaterials(remedial);
 
   return (
     <li className={cn(card, "flex flex-col gap-4 p-6")}>
@@ -66,7 +68,7 @@ function ActiveCard({ slug, remedial }: { slug: string; remedial: MyRemedial }) 
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {/* UAT REM-H05: the practice questions of the approved package have their own page. */}
-          {(remedial.package?.practice.length ?? 0) > 0 && (
+          {practiceCount(remedial) > 0 && (
             <Link className={softButtonClassName} href={`/student/${slug}/remedial/latihan/${remedial.sourceAssessment.id}`}>
               Kerjakan Latihan
             </Link>

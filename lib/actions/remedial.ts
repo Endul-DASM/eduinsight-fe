@@ -11,8 +11,9 @@ import {
   rejectGroup,
   requestOfficialDraft,
   requestPractice,
+  type GroupEntry,
+  setGroupEntries,
   setGroupMaterials,
-  setGroupStudents,
 } from "@/lib/api/remedial";
 import type { BloomLevel } from "@/lib/api/types";
 import { MAX_AI_QUESTIONS } from "@/lib/assessment-form";
@@ -51,9 +52,9 @@ export async function generateGroupsAction(slug: string, sourceId: string): Prom
   return save(slug, () => generateRemedialGroups(sourceId));
 }
 
-// Pindah ke: the target group's new member list, the student included.
-export async function setGroupStudentsAction(slug: string, groupId: string, studentIds: string[]): Promise<RemedialActionResult> {
-  return save(slug, () => setGroupStudents(groupId, studentIds));
+// Pindah ke and Tambah siswa: the target group's new entry list, the moved or added (student, TP) included.
+export async function setGroupEntriesAction(slug: string, groupId: string, entries: GroupEntry[]): Promise<RemedialActionResult> {
+  return save(slug, () => setGroupEntries(groupId, entries));
 }
 
 export async function setGroupMaterialsAction(slug: string, groupId: string, materialIds: string[]): Promise<RemedialActionResult> {

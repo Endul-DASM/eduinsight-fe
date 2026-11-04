@@ -20,7 +20,7 @@ export default async function RemedialRoute({ params, searchParams }: PageProps<
     pair.sourceResults ? getMaterialReferences(subject, pair.sourceResults, pair.targets) : [],
     pair.source ? getSourceRemedial(pair.source.id) : null,
   ]);
-  const groupLevels = Object.fromEntries((remedial?.targets ?? []).map((target) => [target.student.id, target.groupLevel]));
+  const groupLevels = Object.fromEntries((remedial?.targets ?? []).map((target) => [target.student.id, target.groups.map((group) => group.level)]));
 
   return <RemedialPage cards={cards} groupLevels={groupLevels} pair={pair} references={references} slug={slug} />;
 }

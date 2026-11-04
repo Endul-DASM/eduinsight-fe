@@ -104,7 +104,7 @@ export function RemedialPage({
   // Assessments of type remedial, as Daftar Asesmen cards.
   cards: Card[];
   // Student id → group level, from the backend's Siswa Target (FR-G-101).
-  groupLevels: Record<string, RemedialLevel | null>;
+  groupLevels: Record<string, RemedialLevel[]>;
 }) {
   const query = new URLSearchParams();
   if (pair.source) query.set("source", pair.source.id);

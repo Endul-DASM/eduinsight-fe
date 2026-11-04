@@ -18,11 +18,13 @@ import {
   refreshAssessmentAction,
   rejectQuestionAction,
   removeQuestionAction,
+  setQuestionLevelAction,
   unpublishAction,
   variationAction,
 } from "@/lib/actions/assessments";
-import type { AssessmentDetail, BloomLevel, Question } from "@/lib/api/types";
+import type { AssessmentDetail, BloomLevel, OfficialRemedialLevel, Question } from "@/lib/api/types";
 import { assessmentStatusLabels, type BuilderMethod, builderPath, formatLongSchedule, isEditable } from "@/lib/assessment-form";
+import { levelLabels } from "@/lib/remedial-figures";
 import { claimPendingSummaryPreference, useSummaryPreference } from "@/lib/summary-preference";
 import { AssessmentSummary } from "./assessment-summary";
 import { FormMessage, InfoMessage } from "./builder-fields";
@@ -108,6 +110,19 @@ export function ReviewStep({
   const waitingDrafts = assessment.questions.filter(
     (question) => question.origin === "ai" && question.status === "pending_review",
   );
+  // FR-G-103: an official remedial's questions can each be for one group; the rest are for every target.
+  const perGroup = assessment.type === "remedial" && assessment.remedialKind === "official";
+  const levels = assessment.remedialLevels ?? {};
+  // Regenerate Semua would write the drafts again for every target, dropping their group.
+  const canRegenerate = !waitingDrafts.some((question) => levels[question.id]);
+
+  function setLevel(question: Question, level: OfficialRemedialLevel | null) {
+    setAiMessage(undefined);
+    startTransition(async () => {
+      const result = await setQuestionLevelAction(slug, assessment.id, question.id, level);
+      if (result.status === "error") setAiMessage(result.message);
+    });
+  }
 
   function queue(request: () => Promise<{ status: "queued"; jobId: string } | { status: "error"; message: string }>) {
     setAiMessage(undefined);
@@ -189,6 +204,14 @@ export function ReviewStep({
         </InfoMessage>
       )}
 
+      {perGroup && (
+        <InfoMessage>
+          Pilih untuk siapa tiap soal: semua siswa target, atau satu kelompok remedial. Siswa hanya mendapat soal kelompoknya
+          pada TP yang ia perlukan; siswa di beberapa kelompok mengerjakan satu asesmen berisi semua soalnya.
+        </InfoMessage>
+      )}
+      {!draft && aiMessage && <FormMessage>{aiMessage}</FormMessage>}
+
       {draft && (aiBusy || aiMessage || waitingDrafts.length > 0) && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#c5c6cd] bg-[rgba(250,251,253,0.6)] px-4 py-3">
           <p className="text-sm leading-normal text-[#1b1b1d]">
@@ -196,7 +219,7 @@ export function ReviewStep({
               ? "AI sedang menyusun soal dari materi Anda..."
               : `${waitingDrafts.length} soal AI menunggu ACC. Tinjau dan ubah bila perlu, lalu setujui sebelum publikasi.`}
           </p>
-          {!aiBusy && waitingDrafts.length > 0 && (
+          {!aiBusy && waitingDrafts.length > 0 && canRegenerate && (
             <button
               className={cn(outlineButtonClassName, "gap-2")}
               disabled={pending}
@@ -231,6 +254,19 @@ export function ReviewStep({
               actions={
                 editable && (
                   <>
+                    {perGroup && (
+                      <select
+                        aria-label={`Soal ${index + 1} untuk`}
+                        className="h-[32px] rounded-lg border border-[#c5c6cd] bg-white px-2 text-xs text-[#1b1b1d]"
+                        disabled={pending || aiBusy}
+                        onChange={(e) => setLevel(question, (e.target.value || null) as OfficialRemedialLevel | null)}
+                        value={levels[question.id] ?? ""}
+                      >
+                        <option value="">Semua siswa target</option>
+                        <option value="belum_paham">Kelompok {levelLabels.belum_paham}</option>
+                        <option value="butuh_latihan">Kelompok {levelLabels.butuh_latihan}</option>
+                      </select>
+                    )}
                     {draft && question.status === "pending_review" && (
                       <>
                         <button
@@ -285,6 +321,11 @@ export function ReviewStep({
               answer={question.answerKey}
               badge={
                 <>
+                  {perGroup && !editable && (
+                    <span className={cn(badgeClassName, "bg-[#f4f6fa] text-[#45474c]")}>
+                      {levels[question.id] ? `Kelompok ${levelLabels[levels[question.id]]}` : "Semua siswa target"}
+                    </span>
+                  )}
                   {question.origin === "ai" && (
                     <span className={cn(badgeClassName, "bg-[#e6eff9] text-[#004695]")} title="Dibuat dengan AI">
                       AI

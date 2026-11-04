@@ -6,6 +6,7 @@ import type {
   AssessmentMode,
   AssessmentStatus,
   AssessmentType,
+  OfficialRemedialLevel,
   RemedialKind,
 } from "./types";
 
@@ -92,6 +93,19 @@ export async function replaceAssessmentQuestions(id: string, questionIds: string
     method: "PUT",
     body: JSON.stringify({ questionIds }),
   });
+}
+
+// PUT /assessments/:id/questions/:questionId/remedial-level — FR-G-103: the group whose students get the question
+// of an official remedial; null for every target.
+export async function setAssessmentQuestionLevel(
+  id: string,
+  questionId: string,
+  level: OfficialRemedialLevel | null,
+): Promise<AssessmentDetail> {
+  return apiFetch<AssessmentDetail>(
+    `/assessments/${encodeURIComponent(id)}/questions/${encodeURIComponent(questionId)}/remedial-level`,
+    { method: "PUT", body: JSON.stringify({ level }) },
+  );
 }
 
 // POST /assessments/:id/publish — 422 publish_blocked lists what is missing (FR-G-050).

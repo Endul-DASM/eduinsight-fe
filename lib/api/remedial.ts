@@ -2,7 +2,7 @@ import { cache } from "react";
 import type { AiJobAccepted } from "./ai-jobs";
 import { ApiError, apiFetch, isMockMode } from "./client";
 import type { QuestionCounts } from "./question-sources";
-import type { BloomLevel, LearningObjectiveRef, Question } from "./types";
+import type { BloomLevel, LearningObjectiveRef, OfficialRemedialLevel, Question } from "./types";
 
 // Remedial module of eduinsight-be (BE-12, AI-12 – 14; SRS FR-G-100 – 107): Siswa Target, groups with their
 // packages and ACC, and the AI remedial questions. Scores are 0–100 with two decimals.
@@ -148,15 +148,17 @@ export async function deleteRemedialItem(itemId: string): Promise<RemedialGroups
   return apiFetch<RemedialGroups>(`/remedial-items/${path(itemId)}`, { method: "DELETE" });
 }
 
-// POST /assessments/:id/remedial/official-draft → 202 { jobId, assessmentId } (AI-14, FR-G-103): AI questions on the
-// source's weak TPs, in its draft official remedial (made if missing). Review and ACC them in that assessment.
+// POST /assessments/:id/remedial/official-draft → 202 { jobId, assessmentId } (AI-14, FR-G-103): AI questions in the
+// source's draft official remedial (made if missing), on its weak TPs for every target, or with a level on that
+// group's TPs for its students only. Review and ACC them in that assessment.
 export async function requestOfficialDraft(
   sourceId: string,
   counts: QuestionCounts,
   bloomLevel: BloomLevel,
+  level: OfficialRemedialLevel | null = null,
 ): Promise<AiJobAccepted & { assessmentId: string }> {
   return apiFetch(`/assessments/${path(sourceId)}/remedial/official-draft`, {
     method: "POST",
-    body: JSON.stringify({ counts, bloomLevel }),
+    body: JSON.stringify({ counts, bloomLevel, level }),
   });
 }

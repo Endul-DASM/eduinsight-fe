@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { RemedialPage } from "@/components/remedial/remedial-page";
-import { getSourceRemedial } from "@/lib/api/remedial";
+import { getRemedialGroups, getSourceRemedial } from "@/lib/api/remedial";
 import { getSubject } from "@/lib/api/subjects";
 import { getAssessmentCards } from "@/lib/assessment-list";
 import { getMaterialReferences, getRemedialPair } from "@/lib/remedial";
@@ -16,11 +16,28 @@ export default async function RemedialRoute({ params, searchParams }: PageProps<
     getRemedialPair(subject, query.source, query.remedial),
     getAssessmentCards(subject, { type: "remedial" }),
   ]);
-  const [references, remedial] = await Promise.all([
+  const [references, remedial, groups] = await Promise.all([
     pair.sourceResults ? getMaterialReferences(subject, pair.sourceResults, pair.targets) : [],
     pair.source ? getSourceRemedial(pair.source.id) : null,
+    pair.source ? getRemedialGroups(pair.source.id) : null,
   ]);
   const groupLevels = Object.fromEntries((remedial?.targets ?? []).map((target) => [target.student.id, target.groups.map((group) => group.level)]));
+  // Every target of the cycle is in a group and every group is approved (FR-G-104).
+  const groupsApproved = Boolean(
+    groups &&
+      groups.groups.length > 0 &&
+      groups.ungrouped.length === 0 &&
+      groups.groups.every((group) => group.approvalStatus === "approved"),
+  );
 
-  return <RemedialPage cards={cards} groupLevels={groupLevels} pair={pair} references={references} slug={slug} />;
+  return (
+    <RemedialPage
+      cards={cards}
+      groupLevels={groupLevels}
+      groupsApproved={groupsApproved}
+      pair={pair}
+      references={references}
+      slug={slug}
+    />
+  );
 }

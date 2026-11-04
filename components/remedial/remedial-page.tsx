@@ -97,6 +97,7 @@ export function RemedialPage({
   references,
   cards,
   groupLevels,
+  groupsApproved,
 }: {
   slug: string;
   pair: RemedialPair;
@@ -105,6 +106,8 @@ export function RemedialPage({
   cards: Card[];
   // Student id → group level, from the backend's Siswa Target (FR-G-101).
   groupLevels: Record<string, RemedialLevel[]>;
+  // Every target is grouped and every group approved.
+  groupsApproved: boolean;
 }) {
   const query = new URLSearchParams();
   if (pair.source) query.set("source", pair.source.id);
@@ -143,6 +146,7 @@ export function RemedialPage({
               <TargetsCard
                 kkm={pair.sourceResults.assessment.kkm}
                 groupLevels={groupLevels}
+                groupsApproved={groupsApproved}
                 groupsHref={`/${slug}/analysis?tab=remedial&${query}`}
                 remedialChosen={Boolean(pair.remedial)}
                 scheduleHref={scheduleHref}

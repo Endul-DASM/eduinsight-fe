@@ -23,6 +23,7 @@ export function TargetsCard({
   scheduleHref,
   groupLevels,
   groupsHref,
+  groupsApproved,
 }: {
   targets: TargetRow[];
   kkm: number;
@@ -34,6 +35,8 @@ export function TargetsCard({
   groupLevels: Record<string, RemedialLevel[]>;
   // Analisis › Remedial for this source, where the groups are approved.
   groupsHref: string;
+  // Every target is grouped and every group approved, so there is nothing left to ACC.
+  groupsApproved: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [onlyPending, setOnlyPending] = useState(false);
@@ -160,7 +163,7 @@ export function TargetsCard({
           bukan progres latihan.
         </p>
         <Link className={cn(outlineButtonClassName, "px-4 py-2 text-sm")} href={groupsHref}>
-          Acc Peserta Remedial
+          {groupsApproved ? "Lihat Kelompok Remedial" : "Acc Peserta Remedial"}
         </Link>
       </div>
     </section>

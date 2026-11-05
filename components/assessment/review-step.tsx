@@ -22,7 +22,7 @@ import {
   variationAction,
 } from "@/lib/actions/assessments";
 import type { AssessmentDetail, BloomLevel, Question } from "@/lib/api/types";
-import { assessmentStatusLabels, type BuilderMethod, builderPath, formatLongSchedule, isEditable } from "@/lib/assessment-form";
+import { aiFailureMessage, assessmentStatusLabels, type BuilderMethod, builderPath, formatLongSchedule, isEditable } from "@/lib/assessment-form";
 import { claimPendingSummaryPreference, useSummaryPreference } from "@/lib/summary-preference";
 import { AssessmentSummary } from "./assessment-summary";
 import { FormMessage, InfoMessage } from "./builder-fields";
@@ -101,7 +101,7 @@ export function ReviewStep({
     },
     onFailed: (message) => {
       setAiJobId(null);
-      setAiMessage(message);
+      setAiMessage(aiFailureMessage(message));
     },
   });
   const aiBusy = Boolean(aiJobId) && aiJob.status !== "failed";

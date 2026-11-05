@@ -35,6 +35,7 @@ import {
 import type { AssessmentType } from "@/lib/api/types";
 import { type RemedialScheduleValues, validateRemedialSchedule } from "@/lib/remedial-figures";
 import {
+  aiFailureMessage,
   type BuilderMethod,
   builderPath,
   durationOf,
@@ -78,6 +79,12 @@ function messageOf(error: unknown): string {
 function errorResult(error: unknown): Extract<BuilderResult, { status: "error" }> {
   const fields = error instanceof ApiError ? error.fields : undefined;
   return { status: "error", message: fields ? Object.values(fields)[0] : messageOf(error), fields };
+}
+
+// A refused AI request, worded for the teacher (UAT): quota, budget and AI switched off.
+function aiRequestError(error: unknown): { status: "error"; message: string } {
+  const message = errorResult(error).message ?? SERVER_UNREACHABLE_MESSAGE;
+  return { status: "error", message: aiFailureMessage(message, error instanceof ApiError ? error.code : undefined) };
 }
 
 function refresh(slug: string, assessmentId: string) {
@@ -339,7 +346,7 @@ export async function generateQuestionsAction(
     return { status: "queued", jobId };
   } catch (error) {
     unstable_rethrow(error);
-    return { status: "error", message: errorResult(error).message ?? SERVER_UNREACHABLE_MESSAGE };
+    return aiRequestError(error);
   }
 }
 
@@ -351,7 +358,7 @@ export async function variationAction(slug: string, assessmentId: string, questi
     return { status: "queued", jobId };
   } catch (error) {
     unstable_rethrow(error);
-    return { status: "error", message: errorResult(error).message ?? SERVER_UNREACHABLE_MESSAGE };
+    return aiRequestError(error);
   }
 }
 

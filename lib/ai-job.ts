@@ -15,7 +15,7 @@ const MAX_WAIT_MS = 5 * 60 * 1000;
 const MAX_ERRORS = 3;
 
 const FAILED_MESSAGE = "Proses AI gagal. Silakan coba lagi.";
-const TIMEOUT_MESSAGE = "Proses AI masih berjalan. Kami akan mengirim notifikasi saat selesai.";
+export const TIMEOUT_MESSAGE = "Proses AI masih berjalan. Kami akan mengirim notifikasi saat selesai.";
 
 export type AiJobState =
   | { status: "idle" }

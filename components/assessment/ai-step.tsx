@@ -7,10 +7,11 @@ import { useId, useState, useTransition } from "react";
 import { primaryButtonClassName } from "@/components/auth/styles";
 import { greyButtonClassName } from "@/components/curriculum/styles";
 import { cn } from "@/components/ui/cn";
-import { useAiJob } from "@/lib/ai-job";
+import { TIMEOUT_MESSAGE, useAiJob } from "@/lib/ai-job";
 import { generateQuestionsAction, refreshAssessmentAction } from "@/lib/actions/assessments";
 import type { AssessmentDetail, BloomLevel, LearningObjectiveRef } from "@/lib/api/types";
 import {
+  aiFailureMessage,
   bloomLevels,
   type BuilderMethod,
   builderPath,
@@ -52,7 +53,11 @@ export function AiStep({
     },
     onFailed: (failure) => {
       setJobId(null);
-      setMessage(`${failure} Anda tetap bisa mengetik soal sendiri atau memakai Template.`);
+      // Still running after the wait is not a failure; the notification follows. The reworded messages already
+      // name what else the teacher can do.
+      const reworded = aiFailureMessage(failure);
+      if (failure === TIMEOUT_MESSAGE || reworded !== failure) setMessage(reworded);
+      else setMessage(`${failure} Anda tetap bisa mengetik soal sendiri atau memakai Template.`);
     },
   });
 

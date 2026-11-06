@@ -53,8 +53,16 @@ function fromQuestion(question: Question): TypedQuestion {
   };
 }
 
+// The question and option boxes grow with their text so a long one stays readable (UAT).
+function fitHeight(element: HTMLTextAreaElement | null) {
+  if (!element) return;
+  element.style.height = "auto";
+  // scrollHeight leaves out the border, which the border-box height includes.
+  element.style.height = `${element.scrollHeight + element.offsetHeight - element.clientHeight}px`;
+}
+
 const textAreaClassName =
-  "w-full resize-y rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] px-[13px] py-3 text-base leading-normal text-[#1b1b1d] outline-none placeholder:text-[#75777d] focus:border-[#0058be] focus:ring-2 focus:ring-[rgba(0,88,190,0.15)]";
+  "w-full rounded-xl border border-[#c5c6cd] bg-[#fbf8fa] px-[13px] py-3 text-base leading-normal text-[#1b1b1d] outline-none placeholder:text-[#75777d] focus:border-[#0058be] focus:ring-2 focus:ring-[rgba(0,88,190,0.15)]";
 
 function QuestionEditor({
   number,
@@ -126,15 +134,22 @@ function QuestionEditor({
             Tulis Soal di Sini
           </label>
           <textarea
-            className={textAreaClassName}
+            className={cn(textAreaClassName, "resize-none overflow-hidden")}
             id={`${id}-stem`}
             maxLength={5000}
-            onChange={(event) => onChange({ stem: event.target.value })}
+            onChange={(event) => {
+              onChange({ stem: event.target.value });
+              fitHeight(event.target);
+            }}
             placeholder={
               question.type === "benar_salah"
                 ? "Contoh: Bentuk sederhana dari 2³ × 2⁵ adalah 2⁸."
                 : "Contoh: Bentuk sederhana dari 2³ × 2⁵ adalah …"
             }
+            // Grows with a long question or Benar/Salah statement instead of scrolling inside three rows.
+            ref={(element) => {
+              fitHeight(element);
+            }}
             rows={3}
             value={question.stem}
           />
@@ -151,7 +166,7 @@ function QuestionEditor({
       </div>
 
       {question.type === "benar_salah" ? (
-        <fieldset className="flex max-w-[480px] flex-col gap-3">
+        <fieldset className="flex flex-col gap-3">
           <legend className="sr-only">Kunci jawaban: Benar atau Salah</legend>
           <div className="grid grid-cols-2 gap-3">
             {TRUE_FALSE_OPTIONS.map((text, index) => {
@@ -181,40 +196,52 @@ function QuestionEditor({
           </p>
         </fieldset>
       ) : question.type === "pg" ? (
-        <fieldset className="flex max-w-[480px] flex-col gap-3">
+        <fieldset className="flex flex-col gap-3">
           <legend className="sr-only">Opsi jawaban, tandai yang benar</legend>
           {question.options.map((option, index) => {
             const key = OPTION_KEYS[index];
             return (
-              <div className="flex items-center gap-2" key={key}>
+              <div className="flex items-start gap-2" key={key}>
                 <label
                   className={cn(
-                    "flex h-[50px] flex-1 items-center gap-3 rounded-xl border bg-[#fbf8fa] px-[13px] focus-within:border-[#0058be]",
+                    "flex min-h-[50px] min-w-0 flex-1 items-start gap-3 rounded-xl border bg-[#fbf8fa] px-[13px] py-3 focus-within:border-[#0058be]",
                     question.answerKey === key ? "border-[#0058be] bg-[#e6eff9]" : "border-[#c5c6cd]",
                   )}
                 >
                   <input
                     aria-label={`Jawaban benar: opsi ${key}`}
                     checked={question.answerKey === key}
-                    className="size-5 shrink-0 accent-[#0058be]"
+                    className="mt-0.5 size-5 shrink-0 accent-[#0058be]"
                     name={`${id}-answer`}
                     onChange={() => onChange({ answerKey: key })}
                     type="radio"
                   />
-                  <span className="text-sm font-semibold text-[#45474c]">{key}.</span>
-                  <input
+                  <span className="mt-0.5 text-sm font-semibold text-[#45474c]">{key}.</span>
+                  {/* Enter and pasted line breaks add no new line: an option is one paragraph that only wraps. */}
+                  <textarea
                     aria-label={`Opsi ${key}`}
-                    className="min-w-0 flex-1 bg-transparent text-base text-[#1b1b1d] outline-none placeholder:text-[#75777d]"
+                    className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-base leading-normal text-[#1b1b1d] outline-none placeholder:text-[#75777d]"
                     maxLength={1000}
-                    onChange={(event) => setOption(index, event.target.value)}
+                    onChange={(event) => {
+                      setOption(index, event.target.value.replace(/\s*\n\s*/g, " "));
+                      fitHeight(event.target);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") event.preventDefault();
+                    }}
                     placeholder="Pilihan"
+                    // Refit on every render too: removing an option moves the texts below it up a box.
+                    ref={(element) => {
+                      fitHeight(element);
+                    }}
+                    rows={1}
                     value={option}
                   />
                 </label>
                 {question.options.length > 2 && (
                   <button
                     aria-label={`Hapus opsi ${key}`}
-                    className={cn(iconButtonClassName, "text-lg leading-none")}
+                    className={cn(iconButtonClassName, "mt-2 text-lg leading-none")}
                     onClick={() => removeOption(index)}
                     type="button"
                   >
@@ -242,7 +269,7 @@ function QuestionEditor({
             Kunci Jawaban / Rubrik Penilaian
           </label>
           <textarea
-            className={textAreaClassName}
+            className={cn(textAreaClassName, "resize-y")}
             id={`${id}-answer`}
             maxLength={5000}
             onChange={(event) => onChange({ answerKey: event.target.value })}

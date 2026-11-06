@@ -87,6 +87,47 @@ export const MIN_LEARNING_OBJECTIVE_MESSAGE = "Pilih minimal satu TP.";
 // The most questions per "Bikin Soal dengan AI" request, as the backend allows (AI Plan §6.2).
 export const MAX_AI_QUESTIONS = 20;
 
+const AI_ALTERNATIVES = "ketik soal sendiri atau gunakan Template";
+
+// A refused AI request (Bikin Soal, Regenerate Semua, Buat Variasi), by the backend's error code.
+const aiRefusals: Record<string, (message: string) => string> = {
+  ai_quota_exceeded: (message) => {
+    const limit = /\d+/.exec(message)?.[0];
+    return `Kuota AI Anda hari ini${limit ? ` (${limit} permintaan)` : ""} sudah habis dan akan direset pukul 00.00 WIB. Sementara itu, ${AI_ALTERNATIVES}.`;
+  },
+  ai_budget_exceeded: () =>
+    "Kuota AI EduInsight hari ini sudah habis dan akan direset pukul 00.00 WIB. Sementara itu, gunakan Bank Soal, ketik soal sendiri, atau gunakan Template.",
+  ai_disabled: () => "Fitur AI sedang dinonaktifkan sementara. Gunakan Bank Soal, ketik soal sendiri, atau gunakan Template.",
+};
+
+// A failed AI job only carries the backend's sentence, so it is recognised by how that starts (app/ai/jobs.py and
+// app/ai/features/question_generation.py).
+const aiJobFailures: [prefix: string, message: string][] = [
+  [
+    "Hasil AI tidak memenuhi format",
+    `Soal tidak dapat dibuat karena materi yang diunggah belum sesuai dengan CP dan TP yang dipilih. Periksa kembali materi pada Bab tersebut di Kurikulum › Materi, atau ${AI_ALTERNATIVES}.`,
+  ],
+  [
+    "Belum ada materi yang terindeks",
+    "Belum ada materi untuk TP yang dipilih. Unggah materi pada Bab tersebut di Kurikulum › Materi, tunggu sampai selesai diproses, lalu coba lagi.",
+  ],
+  [
+    "Layanan AI sedang tidak tersedia",
+    `Layanan AI sedang sibuk atau terganggu. Coba lagi beberapa menit lagi, atau ${AI_ALTERNATIVES}.`,
+  ],
+  ["TP yang dipilih tidak lagi", "TP yang dipilih sudah tidak ada di asesmen ini. Periksa TP di Spesifikasi Soal, lalu coba lagi."],
+  ["Proses gagal.", "Pembuatan soal terhenti sebelum selesai. Silakan coba lagi."],
+  ["Fitur AI sedang dinonaktifkan", aiRefusals.ai_disabled("")],
+];
+
+// UAT: the teacher-facing message for a failed AI question request or job. Anything not listed (or reworded by the
+// backend) is shown as it is.
+export function aiFailureMessage(message: string, code?: string): string {
+  const refusal = code ? aiRefusals[code] : undefined;
+  if (refusal) return refusal(message);
+  return aiJobFailures.find(([prefix]) => message.startsWith(prefix))?.[1] ?? message;
+}
+
 // Schedules are entered and shown in WIB. A datetime-local input has no time zone, and the page is rendered on the
 // server, so a fixed zone keeps the server and the browser in agreement. Schools in WITA/WIT are a follow-up.
 export const SCHEDULE_TIME_ZONE = "Asia/Jakarta";
